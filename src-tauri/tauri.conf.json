@@ -1,0 +1,88 @@
+{
+  "$schema":     "https://schema.tauri.app/config/2",
+  "productName": "M4TR1X",
+  "version":     "2.0.0",
+  "identifier":  "io.m4tr1x.app",
+
+  "build": {
+    "frontendDist": "../frontend",
+    "devUrl":       "http://localhost:8080/app",
+    "beforeDevCommand":   "node server/index.js",
+    "beforeBuildCommand": ""
+  },
+
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label":           "main",
+        "title":           "M4TR1X — The Unfiltered Eye",
+        "width":           420,
+        "height":          900,
+        "minWidth":        375,
+        "minHeight":       667,
+        "resizable":       true,
+        "decorations":     true,
+        "backgroundColor": "#000000",
+        "url":             "http://localhost:8080/app"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' http://localhost:8080; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' https:; connect-src 'self' http://localhost:8080 wss: https:; frame-src https:; object-src 'none'; base-uri 'self'"
+    }
+  },
+
+  "bundle": {
+    "active":      true,
+    "icon":        [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "targets": "all",
+    "copyright": "MIT — Free to use, fork, and build upon.",
+    "category":  "SocialNetworking",
+    "shortDescription": "Decentralized privacy-first social video.",
+    "longDescription":  "M4TR1X is a beautiful interface over open-source protocols — Nostr, IPFS, Monero — that puts privacy back in your hands.",
+
+    "windows": {
+      "nsis": {
+        "installMode":             "currentUser",
+        "installerIcon":           "../assets/icon.ico",
+        "headerImage":             "../assets/icon-1024.png",
+        "sidebarImage":            "../assets/icon-1024.png",
+        "createDesktopShortcut":   true,
+        "createStartMenuShortcut": true
+      }
+    },
+
+    "macOS": {
+      "entitlements":           null,
+      "exceptionDomain":        "",
+      "signingIdentity":        null,
+      "providerShortName":      null
+    },
+
+    "linux": {
+      "deb":  { "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"] },
+      "rpm":  { "depends": ["webkit2gtk4.1", "gtk3"] },
+      "appimage": { "bundleMediaFramework": true }
+    },
+
+    "android": {
+      "minSdkVersion": 24
+    },
+
+    "iOS": {
+      "minimumSystemVersion": "16.0"
+    },
+
+    "resources": [
+      { "src": "../server/**/*",  "target": "server"  },
+      { "src": "../models/**/*",  "target": "models"  },
+      { "src": "../train/**/*",   "target": "train"   }
+    ]
+  }
+}

@@ -1,0 +1,90 @@
+name: M4TR1X Build & Release
+
+# Si attiva quando pubblichi una release su GitHub (es. v2.1.0)
+# oppure manualmente dal pannello Actions
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+            artifact: '*.exe'
+          - os: macos-latest
+            platform: mac
+            artifact: '*.dmg'
+          - os: ubuntu-latest
+            platform: linux
+            artifact: '*.AppImage'
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # 1. Checkout codice
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js 20 LTS
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3. Installa dipendenze
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Build Electron per la piattaforma corrente
+      - name: Build (${{ matrix.platform }})
+        run: npm run build:${{ matrix.platform }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Code signing (opzionale — rimuovi se non hai i certificati)
+          # CSC_LINK: ${{ secrets.CSC_LINK }}
+          # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+
+      # 5. Calcola checksum SHA-256 (chiunque può verificare che il binario non è stato manomesso)
+      - name: Generate checksums
+        shell: bash
+        run: |
+          cd dist
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            certutil -hashfile *.exe SHA256 > checksums-win.txt
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            shasum -a 256 *.dmg > checksums-mac.txt
+          else
+            sha256sum *.AppImage > checksums-linux.txt
+          fi
+
+      # 6. Carica artefatti sulla release GitHub
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/${{ matrix.artifact }}
+            dist/checksums-*.txt
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job separato: verifica che il codice sia pulito (sicurezza)
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Security audit
+        run: npm audit --audit-level=high
+        continue-on-error: true   # non blocca la build, ma mostra i warning

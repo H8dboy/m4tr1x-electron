@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Dynamic OG tags for WhatsApp / Telegram / Twitter previews -->
+  <meta property="og:site_name"    content="M4TR1X — The Unfiltered Eye">
+  <meta property="og:type"         content="video.other">
+  <meta property="og:title"        id="og-title"       content="M4TR1X Video">
+  <meta property="og:description"  id="og-desc"        content="Watch on M4TR1X — decentralized, uncensored, anonymous.">
+  <meta property="og:image"        id="og-image"       content="">
+  <meta property="og:video"        id="og-video"       content="">
+  <meta name="twitter:card"        content="player">
+  <meta name="twitter:title"       id="tw-title"       content="M4TR1X Video">
+  <meta name="twitter:description" content="Watch on M4TR1X — decentralized, uncensored, anonymous.">
+
+  <title>M4TR1X — Watch</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+    :root {
+      --green:     #00ff41;
+      --green-dim: #00aa2b;
+      --black:     #000;
+      --surface:   rgba(5,10,5,0.97);
+      --font-mono: 'Share Tech Mono', monospace;
+      --font-disp: 'Orbitron', monospace;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    html, body {
+      background: var(--black);
+      color: var(--green);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(0,255,65,0.15);
+      background: var(--surface);
+    }
+    .logo {
+      font-family: var(--font-disp);
+      font-size: 1.1rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--green);
+      text-decoration: none;
+    }
+    .logo span { color: #fff; }
+    .download-btn {
+      background: var(--green);
+      color: #000;
+      font-family: var(--font-disp);
+      font-weight: 700;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .download-btn:hover { background: #fff; }
+
+    /* ── Main layout ── */
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 0 0 80px 0;
+    }
+
+    /* ── Video player ── */
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      background: #000;
+      aspect-ratio: 9/16;
+      max-height: 75vh;
+    }
+    .video-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* ── AI badge ── */
+    .ai-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 0.65rem;
+      font-family: var(--font-disp);
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .ai-badge.human   { background: rgba(0,255,65,0.15); color: var(--green); border: 1px solid var(--green); }
+    .ai-badge.ai-gen  { background: rgba(255,34,34,0.2);  color: #ff4444;      border: 1px solid #ff4444; }
+    .ai-badge.uncertain { background: rgba(255,204,0,0.15); color: #ffcc00; border: 1px solid #ffcc00; display: none; }
+
+    /* ── Info panel ── */
+    .info {
+      padding: 16px 16px 8px;
+      border-bottom: 1px solid rgba(0,255,65,0.1);
+    }
+    .author-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .ident-grid canvas {
+      width: 28px;
+      height: 28px;
+      image-rendering: pixelated;
+    }
+    .author-info { flex: 1; }
+    .author-name {
+      font-size: 0.82rem;
+      color: var(--green);
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .author-key {
+      font-size: 0.65rem;
+      color: var(--green-dim);
+      word-break: break-all;
+    }
+    .video-title {
+      font-size: 0.9rem;
+      color: #fff;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+    .video-desc {
+      font-size: 0.75rem;
+      color: var(--green-dim);
+      line-height: 1.5;
+    }
+    .tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .tag {
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border: 1px solid rgba(0,255,65,0.3);
+      color: var(--green-dim);
+    }
+
+    /* ── Locked interaction bar ── */
+    .locked-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(0,255,65,0.1);
+    }
+    .locked-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.3;
+      cursor: default;
+      font-size: 0.65rem;
+      color: var(--green-dim);
+    }
+    .locked-action span { font-size: 1.4rem; }
+    .locked-label {
+      font-size: 0.6rem;
+      color: rgba(0,255,65,0.4);
+      text-align: center;
+      padding: 0 16px 10px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      margin: 20px 16px;
+      border: 1px solid rgba(0,255,65,0.25);
+      padding: 20px;
+      text-align: center;
+    }
+    .cta-title {
+      font-family: var(--font-disp);
+      font-size: 0.9rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+    .cta-sub {
+      font-size: 0.72rem;
+      color: var(--green-dim);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: var(--green);
+      color: #000;
+      font-family: var(--font-disp);
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      padding: 12px 28px;
+      text-decoration: none;
+      margin-bottom: 10px;
+    }
+    .cta-btn:hover { background: #fff; }
+    .cta-platforms {
+      font-size: 0.6rem;
+      color: rgba(0,255,65,0.35);
+      letter-spacing: 1px;
+      margin-top: 8px;
+    }
+
+    /* ── Loading / error states ── */
+    .state-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      text-align: center;
+      padding: 40px 20px;
+      gap: 16px;
+    }
+    .state-icon { font-size: 3rem; }
+    .state-title {
+      font-family: var(--font-disp);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+    .state-sub {
+      font-size: 0.75rem;
+      color: var(--green-dim);
+      line-height: 1.6;
+      max-width: 300px;
+    }
+    .blink { animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: var(--green-dim); }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <a class="logo" href="#">M4TR<span>1</span>X</a>
+  <a class="download-btn" href="https://github.com/H8dboy/m4tr1x-electron/releases" target="_blank">
+    ⬇ GET THE APP
+  </a>
+</div>
+
+<!-- Main content -->
+<div class="container">
+
+  <!-- Loading state (shown first) -->
+  <div class="state-screen" id="state-loading">
+    <div class="state-icon blink">[ ▓ ]</div>
+    <div class="state-title">FETCHING FROM NOSTR</div>
+    <div class="state-sub">Connecting to decentralized relays — no servers, no censorship.</div>
+  </div>
+
+  <!-- Error state -->
+  <div class="state-screen" id="state-error" style="display:none">
+    <div class="state-icon">⚠</div>
+    <div class="state-title" id="err-title">VIDEO NOT FOUND</div>
+    <div class="state-sub" id="err-sub">This event may have been deleted, or all relays are offline.</div>
+    <a class="cta-btn" href="https://github.com/H8dboy/m4tr1x-electron/releases" target="_blank">DOWNLOAD M4TR1X</a>
+  </div>
+
+  <!-- Video content (hidden until loaded) -->
+  <div id="content" style="display:none">
+
+    <!-- Player -->
+    <div class="video-wrap">
+      <video id="player" controls playsinline preload="metadata"></video>
+      <div class="ai-badge" id="ai-badge"></div>
+    </div>
+
+    <!-- Author + metadata -->
+    <div class="info">
+      <div class="author-row">
+        <div class="ident-grid"><canvas id="ident-canvas" width="24" height="24"></canvas></div>
+        <div class="author-info">
+          <div class="author-name" id="author-name">ANONYMOUS</div>
+          <div class="author-key" id="author-key"></div>
+        </div>
+      </div>
+      <div class="video-title" id="video-title"></div>
+      <div class="video-desc"  id="video-desc"></div>
+      <div class="tags-row"    id="tags-row"></div>
+    </div>
+
+    <!-- Locked actions -->
+    <div class="locked-bar">
+      <div class="locked-action"><span>⚡</span>ZAP</div>
+      <div class="locked-action"><span>💬</span>COMMENT</div>
+      <div class="locked-action"><span>↗</span>SHARE</div>
+      <div class="locked-action"><span>👤</span>FOLLOW</div>
+    </div>
+    <div class="locked-label">🔒 Download M4TR1X to interact — free, private, no account needed</div>
+
+    <!-- Download CTA -->
+    <div class="cta-section">
+      <div class="cta-title">JOIN M4TR1X</div>
+      <div class="cta-sub">
+        Open-source · No censorship · Anonymous by default<br>
+        Powered by Nostr · Monero payments · Signal-grade DMs
+      </div>
+      <a class="cta-btn" href="https://github.com/H8dboy/m4tr1x-electron/releases" target="_blank">
+        ⬇ FREE DOWNLOAD
+      </a>
+      <div class="cta-platforms">WINDOWS · MACOS · LINUX · ANDROID · iOS</div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /container -->
+
+<script>
+// ── Nostr public relays (no auth required) ─────────────────────────────────
+const RELAYS = [
+  'wss://relay.damus.io',
+  'wss://nos.lol',
+  'wss://relay.nostr.band',
+  'wss://nostr.wine',
+  'wss://relay.snort.social',
+]
+
+// ── Parse event ID from URL hash: #note1xxx or #nevent1xxx or #<hex> ───────
+function parseEventId() {
+  const hash = location.hash.replace('#', '').trim()
+  if (!hash) return null
+  // If it looks like bech32 (note1..., nevent1...) decode it
+  if (/^(note1|nevent1)[a-z0-9]+$/i.test(hash)) {
+    try { return decodeBech32EventId(hash) } catch(e) {}
+  }
+  // Plain hex
+  if (/^[0-9a-f]{64}$/i.test(hash)) return hash
+  return null
+}
+
+// ── Minimal bech32 decoder (only for note1/nevent1) ────────────────────────
+function decodeBech32EventId(str) {
+  const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l'
+  str = str.toLowerCase()
+  const sep = str.lastIndexOf('1')
+  if (sep < 1) throw new Error('bad bech32')
+  const data = []
+  for (let i = sep + 1; i < str.length - 6; i++) {
+    const v = CHARSET.indexOf(str[i])
+    if (v < 0) throw new Error('bad char')
+    data.push(v)
+  }
+  // Convert 5-bit groups to 8-bit bytes
+  let acc = 0, bits = 0
+  const bytes = []
+  for (const v of data) {
+    acc = (acc << 5) | v; bits += 5
+    if (bits >= 8) { bits -= 8; bytes.push((acc >> bits) & 0xff) }
+  }
+  if (str.startsWith('note1')) {
+    return Array.from(bytes).map(b => b.toString(16).padStart(2,'0')).join('')
+  }
+  // nevent1: TLV — first TLV type 0 is the event ID
+  let i = 0
+  while (i < bytes.length) {
+    const type = bytes[i++]
+    const len  = bytes[i++]
+    if (type === 0 && len === 32) {
+      return Array.from(bytes.slice(i, i+32)).map(b => b.toString(16).padStart(2,'0')).join('')
+    }
+    i += len
+  }
+  throw new Error('no event id in nevent')
+}
+
+// ── Identity grid (6×6 colored pixels from pubkey) ────────────────────────
+function drawIdentGrid(canvas, pubkeyHex) {
+  const ctx = canvas.getContext('2d')
+  const size = canvas.width / 6
+  const colors = ['#00ff41','#00aa2b','#00ff41','#ffffff','#00cc33','#007716']
+  for (let row = 0; row < 6; row++) {
+    for (let col = 0; col < 6; col++) {
+      const idx = (row * 6 + col) * 2
+      const byte = parseInt(pubkeyHex.slice(idx, idx+2) || '00', 16)
+      ctx.fillStyle = byte > 128 ? colors[byte % colors.length] : '#001100'
+      ctx.fillRect(col*size, row*size, size, size)
+    }
+  }
+}
+
+// ── Fetch event from Nostr relays ─────────────────────────────────────────
+function fetchEvent(eventId) {
+  return new Promise((resolve, reject) => {
+    let found = false
+    let openCount = 0
+    const timeout = setTimeout(() => {
+      if (!found) reject(new Error('timeout'))
+    }, 12000)
+
+    for (const url of RELAYS) {
+      try {
+        const ws = new WebSocket(url)
+        const subId = 'preview-' + Math.random().toString(36).slice(2,8)
+
+        ws.onopen = () => {
+          openCount++
+          ws.send(JSON.stringify(['REQ', subId, { ids: [eventId], limit: 1 }]))
+        }
+
+        ws.onmessage = (e) => {
+          if (found) { ws.close(); return }
+          try {
+            const msg = JSON.parse(e.data)
+            if (msg[0] === 'EVENT' && msg[2] && msg[2].id === eventId) {
+              found = true
+              clearTimeout(timeout)
+              resolve(msg[2])
+              ws.close()
+            }
+          } catch(_) {}
+        }
+
+        ws.onerror = () => {
+          openCount--
+          if (openCount === 0 && !found) reject(new Error('all relays failed'))
+        }
+      } catch(_) {}
+    }
+  })
+}
+
+// ── Fetch kind-0 profile for an author ───────────────────────────────────
+function fetchProfile(pubkey) {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve(null), 5000)
+    for (const url of RELAYS) {
+      try {
+        const ws = new WebSocket(url)
+        const subId = 'prof-' + Math.random().toString(36).slice(2,8)
+        ws.onopen = () => ws.send(JSON.stringify(['REQ', subId, { kinds:[0], authors:[pubkey], limit:1 }]))
+        ws.onmessage = (e) => {
+          try {
+            const msg = JSON.parse(e.data)
+            if (msg[0]==='EVENT' && msg[2]?.kind===0) {
+              clearTimeout(timeout)
+              try { resolve(JSON.parse(msg[2].content)) } catch(_) { resolve(null) }
+              ws.close()
+            }
+          } catch(_) {}
+        }
+        ws.onerror = () => {}
+      } catch(_) {}
+    }
+  })
+}
+
+// ── Show error ─────────────────────────────────────────────────────────────
+function showError(title, sub) {
+  document.getElementById('state-loading').style.display = 'none'
+  document.getElementById('state-error').style.display   = 'flex'
+  document.getElementById('err-title').textContent = title
+  document.getElementById('err-sub').textContent   = sub
+}
+
+// ── Render AI badge from Nostr event tags ──────────────────────────────────
+function renderBadge(event) {
+  const verdictTag = event.tags.find(t => t[0] === 'm4tr1x-verdict')
+  const badge = document.getElementById('ai-badge')
+  if (!verdictTag) { badge.style.display = 'none'; return }
+  const v = verdictTag[1]
+  if (v === 'REAL' || v === 'AUTHENTIC') {
+    badge.textContent = '✓ HUMAN'
+    badge.className   = 'ai-badge human'
+  } else if (v === 'AI_GENERATED') {
+    badge.textContent = '⚠ AI GENERATED'
+    badge.className   = 'ai-badge ai-gen'
+  } else {
+    badge.style.display = 'none'
+  }
+}
+
+// ── Main ───────────────────────────────────────────────────────────────────
+async function main() {
+  const eventId = parseEventId()
+
+  if (!eventId) {
+    showError('NO VIDEO SELECTED', 'Open this page with a video link, e.g. m4tr1x.watch/#note1...')
+    return
+  }
+
+  let event
+  try {
+    event = await fetchEvent(eventId)
+  } catch(e) {
+    showError('VIDEO NOT FOUND', 'This event was not found on any relay. It may have been deleted.')
+    return
+  }
+
+  // Extract video URL from tags (kind 1063 file metadata) or content
+  let videoUrl = null
+  const urlTag = event.tags.find(t => t[0] === 'url')
+  if (urlTag) videoUrl = urlTag[1]
+  if (!videoUrl && event.content && /^https?:\/\/.+\.(mp4|mov|webm|m3u8)/i.test(event.content.trim())) {
+    videoUrl = event.content.trim()
+  }
+  // Try to extract URL from content if it's in the text
+  if (!videoUrl) {
+    const match = event.content.match(/https?:\/\/\S+\.(mp4|mov|webm|m3u8)/i)
+    if (match) videoUrl = match[0]
+  }
+
+  if (!videoUrl) {
+    showError('NO VIDEO IN THIS EVENT', 'This Nostr event does not contain a playable video URL.')
+    return
+  }
+
+  // Extract metadata from tags
+  const titleTag   = event.tags.find(t => t[0] === 'title')
+  const descTag    = event.tags.find(t => t[0] === 'description' || t[0] === 'summary')
+  const thumbTag   = event.tags.find(t => t[0] === 'thumb' || t[0] === 'image')
+  const topicTags  = event.tags.filter(t => t[0] === 't').map(t => t[1])
+
+  const title      = titleTag?.[1] || 'M4TR1X Video'
+  const desc       = descTag?.[1]  || event.content?.slice(0,200) || ''
+  const thumb      = thumbTag?.[1] || ''
+
+  // Update OG meta for link previews
+  document.title = title + ' — M4TR1X'
+  document.getElementById('og-title').setAttribute('content', title)
+  document.getElementById('og-desc').setAttribute('content', desc || 'Watch on M4TR1X — decentralized, uncensored, anonymous.')
+  document.getElementById('og-image').setAttribute('content', thumb)
+  document.getElementById('og-video').setAttribute('content', videoUrl)
+  document.getElementById('tw-title').setAttribute('content', title)
+
+  // Populate UI
+  document.getElementById('player').src    = videoUrl
+  document.getElementById('video-title').textContent = title
+  document.getElementById('video-desc').textContent  = desc
+
+  // Tags
+  const tagsRow = document.getElementById('tags-row')
+  topicTags.slice(0,6).forEach(t => {
+    const el = document.createElement('span')
+    el.className = 'tag'
+    el.textContent = '#' + t
+    tagsRow.appendChild(el)
+  })
+
+  // Author identity grid
+  drawIdentGrid(document.getElementById('ident-canvas'), event.pubkey)
+  const shortKey = event.pubkey.slice(0,8) + '...' + event.pubkey.slice(-8)
+  document.getElementById('author-key').textContent = shortKey
+
+  // AI badge
+  renderBadge(event)
+
+  // Show content, hide loading
+  document.getElementById('state-loading').style.display = 'none'
+  document.getElementById('content').style.display       = 'block'
+
+  // Fetch profile name in background
+  fetchProfile(event.pubkey).then(profile => {
+    if (profile?.name || profile?.display_name) {
+      document.getElementById('author-name').textContent =
+        (profile.display_name || profile.name).toUpperCase()
+    }
+  })
+}
+
+main()
+</script>
+
+</body>
+</html>

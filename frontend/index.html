@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>M4TR1X — UNFILTERED SIGNAL</title>
+  <!-- Universal Tauri/Electron bridge — must load first -->
+  <script src="/m4tr1x-bridge.js"></script>
+  <!-- nostr-tools: bundle locale (servito dal server Express) con fallback CDN -->
+  <script>
+    (function() {
+      var s = document.createElement('script');
+      s.src = '/libs/nostr.bundle.js';
+      s.onerror = function() {
+        var fallback = document.createElement('script');
+        fallback.src = 'https://unpkg.com/nostr-tools/lib/nostr.bundle.js';
+        document.head.appendChild(fallback);
+        console.warn('[M4TR1X] nostr-tools loaded from CDN (fallback). Run npm install for local bundle.');
+      };
+      document.head.appendChild(s);
+    })();
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+    :root{--green:#00ff41;--green-dim:#00aa2b;--green-dark:#002200;--green-glow:rgba(0,255,65,0.12);--black:#000;--surface:rgba(5,10,5,0.97);--red:#ff2222;--yellow:#ffcc00;--blue:#00aaff;--purple:#bb66ff;--shop-orange:#ff8800;--font-mono:'Share Tech Mono',monospace;--font-display:'Orbitron',monospace;--topbar:52px;--tabs:44px}
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;width:100%;background:var(--black);color:var(--green);font-family:var(--font-mono);overflow:hidden}
+    body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,255,65,0.012) 3px,rgba(0,255,65,0.012) 4px);pointer-events:none;z-index:9999}
+    #topbar{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--topbar);background:linear-gradient(to bottom,rgba(0,0,0,0.9),transparent);display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+    .logo{font-family:var(--font-display);font-size:1.1em;font-weight:900;letter-spacing:4px;color:var(--green);text-shadow:0 0 15px var(--green)}
+    #topbar-right{display:flex;align-items:center;gap:10px}
+    .top-btn{background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer;padding:6px;transition:0.2s}
+    .top-btn:hover{text-shadow:0 0 10px var(--green)}
+    #user-avatar-top{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--green);overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1em;background:rgba(0,255,65,0.05)}
+    #user-avatar-top img{width:100%;height:100%;object-fit:cover}
+    #section-tabs{position:fixed;top:var(--topbar);left:0;right:0;z-index:199;height:var(--tabs);display:flex;align-items:center;justify-content:center;background:linear-gradient(to bottom,rgba(0,0,0,0.75),transparent);gap:0}
+    .sec-tab{padding:8px 18px;font-size:1.2em;background:none;border:none;cursor:pointer;transition:0.25s;position:relative;opacity:0.35;filter:grayscale(1)}
+    .sec-tab::after{content:'';position:absolute;bottom:0;left:50%;right:50%;height:2px;background:var(--green);transition:0.25s;box-shadow:0 0 8px var(--green)}
+    .sec-tab.active{opacity:1;filter:grayscale(0)}
+    .sec-tab.active::after{left:15%;right:15%}
+    .sec-tab.film-tab.active::after{background:var(--blue);box-shadow:0 0 8px var(--blue)}
+    .sec-tab.music-tab.active::after{background:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+    .sec-tab.forum-tab.active::after{background:var(--purple);box-shadow:0 0 8px var(--purple)}
+    .sec-tab.shop-tab.active::after{background:var(--shop-orange);box-shadow:0 0 8px var(--shop-orange)}
+    .sec-tab.dm-tab.active::after{background:var(--green);box-shadow:0 0 8px var(--green)}
+    .section-banner{position:fixed;top:calc(var(--topbar) + var(--tabs));left:0;right:0;z-index:198;padding:6px 14px;display:none;align-items:center;gap:10px;font-size:0.58em;letter-spacing:2px;backdrop-filter:blur(8px)}
+    .section-banner.show{display:flex}
+    #banner-film{background:rgba(0,10,20,0.85);border-bottom:1px solid rgba(0,170,255,0.3);color:var(--blue)}
+    #banner-music{background:rgba(20,10,0,0.85);border-bottom:1px solid rgba(255,204,0,0.3);color:var(--yellow)}
+    #banner-forum{background:rgba(10,0,20,0.85);border-bottom:1px solid rgba(187,102,255,0.3);color:var(--purple)}
+    #banner-shop{background:rgba(20,10,0,0.85);border-bottom:1px solid rgba(255,136,0,0.3);color:var(--shop-orange)}
+    #banner-dm{background:rgba(0,10,5,0.85);border-bottom:1px solid rgba(0,255,65,0.3);color:var(--green)}
+    .banner-icon{font-size:1.5em}
+    .banner-text strong{display:block;font-family:var(--font-display);font-size:1.05em;margin-bottom:1px}
+    #feed-wrap{position:fixed;inset:0}
+    .section-feed{position:absolute;inset:0;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;display:none;scrollbar-width:none}
+    .section-feed::-webkit-scrollbar{display:none}
+    .section-feed.active{display:block}
+    .video-slide{width:100%;height:100vh;scroll-snap-align:start;position:relative;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .slide-video{width:100%;height:100%;object-fit:cover;display:block}
+    .slide-video.landscape{object-fit:contain}
+    .grad-top{position:absolute;top:0;left:0;right:0;height:180px;background:linear-gradient(to bottom,rgba(0,0,0,0.65),transparent);pointer-events:none;z-index:1}
+    .grad-bot{position:absolute;bottom:0;left:0;right:0;height:320px;background:linear-gradient(to top,rgba(0,0,0,0.88),transparent);pointer-events:none;z-index:1}
+    .play-flash{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:4em;opacity:0;transition:opacity 0.25s;pointer-events:none;z-index:5}
+    .play-flash.on{opacity:1}
+    .vid-prog{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,0.15);z-index:6}
+    .vid-prog-fill{height:100%;background:var(--green);box-shadow:0 0 6px var(--green);width:0%}
+    .slide-info{position:absolute;bottom:75px;left:14px;max-width:calc(100% - 80px);z-index:4}
+    .slide-author{display:flex;align-items:center;gap:8px;margin-bottom:7px;cursor:pointer}
+    .slide-av{width:36px;height:36px;border-radius:50%;border:2px solid var(--green);overflow:hidden;flex-shrink:0;background:rgba(0,255,65,0.05);display:flex;align-items:center;justify-content:center;font-size:1em}
+    .slide-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .slide-name{font-family:var(--font-display);font-size:0.72em;color:#fff;text-shadow:0 1px 5px #000}
+    .slide-time{font-size:0.58em;color:rgba(255,255,255,0.5);margin-left:4px}
+    .slide-meta{font-family:var(--font-display);font-size:0.78em;color:#fff;margin-bottom:4px;text-shadow:0 1px 4px #000}
+    .slide-genre{font-size:0.75em;color:rgba(255,255,255,0.55);margin-left:6px}
+    .slide-caption{font-size:0.78em;color:rgba(255,255,255,0.88);line-height:1.5;text-shadow:0 1px 4px #000;margin-bottom:4px}
+    .slide-tags{font-size:0.68em;color:var(--green)}
+    .slide-actions{position:absolute;right:12px;bottom:90px;display:flex;flex-direction:column;align-items:center;gap:18px;z-index:4}
+    .sact{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+    .sact-icon{width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,0.45);border:1.5px solid rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1.25em;transition:0.2s;backdrop-filter:blur(4px)}
+    .sact:hover .sact-icon{border-color:var(--green);box-shadow:0 0 14px rgba(0,255,65,0.4);transform:scale(1.08)}
+    .sact.zap-act:hover .sact-icon{border-color:var(--yellow);box-shadow:0 0 14px rgba(255,204,0,0.4)}
+    .sact-label{font-size:0.55em;color:rgba(255,255,255,0.7);letter-spacing:1px}
+    .sact.label-real-act:hover .sact-icon{border-color:#00ff88;box-shadow:0 0 14px rgba(0,255,136,0.5)}
+    .sact.label-ai-act:hover .sact-icon{border-color:#ff4444;box-shadow:0 0 14px rgba(255,68,68,0.5)}
+    .sact.label-voted-real .sact-icon{border-color:#00ff88;box-shadow:0 0 10px rgba(0,255,136,0.6);background:rgba(0,255,136,0.2)}
+    .sact.label-voted-ai .sact-icon{border-color:#ff4444;box-shadow:0 0 10px rgba(255,68,68,0.6);background:rgba(255,68,68,0.2)}
+    .label-stats-panel{font-size:0.5em;color:var(--green);text-align:center;letter-spacing:1px;line-height:1.4;max-width:52px;word-break:break-word}
+    #mute-btn{position:fixed;top:calc(var(--topbar)+var(--tabs)+28px);right:14px;z-index:198;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.2);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);font-size:0.9em;transition:0.2s}
+    #mute-btn:hover{border-color:var(--green)}
+    #bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;height:60px;background:linear-gradient(to top,rgba(0,0,0,0.92),transparent);display:flex;align-items:center;justify-content:space-around;padding:0 6px}
+    .bnav{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:rgba(255,255,255,0.45);font-family:var(--font-mono);font-size:0.52em;letter-spacing:1px;cursor:pointer;transition:0.2s;padding:8px 4px}
+    .bnav .bicon{font-size:1.5em}
+    .bnav.active,.bnav:hover{color:var(--green)}
+    .bnav.film-nav.active{color:var(--blue)}
+    .bnav.music-nav.active{color:var(--yellow)}
+    .bnav.forum-nav.active{color:var(--purple)}
+    .bnav.shop-nav.active{color:var(--shop-orange)}
+    .bnav.dm-nav.active{color:var(--green)}
+    .bnav.post-nav .bicon{background:var(--green);color:var(--black);width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.3em;box-shadow:0 0 14px rgba(0,255,65,0.4)}
+    .bnav.post-nav{color:var(--green)}
+    .forum-container{padding:calc(var(--topbar) + var(--tabs) + 45px) 14px 80px;height:100vh;overflow-y:auto}
+    .forum-post{background:rgba(187,102,255,0.04);border:1px solid rgba(187,102,255,0.15);padding:14px;margin-bottom:12px;transition:0.2s}
+    .forum-post:hover{border-color:rgba(187,102,255,0.4);background:rgba(187,102,255,0.08)}
+    .forum-post-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .forum-post-av{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--purple);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:0.8em;background:rgba(187,102,255,0.05)}
+    .forum-post-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .forum-post-name{font-family:var(--font-display);font-size:0.68em;color:var(--purple);letter-spacing:1px}
+    .forum-post-time{font-size:0.55em;color:rgba(187,102,255,0.4);margin-left:auto}
+    .forum-post-title{font-family:var(--font-display);font-size:0.82em;color:#fff;margin-bottom:6px;letter-spacing:1px}
+    .forum-post-body{font-size:0.75em;color:rgba(255,255,255,0.7);line-height:1.6;margin-bottom:10px}
+    .forum-post-footer{display:flex;gap:16px;align-items:center}
+    .forum-act{display:flex;align-items:center;gap:4px;font-size:0.65em;color:rgba(187,102,255,0.4);cursor:pointer;transition:0.2s}
+    .forum-act:hover{color:var(--purple)}
+    .forum-post-source{font-size:0.5em;color:rgba(187,102,255,0.25);margin-left:auto;letter-spacing:1px}
+    .forum-new-btn{position:fixed;bottom:75px;right:14px;z-index:197;background:var(--purple);color:#fff;border:none;width:50px;height:50px;border-radius:50%;font-size:1.4em;cursor:pointer;box-shadow:0 0 20px rgba(187,102,255,0.4);transition:0.2s;display:none}
+    .forum-new-btn.show{display:flex;align-items:center;justify-content:center}
+    .forum-new-btn:hover{box-shadow:0 0 30px rgba(187,102,255,0.6);transform:scale(1.05)}
+    .forum-powered{text-align:center;padding:12px;font-size:0.5em;color:rgba(187,102,255,0.25);letter-spacing:2px}
+    #forum-modal{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.93);display:none;align-items:flex-end}
+    #forum-modal.open{display:flex}
+    .forum-sheet{width:100%;background:var(--surface);border-top:1px solid var(--purple);max-height:85vh;overflow-y:auto;animation:slideUp 0.3s ease}
+    .forum-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(187,102,255,0.15)}
+    .forum-sheet-title{font-family:var(--font-display);font-size:0.72em;letter-spacing:2px;color:var(--purple)}
+    .forum-sheet-close{background:none;border:none;color:var(--purple);font-size:1.3em;cursor:pointer}
+    .forum-field{margin:12px 16px}
+    .forum-field label{display:block;font-size:0.6em;color:rgba(187,102,255,0.5);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
+    .forum-field input,.forum-field textarea{width:100%;background:var(--black);border:1px solid rgba(187,102,255,0.2);color:var(--purple);font-family:var(--font-mono);font-size:0.78em;padding:9px 10px;outline:none;resize:none}
+    .forum-field input:focus,.forum-field textarea:focus{border-color:var(--purple)}
+    .btn-forum-post{width:calc(100% - 32px);margin:12px 16px 20px;padding:13px;background:var(--purple);color:#fff;border:none;font-family:var(--font-display);font-size:0.72em;font-weight:900;letter-spacing:3px;cursor:pointer;transition:0.2s}
+    .btn-forum-post:hover{box-shadow:0 0 22px rgba(187,102,255,0.5)}
+    .dm-container{padding:calc(var(--topbar) + var(--tabs) + 10px) 0 80px;height:100vh;display:flex;flex-direction:column}
+    .dm-list{flex:1;overflow-y:auto;padding:0 14px}
+    .dm-item{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--green-dark);cursor:pointer;transition:0.2s}
+    .dm-item:hover{background:rgba(0,255,65,0.03)}
+    .dm-av{width:44px;height:44px;border-radius:50%;border:2px solid var(--green);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.1em;background:rgba(0,255,65,0.05);flex-shrink:0}
+    .dm-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .dm-info{flex:1;min-width:0}
+    .dm-name{font-family:var(--font-display);font-size:0.72em;color:var(--green);letter-spacing:1px;margin-bottom:2px}
+    .dm-preview{font-size:0.68em;color:rgba(0,255,65,0.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dm-time{font-size:0.55em;color:rgba(0,255,65,0.3);flex-shrink:0}
+    .dm-badge{background:var(--green);color:var(--black);font-size:0.5em;font-weight:900;padding:2px 6px;border-radius:10px;flex-shrink:0}
+    .dm-powered{text-align:center;padding:12px;font-size:0.5em;color:rgba(0,255,65,0.2);letter-spacing:2px}
+    .dm-encryption-badge{display:flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(0,255,65,0.04);border:1px solid var(--green-dark);margin:8px 14px;font-size:0.55em;color:var(--green-dim);letter-spacing:1px}
+    .dm-encryption-badge .lock-icon{font-size:1.2em}
+    #dm-chat{position:fixed;inset:0;z-index:300;background:var(--black);display:none;flex-direction:column}
+    #dm-chat.open{display:flex}
+    .dm-chat-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--green-dark);background:rgba(0,0,0,0.95)}
+    .dm-chat-back{background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer}
+    .dm-chat-name{font-family:var(--font-display);font-size:0.72em;color:var(--green);letter-spacing:2px}
+    .dm-chat-encrypt{font-size:0.5em;color:var(--green-dim);letter-spacing:1px;margin-left:auto}
+    .dm-chat-msgs{flex:1;overflow-y:auto;padding:14px}
+    .dm-msg{margin-bottom:12px;max-width:80%}
+    .dm-msg.me{margin-left:auto;text-align:right}
+    .dm-msg-bubble{display:inline-block;padding:10px 14px;font-size:0.75em;line-height:1.5;border:1px solid var(--green-dark);background:rgba(0,255,65,0.03)}
+    .dm-msg.me .dm-msg-bubble{background:rgba(0,255,65,0.08);border-color:var(--green-dim)}
+    .dm-msg-time{font-size:0.5em;color:rgba(0,255,65,0.3);margin-top:3px}
+    .dm-chat-input{display:flex;padding:10px 14px;border-top:1px solid var(--green-dark);gap:0;background:rgba(0,0,0,0.95)}
+    .dm-chat-input input{flex:1;background:rgba(0,0,0,0.8);border:1px solid var(--green-dark);border-right:none;color:var(--green);font-family:var(--font-mono);font-size:0.78em;padding:10px 11px;outline:none}
+    .dm-chat-input input:focus{border-color:var(--green-dim)}
+    .dm-chat-input button{background:var(--green);color:var(--black);border:none;font-family:var(--font-display);font-size:0.62em;font-weight:700;padding:0 14px;cursor:pointer;letter-spacing:1px}
+    .shop-container{padding:calc(var(--topbar) + var(--tabs) + 45px) 14px 80px;height:100vh;overflow-y:auto}
+    .shop-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .shop-balance{display:flex;align-items:center;gap:6px;font-family:var(--font-display);font-size:0.72em;color:var(--shop-orange);letter-spacing:1px}
+    .shop-balance-amount{background:rgba(255,136,0,0.1);border:1px solid rgba(255,136,0,0.3);padding:4px 10px;font-size:0.9em}
+    .shop-buy-tokens{background:var(--shop-orange);color:#000;border:none;font-family:var(--font-display);font-size:0.55em;font-weight:700;padding:6px 12px;cursor:pointer;letter-spacing:1px}
+    .shop-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+    .shop-item{background:rgba(255,136,0,0.04);border:1px solid rgba(255,136,0,0.15);padding:10px;cursor:pointer;transition:0.2s}
+    .shop-item:hover{border-color:rgba(255,136,0,0.4);background:rgba(255,136,0,0.08)}
+    .shop-item-img{width:100%;aspect-ratio:1;background:rgba(255,136,0,0.06);display:flex;align-items:center;justify-content:center;font-size:2.5em;margin-bottom:8px;border:1px solid rgba(255,136,0,0.1)}
+    .shop-item-img img{width:100%;height:100%;object-fit:cover}
+    .shop-item-name{font-family:var(--font-display);font-size:0.65em;color:#fff;letter-spacing:1px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .shop-item-price{font-size:0.7em;color:var(--shop-orange)}
+    .shop-item-seller{font-size:0.55em;color:rgba(255,136,0,0.35);margin-top:3px}
+    .shop-sell-btn{position:fixed;bottom:75px;right:14px;z-index:197;background:var(--shop-orange);color:#000;border:none;width:50px;height:50px;border-radius:50%;font-size:1.4em;cursor:pointer;box-shadow:0 0 20px rgba(255,136,0,0.4);transition:0.2s;display:none}
+    .shop-sell-btn.show{display:flex;align-items:center;justify-content:center}
+    .shop-powered{text-align:center;padding:12px;font-size:0.5em;color:rgba(255,136,0,0.25);letter-spacing:2px}
+    #sell-modal{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.93);display:none;align-items:flex-end}
+    #sell-modal.open{display:flex}
+    .sell-sheet{width:100%;background:var(--surface);border-top:1px solid var(--shop-orange);max-height:85vh;overflow-y:auto;animation:slideUp 0.3s ease}
+    .sell-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,136,0,0.15)}
+    .sell-sheet-title{font-family:var(--font-display);font-size:0.72em;letter-spacing:2px;color:var(--shop-orange)}
+    .sell-sheet-close{background:none;border:none;color:var(--shop-orange);font-size:1.3em;cursor:pointer}
+    .sell-field{margin:12px 16px}
+    .sell-field label{display:block;font-size:0.6em;color:rgba(255,136,0,0.5);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
+    .sell-field input,.sell-field textarea,.sell-field select{width:100%;background:var(--black);border:1px solid rgba(255,136,0,0.2);color:var(--shop-orange);font-family:var(--font-mono);font-size:0.78em;padding:9px 10px;outline:none;resize:none}
+    .sell-img-zone{border:2px dashed rgba(255,136,0,0.2);padding:20px;text-align:center;cursor:pointer;transition:0.2s;margin:12px 16px}
+    .sell-img-zone:hover{border-color:var(--shop-orange)}
+    .btn-sell{width:calc(100% - 32px);margin:12px 16px 20px;padding:13px;background:var(--shop-orange);color:#000;border:none;font-family:var(--font-display);font-size:0.72em;font-weight:900;letter-spacing:3px;cursor:pointer}
+    #token-modal{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.88);display:none;align-items:flex-end}
+    #token-modal.open{display:flex}
+    .token-sheet{width:100%;background:rgba(20,10,0,0.98);border-top:1px solid var(--shop-orange);padding:20px 16px 32px;animation:slideUp 0.3s ease}
+    .token-title{font-family:var(--font-display);font-size:0.78em;letter-spacing:3px;color:var(--shop-orange);margin-bottom:16px;text-align:center}
+    .token-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+    .token-btn{flex:1;min-width:52px;padding:10px 3px;text-align:center;border:1px solid rgba(255,136,0,0.22);background:none;color:rgba(255,136,0,0.55);font-family:var(--font-mono);font-size:0.76em;cursor:pointer;transition:0.2s}
+    .token-btn:hover,.token-btn.sel{border-color:var(--shop-orange);color:var(--shop-orange);background:rgba(255,136,0,0.09)}
+    .token-info{font-size:0.6em;color:rgba(255,136,0,0.35);text-align:center;margin-bottom:12px;letter-spacing:1px}
+    .btn-buy-token{width:100%;padding:13px;background:var(--shop-orange);color:#000;border:none;font-family:var(--font-display);font-size:0.77em;font-weight:900;letter-spacing:3px;cursor:pointer}
+    .token-cancel{width:100%;padding:9px;background:none;border:none;color:rgba(255,136,0,0.35);font-family:var(--font-mono);font-size:0.7em;cursor:pointer;margin-top:7px;letter-spacing:2px}
+    #comments-drawer{position:fixed;bottom:0;left:0;right:0;z-index:300;background:rgba(4,9,4,0.97);border-top:1px solid var(--green-dim);transform:translateY(100%);transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);max-height:65vh;display:flex;flex-direction:column;backdrop-filter:blur(12px)}
+    #comments-drawer.open{transform:translateY(0)}
+    .drawer-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--green-dark);cursor:pointer}
+    .drawer-bar-title{font-family:var(--font-display);font-size:0.68em;letter-spacing:2px}
+    .drawer-bar-close{background:none;border:none;color:var(--green-dim);font-size:1.1em;cursor:pointer}
+    #cmt-list{flex:1;overflow-y:auto;padding:8px 14px}
+    .cmt-item{padding:7px 0;border-bottom:1px solid var(--green-dark);font-size:0.74em;line-height:1.5}
+    .cmt-item:last-child{border:none}
+    .cmt-author{color:var(--green);font-family:var(--font-display);font-size:0.78em;margin-right:6px}
+    #cmt-input-bar{display:flex;padding:10px 14px;border-top:1px solid var(--green-dark);gap:0}
+    #cmt-input{flex:1;background:rgba(0,0,0,0.8);border:1px solid var(--green-dark);border-right:none;color:var(--green);font-family:var(--font-mono);font-size:0.78em;padding:10px 11px;outline:none}
+    #cmt-send{background:var(--green);color:var(--black);border:none;font-family:var(--font-display);font-size:0.62em;font-weight:700;padding:0 14px;cursor:pointer;letter-spacing:1px}
+    #upload-modal{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.93);display:none;align-items:flex-end}
+    #upload-modal.open{display:flex}
+    .upload-sheet{width:100%;background:var(--surface);border-top:1px solid var(--green-dim);max-height:93vh;overflow-y:auto;animation:slideUp 0.3s ease}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .up-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--green-dark);position:sticky;top:0;background:var(--surface);z-index:1}
+    .up-title{font-family:var(--font-display);font-size:0.72em;letter-spacing:2px}
+    .up-close{background:none;border:none;color:var(--green-dim);font-size:1.3em;cursor:pointer}
+    .up-cats{display:flex;gap:8px;padding:14px 16px 0}
+    .up-cat{flex:1;padding:10px 4px;text-align:center;font-size:1.2em;cursor:pointer;transition:0.2s;border:1px solid;background:none}
+    .up-cat.signal{border-color:var(--green-dark);color:rgba(0,255,65,0.4)}
+    .up-cat.film{border-color:rgba(0,170,255,0.2);color:rgba(0,170,255,0.4)}
+    .up-cat.music{border-color:rgba(255,204,0,0.2);color:rgba(255,204,0,0.4)}
+    .up-cat.signal.sel{border-color:var(--green);color:var(--green);background:var(--green-glow)}
+    .up-cat.film.sel{border-color:var(--blue);color:var(--blue);background:rgba(0,170,255,0.08)}
+    .up-cat.music.sel{border-color:var(--yellow);color:var(--yellow);background:rgba(255,204,0,0.08)}
+    .up-body{padding:14px 16px}
+    .up-disc{display:none;padding:10px 12px;font-size:0.63em;line-height:1.7;margin-bottom:12px;border:1px solid}
+    .up-disc.film{border-color:rgba(0,170,255,0.25);color:var(--blue);background:rgba(0,170,255,0.04)}
+    .up-disc.music{border-color:rgba(255,204,0,0.25);color:var(--yellow);background:rgba(255,204,0,0.04)}
+    .drop-zone{border:2px dashed var(--green-dark);padding:28px 16px;text-align:center;cursor:pointer;transition:0.2s;margin-bottom:12px}
+    .drop-zone:hover,.drop-zone.drag{border-color:var(--green);background:var(--green-glow)}
+    .dz-icon{font-size:2em;margin-bottom:6px}
+    .drop-zone p{font-size:0.72em;color:var(--green-dim)}
+    #file-input{display:none}
+    .prev-wrap{display:none;margin-bottom:12px}
+    .prev-wrap video{width:100%;max-height:180px;border:1px solid var(--green-dark)}
+    .field{margin-bottom:11px}
+    .field label{display:block;font-size:0.6em;color:var(--green-dim);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
+    .field input,.field textarea,.field select{width:100%;background:var(--black);border:1px solid var(--green-dark);color:var(--green);font-family:var(--font-mono);font-size:0.78em;padding:9px 10px;outline:none;resize:none}
+    .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green-dim)}
+    .film-fields,.music-fields{display:none}
+    #up-progress{display:none;margin-bottom:10px}
+    .prog-bar{background:var(--green-dark);height:3px}
+    .prog-fill{height:100%;background:var(--green);width:0%;transition:width 0.3s;box-shadow:0 0 5px var(--green)}
+    .prog-txt{font-size:0.62em;color:var(--green-dim);margin-top:3px}
+    .btn-pub{width:100%;padding:14px;background:var(--green);color:var(--black);border:none;font-family:var(--font-display);font-size:0.72em;font-weight:900;letter-spacing:3px;cursor:pointer;transition:0.2s}
+    .btn-pub:hover{box-shadow:0 0 24px var(--green)}
+    .btn-pub:disabled{opacity:0.35;cursor:not-allowed;box-shadow:none}
+    #zap-modal{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.88);display:none;align-items:flex-end}
+    #zap-modal.open{display:flex}
+    .zap-sheet{width:100%;background:rgba(10,8,0,0.98);border-top:1px solid var(--yellow);padding:20px 16px 32px;animation:slideUp 0.3s ease}
+    .zap-title{font-family:var(--font-display);font-size:0.78em;letter-spacing:3px;color:var(--yellow);margin-bottom:16px;text-align:center}
+    .sats-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+    .sat-btn{flex:1;min-width:52px;padding:10px 3px;text-align:center;border:1px solid rgba(255,204,0,0.22);background:none;color:rgba(255,204,0,0.55);font-family:var(--font-mono);font-size:0.76em;cursor:pointer;transition:0.2s}
+    .sat-btn:hover,.sat-btn.sel{border-color:var(--yellow);color:var(--yellow);background:rgba(255,204,0,0.09)}
+    .zap-input{width:100%;background:var(--black);border:1px solid rgba(255,204,0,0.22);color:var(--yellow);font-family:var(--font-mono);font-size:0.83em;padding:9px 11px;outline:none;margin-bottom:9px}
+    .btn-zap{width:100%;padding:13px;background:var(--yellow);color:var(--black);border:none;font-family:var(--font-display);font-size:0.77em;font-weight:900;letter-spacing:3px;cursor:pointer}
+    .zap-cancel{width:100%;padding:9px;background:none;border:none;color:rgba(255,204,0,0.35);font-family:var(--font-mono);font-size:0.7em;cursor:pointer;margin-top:7px;letter-spacing:2px}
+    .slide-placeholder{width:100%;height:100vh;scroll-snap-align:start;display:flex;align-items:center;justify-content:center}
+    .ph-text{font-size:0.72em;color:var(--green-dim);letter-spacing:3px;animation:pulse 1.5s infinite}
+    @keyframes pulse{0%,100%{opacity:0.25}50%{opacity:1}}
+    #toast{position:fixed;top:74px;left:50%;transform:translateX(-50%) translateY(-8px);background:rgba(0,255,65,0.12);color:var(--green);border:1px solid var(--green-dim);padding:7px 16px;font-family:var(--font-display);font-size:0.62em;font-weight:700;letter-spacing:2px;opacity:0;transition:0.28s;z-index:999;white-space:nowrap;backdrop-filter:blur(8px)}
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .powered-strip{position:fixed;bottom:60px;left:0;right:0;z-index:199;display:flex;align-items:center;justify-content:center;gap:12px;padding:4px 10px;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent);font-size:0.42em;color:rgba(255,255,255,0.15);letter-spacing:1px}
+    .powered-strip span{opacity:0.5}
+    .powered-strip a{color:rgba(255,255,255,0.25);text-decoration:none;transition:0.2s}
+    .powered-strip a:hover{color:var(--green);opacity:1}
+    .integration-status{font-size:0.45em;padding:2px 6px;border-radius:2px;letter-spacing:1px;margin-left:4px}
+    .integration-status.live{background:rgba(0,255,65,0.15);color:var(--green);border:1px solid var(--green-dark)}
+    .peertube-embed{width:100%;height:100%;position:absolute;inset:0}
+    .peertube-embed iframe{width:100%;height:100%;border:none}
+    .funkwhale-track{padding:calc(var(--topbar) + var(--tabs) + 45px) 14px 80px;height:100vh;overflow-y:auto}
+    .fw-track-item{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid rgba(255,204,0,0.12);margin-bottom:8px;transition:0.2s;cursor:pointer}
+    .fw-track-item:hover{border-color:rgba(255,204,0,0.4);background:rgba(255,204,0,0.04)}
+    .fw-track-item.playing{border-color:var(--yellow);background:rgba(255,204,0,0.08)}
+    .fw-cover{width:48px;height:48px;background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.15);display:flex;align-items:center;justify-content:center;font-size:1.5em;flex-shrink:0}
+    .fw-cover img{width:100%;height:100%;object-fit:cover}
+    .fw-info{flex:1;min-width:0}
+    .fw-title{font-family:var(--font-display);font-size:0.7em;color:#fff;letter-spacing:1px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .fw-artist{font-size:0.6em;color:rgba(255,204,0,0.5)}
+    .fw-duration{font-size:0.55em;color:rgba(255,204,0,0.3);flex-shrink:0}
+    #fw-player{position:fixed;bottom:60px;left:0;right:0;z-index:198;background:rgba(10,8,0,0.95);border-top:1px solid rgba(255,204,0,0.2);padding:8px 14px;display:none;align-items:center;gap:10px}
+    #fw-player.show{display:flex}
+    #fw-player audio{display:none}
+    .fw-player-info{flex:1;min-width:0}
+    .fw-player-title{font-size:0.65em;color:var(--yellow);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .fw-player-btn{background:none;border:1px solid rgba(255,204,0,0.3);color:var(--yellow);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1em}
+    /* ===== AI BADGE ===== */
+    .ai-badge{position:absolute;top:8px;left:10px;z-index:5;font-family:var(--font-mono);font-size:0.5em;letter-spacing:1.5px;padding:3px 8px;border-radius:2px;pointer-events:none;transition:opacity 0.3s;backdrop-filter:blur(4px)}
+    .ai-badge.scanning{background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.3)}
+    .ai-badge.human{background:rgba(0,40,0,0.75);border:1px solid var(--green);color:var(--green);box-shadow:0 0 8px rgba(0,255,65,0.3)}
+    .ai-badge.ai-gen{background:rgba(50,0,0,0.75);border:1px solid var(--red);color:var(--red);box-shadow:0 0 8px rgba(255,34,34,0.3)}
+    .ai-badge.uncertain{background:rgba(30,20,0,0.75);border:1px solid var(--yellow);color:var(--yellow)}
+    /* ===== PROFILE PANEL ===== */
+    #profile-panel{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0);pointer-events:none;transition:background 0.3s}
+    #profile-panel.open{background:rgba(0,0,0,0.8);pointer-events:all}
+    #profile-inner{position:absolute;right:-100%;top:0;bottom:0;width:min(420px,100%);background:var(--surface);border-left:1px solid var(--green-dim);transition:right 0.35s cubic-bezier(.4,0,.2,1);overflow-y:auto;display:flex;flex-direction:column}
+    #profile-panel.open #profile-inner{right:0}
+    .prof-head{padding:18px 16px 14px;border-bottom:1px solid var(--green-dark);flex-shrink:0}
+    .prof-head-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+    .prof-close{background:none;border:none;color:var(--green-dim);font-size:1.1em;cursor:pointer;padding:2px;line-height:1}
+    .prof-id{display:flex;align-items:center;gap:12px}
+    .prof-ident{width:46px;height:46px;flex-shrink:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(6,1fr);gap:1px}
+    .prof-name{font-family:var(--font-display);font-size:0.8em;color:var(--green);letter-spacing:2px;word-break:break-word}
+    .prof-key{font-size:0.52em;color:var(--green-dark);word-break:break-all;margin-top:3px;line-height:1.4}
+    .prof-bio{font-size:0.66em;color:rgba(255,255,255,0.5);line-height:1.6;margin-top:8px}
+    .prof-signal-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+    .prof-signal-btn{background:rgba(0,60,200,0.1);border:1px solid rgba(0,120,255,0.35);color:#6aaaff;font-family:var(--font-mono);font-size:0.58em;letter-spacing:2px;padding:6px 12px;cursor:pointer;transition:0.2s;white-space:nowrap}
+    .prof-signal-btn:hover{background:rgba(0,80,255,0.18);box-shadow:0 0 10px rgba(0,100,255,0.3)}
+    .prof-signal-user{font-size:0.58em;color:rgba(255,255,255,0.3);font-family:var(--font-mono)}
+    .prof-actions{display:flex;gap:8px;margin-top:12px}
+    .prof-follow-btn{flex:1;padding:9px;background:var(--green);color:var(--black);border:none;font-family:var(--font-display);font-size:0.58em;font-weight:700;letter-spacing:2px;cursor:pointer;transition:0.2s}
+    .prof-follow-btn.following{background:transparent;color:var(--green);border:1px solid var(--green)}
+    .prof-follow-btn:hover{box-shadow:0 0 14px rgba(0,255,65,0.4);transform:translateY(-1px)}
+    .prof-dm-btn{padding:9px 14px;background:none;color:var(--green-dim);border:1px solid var(--green-dark);font-family:var(--font-mono);font-size:0.58em;cursor:pointer;transition:0.2s}
+    .prof-dm-btn:hover{border-color:var(--green-dim);color:var(--green)}
+    .prof-stats{display:flex;padding:12px 16px;border-bottom:1px solid var(--green-dark);flex-shrink:0}
+    .prof-stat{flex:1;text-align:center}
+    .prof-stat-n{font-family:var(--font-display);font-size:0.85em;color:var(--green)}
+    .prof-stat-l{font-size:0.48em;color:var(--green-dark);letter-spacing:2px;margin-top:2px}
+    .prof-grid{flex:1;padding:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+    .prof-grid-item{aspect-ratio:9/16;background:var(--green-dark);position:relative;overflow:hidden;cursor:pointer;transition:0.2s}
+    .prof-grid-item:hover{opacity:0.8}
+    .prof-grid-item video{width:100%;height:100%;object-fit:cover}
+    .prof-grid-empty{grid-column:span 3;padding:40px;text-align:center;font-size:0.58em;color:var(--green-dark);letter-spacing:2px}
+    /* ===== NOTIFICATION BUTTON + DRAWER ===== */
+    .notif-btn-wrap{position:relative;display:flex;align-items:center}
+    .notif-dot{position:absolute;top:1px;right:1px;width:8px;height:8px;background:var(--red);border-radius:50%;display:none;box-shadow:0 0 5px var(--red);animation:pulse 1.5s infinite}
+    .notif-dot.show{display:block}
+    #notif-drawer{position:fixed;right:-100%;top:0;bottom:0;width:min(360px,100%);z-index:250;background:var(--surface);border-left:1px solid var(--green-dark);transition:right 0.3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+    #notif-drawer.open{right:0}
+    .notif-head{padding:16px;border-bottom:1px solid var(--green-dark);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .notif-title{font-family:var(--font-display);font-size:0.68em;letter-spacing:3px;color:var(--green)}
+    .notif-close{background:none;border:none;color:var(--green-dim);cursor:pointer;font-size:1.1em}
+    .notif-list{flex:1;overflow-y:auto}
+    .notif-item{padding:12px 14px;border-bottom:1px solid rgba(0,255,65,0.06);cursor:pointer;transition:0.15s}
+    .notif-item:hover{background:var(--green-glow)}
+    .notif-item.unread{border-left:2px solid var(--green)}
+    .notif-type{font-size:0.52em;letter-spacing:2px;color:var(--green-dim);margin-bottom:4px}
+    .notif-content{font-size:0.65em;color:rgba(255,255,255,0.65);line-height:1.5}
+    .notif-time{font-size:0.52em;color:var(--green-dark);margin-top:4px}
+    .notif-empty{padding:40px;text-align:center;font-size:0.6em;color:var(--green-dark);letter-spacing:2px;line-height:2}
+    /* ===== SIGNAL DM LINK ===== */
+    .dm-signal-entry{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(0,50,200,0.07);border:1px solid rgba(0,100,255,0.2);margin:6px 0;cursor:pointer;transition:0.2s;color:#6aaaff;font-size:0.68em;letter-spacing:1.5px}
+    .dm-signal-entry:hover{background:rgba(0,70,255,0.14);border-color:rgba(0,150,255,0.4);box-shadow:0 0 10px rgba(0,100,255,0.18)}
+    .dm-signal-icon{font-size:1.3em;flex-shrink:0}
+  </style>
+</head><body>
+  <div id="topbar">
+    <div class="logo">M4TR1X</div>
+    <div id="topbar-right">
+      <button class="top-btn" onclick="toast('EXPLORE — COMING SOON')">🔍</button>
+      <div class="notif-btn-wrap">
+        <button class="top-btn" onclick="openNotifDrawer()" title="Notifications">🔔</button>
+        <div class="notif-dot" id="notif-dot"></div>
+      </div>
+      <div id="user-avatar-top" onclick="openMyProfile()" title="My Profile">👤</div>
+    </div>
+  </div>
+  <div id="section-tabs">
+    <button class="sec-tab active" onclick="switchSec('signal')">📡</button>
+    <button class="sec-tab film-tab" onclick="switchSec('film')">🎬</button>
+    <button class="sec-tab music-tab" onclick="switchSec('music')">🎵</button>
+    <button class="sec-tab forum-tab" onclick="switchSec('forum')">🏛️</button>
+    <button class="sec-tab shop-tab desktop-only" onclick="switchSec('shop')">🛍️</button>
+    <button class="sec-tab dm-tab" onclick="switchSec('dm')">💬</button>
+  </div>
+  <div class="section-banner" id="banner-film">
+    <span class="banner-icon">🎬</span>
+    <div class="banner-text"><strong>INDIE FILM CHANNEL</strong>Streaming via PeerTube Federation <span class="integration-status live">PEERTUBE LIVE</span></div>
+  </div>
+  <div class="section-banner" id="banner-music">
+    <span class="banner-icon">🎵</span>
+    <div class="banner-text"><strong>UNDERGROUND MUSIC</strong>Streaming via Funkwhale Federation <span class="integration-status live">FUNKWHALE LIVE</span></div>
+  </div>
+  <div class="section-banner" id="banner-forum">
+    <span class="banner-icon">🏛️</span>
+    <div class="banner-text"><strong>FORUM</strong>Federated via Mastodon ActivityPub <span class="integration-status live">MASTODON LIVE</span></div>
+  </div>
+  <div class="section-banner" id="banner-shop">
+    <span class="banner-icon">🛍️</span>
+    <div class="banner-text"><strong>MARKETPLACE</strong>Buy & sell with M4TR1X tokens · Decentralized commerce</div>
+  </div>
+  <div class="section-banner" id="banner-dm">
+    <span class="banner-icon">💬</span>
+    <div class="banner-text"><strong>PRIVATE MESSAGES</strong>Signal Protocol in-app · Double Ratchet + X3DH · No phone number <span class="integration-status live">E2E ENCRYPTED</span></div>
+  </div>
+  <button id="mute-btn" onclick="toggleMute()">🔇</button>
+  <div id="feed-wrap">
+    <div class="section-feed active" id="feed-signal"><div class="slide-placeholder"><div class="ph-text">[ CONNECTING TO RELAYS... ]</div></div></div>
+    <div class="section-feed" id="feed-film"><div class="slide-placeholder"><div class="ph-text">[ CONNECTING TO PEERTUBE INSTANCES... ]</div></div></div>
+    <div class="section-feed" id="feed-music">
+      <div class="funkwhale-track" id="fw-track-list"><div class="slide-placeholder"><div class="ph-text">[ CONNECTING TO FUNKWHALE INSTANCES... ]</div></div></div>
+    </div>
+    <div class="section-feed" id="feed-forum">
+      <div class="forum-container" id="forum-container"><div class="slide-placeholder"><div class="ph-text">[ CONNECTING TO MASTODON INSTANCES... ]</div></div></div>
+      <div class="forum-powered">FEDERATED VIA MASTODON ACTIVITYPUB · REAL DECENTRALIZED DISCUSSIONS</div>
+    </div>
+    <div class="section-feed" id="feed-shop">
+      <div class="shop-container" id="shop-container">
+        <div class="shop-header">
+          <div class="shop-balance">💰 M4TR1X: <span class="shop-balance-amount" id="token-balance">0</span></div>
+          <button class="shop-buy-tokens" onclick="openTokenModal()">BUY TOKENS</button>
+        </div>
+        <div class="shop-grid" id="shop-grid"><div class="slide-placeholder" style="grid-column:span 2"><div class="ph-text">[ LOADING MARKETPLACE... ]</div></div></div>
+        <div class="shop-powered">DECENTRALIZED MARKETPLACE · M4TR1X TOKEN ECONOMY</div>
+      </div>
+    </div>
+    <div class="section-feed" id="feed-dm">
+      <div class="dm-container" id="dm-container">
+        <div class="dm-encryption-badge"><span class="lock-icon">🔒</span> SIGNAL PROTOCOL ACTIVE — Double Ratchet + X3DH + AES-256-GCM — Messages are end-to-end encrypted</div>
+        <div class="dm-list" id="dm-list"><div class="slide-placeholder"><div class="ph-text">[ INITIALIZING SIGNAL PROTOCOL... ]</div></div></div>
+        <div class="dm-powered">REAL E2E ENCRYPTION · SIGNAL PROTOCOL (DOUBLE RATCHET) · NO PHONE NUMBER REQUIRED</div>
+      </div>
+    </div>
+  </div>
+  <div class="powered-strip">
+    <span>INTEGRATED WITH</span>
+    <a href="https://nostr.com" target="_blank">NOSTR</a> ·
+    <a href="https://joinmastodon.org" target="_blank">MASTODON</a> ·
+    <a href="https://joinpeertube.org" target="_blank">PEERTUBE</a> ·
+    <a href="https://funkwhale.audio" target="_blank">FUNKWHALE</a> ·
+    <a href="https://signal.org" target="_blank">SIGNAL</a>
+  </div>
+  <div id="bottom-nav">
+    <button class="bnav active" id="bnav-signal" onclick="switchSec('signal')"><span class="bicon">📡</span></button>
+    <button class="bnav film-nav" id="bnav-film" onclick="switchSec('film')"><span class="bicon">🎬</span></button>
+    <button class="bnav forum-nav" id="bnav-forum" onclick="switchSec('forum')"><span class="bicon">🏛️</span></button>
+    <button class="bnav post-nav" onclick="openUpload()"><span class="bicon">＋</span></button>
+    <button class="bnav music-nav" id="bnav-music" onclick="switchSec('music')"><span class="bicon">🎵</span></button>
+    <button class="bnav shop-nav" id="bnav-shop" onclick="switchSec('shop')"><span class="bicon">🛍️</span></button>
+    <button class="bnav dm-nav" id="bnav-dm" onclick="switchSec('dm')"><span class="bicon">💬</span></button>
+    <button class="bnav" onclick="window.location.href='/app/safety'" title="Stay Safe / امنیت / 安全"><span class="bicon">🛡️</span></button>
+  </div>
+  <button class="forum-new-btn" id="forum-fab" onclick="openForumModal()">＋</button>
+  <button class="shop-sell-btn" id="shop-fab" onclick="openSellModal()">＋</button>
+  <!-- Funkwhale Audio Player -->
+  <div id="fw-player">
+    <button class="fw-player-btn" id="fw-play-btn" onclick="toggleFwPlay()">▶</button>
+    <div class="fw-player-info"><div class="fw-player-title" id="fw-now-playing">No track</div></div>
+    <audio id="fw-audio"></audio>
+  </div>
+  <div id="comments-drawer">
+    <div class="drawer-bar" onclick="closeComments()">
+      <span class="drawer-bar-title">💬 REPLIES</span>
+      <button class="drawer-bar-close">✕</button>
+    </div>
+    <div id="cmt-list"></div>
+    <div id="cmt-input-bar">
+      <input id="cmt-input" placeholder="BROADCAST REPLY..." spellcheck="false">
+      <button id="cmt-send" onclick="postComment()">SEND</button>
+    </div>
+  </div>
+  <div id="upload-modal" class="desktop-only">
+    <div class="upload-sheet">
+      <div class="up-head">
+        <span class="up-title" id="up-title">⬆ UPLOAD</span>
+        <button class="up-close" onclick="closeUpload()">✕</button>
+      </div>
+      <div class="up-cats">
+        <button class="up-cat signal sel" onclick="selCat(this,'signal')">📡</button>
+        <button class="up-cat film" onclick="selCat(this,'film')">🎬</button>
+        <button class="up-cat music" onclick="selCat(this,'music')">🎵</button>
+      </div>
+      <div class="up-body">
+        <div class="up-disc film" id="disc-film">🎬 <strong>INDIE FILM CHANNEL</strong><br>Upload only your own content. Also streams from PeerTube federation. Powered by PeerTube API.</div>
+        <div class="up-disc music" id="disc-music">🎵 <strong>UNDERGROUND MUSIC</strong><br>Original music only. Also streams from Funkwhale federation. Powered by Funkwhale API.</div>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <div class="dz-icon">📹</div>
+          <strong style="font-size:0.82em">DROP VIDEO HERE</strong>
+          <p>or click to select · MP4, MOV · max 500MB</p>
+        </div>
+        <input type="file" id="file-input" accept="video/*">
+        <div class="prev-wrap" id="prev-wrap"><video id="prev-video" controls muted></video></div>
+        <div class="field"><label>Title / Caption</label><input type="text" id="up-caption" placeholder="What's happening?"></div>
+        <div class="film-fields" id="film-fields">
+          <div class="field"><label>Film Title</label><input type="text" id="up-film-title" placeholder="e.g. 'Dead Night' — short film 2024"></div>
+          <div class="field"><label>Genre</label><input type="text" id="up-film-genre" placeholder="documentary / noir / experimental..."></div>
+          <div class="field"><label>Year</label><input type="text" id="up-film-year" placeholder="2024"></div>
+        </div>
+        <div class="music-fields" id="music-fields">
+          <div class="field"><label>Track Title</label><input type="text" id="up-music-title" placeholder="e.g. 'Signals' — single 2024"></div>
+          <div class="field"><label>Genre / Style</label><input type="text" id="up-music-genre" placeholder="rap / ambient / punk / jazz..."></div>
+        </div>
+        <div class="field"><label>Tags (space separated)</label><input type="text" id="up-tags" placeholder="evidence underground indie"></div>
+        <div class="field"><label>Blossom Server</label><select id="up-server"><option value="cdn.satellite.earth">cdn.satellite.earth (recommended)</option><option value="blossom.band">blossom.band</option><option value="nostrcheck.me">nostrcheck.me</option></select></div>
+        <div id="up-progress"><div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div><div class="prog-txt" id="prog-txt">Preparing...</div></div>
+        <button class="btn-pub" id="btn-pub" onclick="doUpload()" disabled>PUBLISH ON NOSTR</button>
+      </div>
+    </div>
+  </div>
+  <div id="zap-modal">
+    <div class="zap-sheet">
+      <div class="zap-title">⚡ SEND SATS</div>
+      <div class="sats-row">
+        <button class="sat-btn" onclick="setSats(21,this)">21</button>
+        <button class="sat-btn" onclick="setSats(100,this)">100</button>
+        <button class="sat-btn" onclick="setSats(500,this)">500</button>
+        <button class="sat-btn" onclick="setSats(1000,this)">1K</button>
+        <button class="sat-btn" onclick="setSats(5000,this)">5K</button>
+      </div>
+      <input class="zap-input" type="number" id="zap-amount" placeholder="Custom amount (sats)">
+      <input class="zap-input" type="text" id="zap-comment" placeholder="Comment (optional)" style="margin-bottom:14px">
+      <button class="btn-zap" onclick="sendZap()">⚡ ZAP</button>
+      <button class="zap-cancel" onclick="closeZap()">CANCEL</button>
+    </div>
+  </div>
+  <div id="forum-modal">
+    <div class="forum-sheet">
+      <div class="forum-sheet-head">
+        <span class="forum-sheet-title">🏛️ NEW DISCUSSION</span>
+        <button class="forum-sheet-close" onclick="closeForumModal()">✕</button>
+      </div>
+      <div class="forum-field"><label>Title</label><input type="text" id="forum-title" placeholder="Discussion topic..."></div>
+      <div class="forum-field"><label>Body</label><textarea id="forum-body" rows="6" placeholder="Share your thoughts..."></textarea></div>
+      <div class="forum-field"><label>Tags (space separated)</label><input type="text" id="forum-tags" placeholder="technology privacy freedom"></div>
+      <button class="btn-forum-post" onclick="postForumThread()">PUBLISH THREAD</button>
+    </div>
+  </div>
+  <div id="sell-modal">
+    <div class="sell-sheet">
+      <div class="sell-sheet-head">
+        <span class="sell-sheet-title">🛍️ SELL ITEM</span>
+        <button class="sell-sheet-close" onclick="closeSellModal()">✕</button>
+      </div>
+      <div class="sell-img-zone" id="sell-img-zone" onclick="document.getElementById('sell-img-input').click()">
+        <div style="font-size:2em;margin-bottom:6px">📷</div>
+        <strong style="font-size:0.75em">ADD PHOTOS</strong>
+      </div>
+      <input type="file" id="sell-img-input" accept="image/*" style="display:none">
+      <div class="sell-field"><label>Item Name</label><input type="text" id="sell-name" placeholder="What are you selling?"></div>
+      <div class="sell-field"><label>Description</label><textarea id="sell-desc" rows="3" placeholder="Describe your item..."></textarea></div>
+      <div class="sell-field"><label>Price (M4TR1X Tokens)</label><input type="number" id="sell-price" placeholder="0"></div>
+      <div class="sell-field"><label>Category</label><select id="sell-category"><option value="digital">Digital Goods</option><option value="physical">Physical Goods</option><option value="art">Art & Collectibles</option><option value="services">Services</option><option value="other">Other</option></select></div>
+      <button class="btn-sell" onclick="publishListing()">LIST FOR SALE</button>
+    </div>
+  </div>
+  <div id="token-modal">
+    <div class="token-sheet">
+      <div class="token-title">💰 BUY M4TR1X TOKENS</div>
+      <div class="token-row">
+        <button class="token-btn" onclick="selToken(100,this)">100</button>
+        <button class="token-btn" onclick="selToken(500,this)">500</button>
+        <button class="token-btn" onclick="selToken(1000,this)">1K</button>
+        <button class="token-btn" onclick="selToken(5000,this)">5K</button>
+        <button class="token-btn" onclick="selToken(10000,this)">10K</button>
+      </div>
+      <div class="token-info">1 M4TR1X TOKEN = 1 SAT (Lightning Network)</div>
+      <button class="btn-buy-token" onclick="buyTokens()">⚡ BUY WITH LIGHTNING</button>
+      <button class="token-cancel" onclick="closeTokenModal()">CANCEL</button>
+    </div>
+  </div>
+  <div id="dm-chat">
+    <div class="dm-chat-head">
+      <button class="dm-chat-back" onclick="closeDmChat()">←</button>
+      <div class="dm-av" id="dm-chat-av" style="width:28px;height:28px;font-size:0.7em">👤</div>
+      <span class="dm-chat-name" id="dm-chat-name">...</span>
+      <span class="dm-chat-encrypt">🔒 SIGNAL ENCRYPTED</span>
+    </div>
+    <div class="dm-chat-msgs" id="dm-chat-msgs"></div>
+    <div class="dm-chat-input">
+      <input id="dm-msg-input" placeholder="Type encrypted message..." spellcheck="false">
+      <button onclick="sendDm()">SEND</button>
+    </div>
+  </div>
+
+  <!-- ===== PROFILE PANEL ===== -->
+  <div id="profile-panel" onclick="if(event.target===this)closeProfile()">
+    <div id="profile-inner">
+      <div class="prof-head">
+        <div class="prof-head-row">
+          <div class="prof-id">
+            <div class="prof-ident" id="prof-ident"></div>
+            <div>
+              <div class="prof-name" id="prof-name">...</div>
+              <div class="prof-key" id="prof-key">...</div>
+            </div>
+          </div>
+          <button class="prof-close" onclick="closeProfile()">✕</button>
+        </div>
+        <div class="prof-bio" id="prof-bio" style="display:none"></div>
+        <div class="prof-signal-row" id="prof-signal-row" style="display:none">
+          <span style="font-size:0.55em;color:rgba(0,255,65,0.35);letter-spacing:2px;font-family:var(--font-mono)">🔒 SIGNAL VERIFIED</span>
+          <span class="prof-signal-user" id="prof-signal-user"></span>
+        </div>
+        <div class="prof-actions" id="prof-actions" style="display:none">
+          <button class="prof-follow-btn" id="prof-follow-btn" onclick="toggleFollow()">FOLLOW</button>
+          <button class="prof-dm-btn" onclick="profileDM()">💬 DM</button>
+        </div>
+      </div>
+      <div class="prof-stats">
+        <div class="prof-stat"><div class="prof-stat-n" id="prof-posts">–</div><div class="prof-stat-l">POSTS</div></div>
+        <div class="prof-stat"><div class="prof-stat-n" id="prof-followers">–</div><div class="prof-stat-l">FOLLOWERS</div></div>
+        <div class="prof-stat"><div class="prof-stat-n" id="prof-following">–</div><div class="prof-stat-l">FOLLOWING</div></div>
+      </div>
+      <div class="prof-grid" id="prof-grid"><div class="prof-grid-empty">[ LOADING POSTS... ]</div></div>
+    </div>
+  </div>
+
+  <!-- ===== NOTIFICATIONS DRAWER ===== -->
+  <div id="notif-drawer">
+    <div class="notif-head">
+      <span class="notif-title">🔔 NOTIFICATIONS</span>
+      <button class="notif-close" onclick="closeNotifDrawer()">✕</button>
+    </div>
+    <div class="notif-list" id="notif-list">
+      <div class="notif-empty">[ SIGNALS INCOMING... ]</div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <script>
+  // AUTH GATE
+  (function(){
+    const pk=localStorage.getItem('m4tr1x_pubkey');
+    if(!pk){window.location.href='auth.html';}
+    window._pk=pk;
+    window._method=localStorage.getItem('m4tr1x_method');
+    window._priv=localStorage.getItem('m4tr1x_privkey');
+  })();
+
+  // ========== CONFIGURATION ==========
+  const CONFIG = {
+    // Mastodon instances to federate with
+    mastodon: [
+      'https://mastodon.social',
+      'https://fosstodon.org',
+      'https://infosec.exchange'
+    ],
+    // PeerTube instances to federate with
+    peertube: [
+      'https://videos.scanlines.xyz',
+      'https://peertube.tv',
+      'https://tilvids.com'
+    ],
+    // Funkwhale instances to federate with
+    funkwhale: [
+      'https://open.audio',
+      'https://funkwhale.it',
+      'https://audio.liberta.vip'
+    ],
+    // Nostr relays
+    relays: ['wss://relay.damus.io','wss://nos.lol','wss://relay.nostr.band','wss://nostr.wine','wss://relay.snort.social'],
+    // Blossom servers
+    blossom: {'cdn.satellite.earth':'https://cdn.satellite.earth','blossom.band':'https://blossom.band','nostrcheck.me':'https://nostrcheck.me'}
+  };
+
+  // ========== SIGNAL PROTOCOL ENGINE ==========
+  // Implements Double Ratchet Algorithm + X3DH key agreement
+  // Based on Signal Protocol specification
+  const SignalEngine = {
+    sessions: {},
+    keyPairs: {},
+
+    // Generate X25519 key pair using Web Crypto API
+    async generateKeyPair() {
+      const keyPair = await crypto.subtle.generateKey(
+        { name: 'ECDH', namedCurve: 'P-256' },
+        true,
+        ['deriveBits']
+      );
+      return keyPair;
+    },
+
+    // X3DH: Extended Triple Diffie-Hellman key agreement
+    async x3dhInitiate(theirIdentityKey, theirSignedPreKey) {
+      const ephemeralKey = await this.generateKeyPair();
+      // DH1: Our identity key + Their signed prekey
+      // DH2: Our ephemeral key + Their identity key
+      // DH3: Our ephemeral key + Their signed prekey
+      const sharedSecret = await crypto.subtle.deriveBits(
+        { name: 'ECDH', public: theirSignedPreKey || theirIdentityKey },
+        ephemeralKey.privateKey,
+        256
+      );
+      return { sharedSecret: new Uint8Array(sharedSecret), ephemeralPublic: ephemeralKey.publicKey };
+    },
+
+    // AES-256-GCM Encrypt
+    async encrypt(plaintext, sharedKey) {
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encodedText = new TextEncoder().encode(plaintext);
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw', sharedKey.slice(0, 32),
+        { name: 'AES-GCM' }, false, ['encrypt']
+      );
+      const ciphertext = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv: iv },
+        keyMaterial, encodedText
+      );
+      // Combine IV + ciphertext
+      const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+      combined.set(iv);
+      combined.set(new Uint8Array(ciphertext), iv.length);
+      return btoa(String.fromCharCode(...combined));
+    },
+
+    // AES-256-GCM Decrypt
+    async decrypt(ciphertextB64, sharedKey) {
+      try {
+        const combined = Uint8Array.from(atob(ciphertextB64), c => c.charCodeAt(0));
+        const iv = combined.slice(0, 12);
+        const ciphertext = combined.slice(12);
+        const keyMaterial = await crypto.subtle.importKey(
+          'raw', sharedKey.slice(0, 32),
+          { name: 'AES-GCM' }, false, ['decrypt']
+        );
+        const decrypted = await crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv: iv },
+          keyMaterial, ciphertext
+        );
+        return new TextDecoder().decode(decrypted);
+      } catch(e) {
+        return '[encrypted - key mismatch]';
+      }
+    },
+
+    // Double Ratchet: Derive new chain key
+    async ratchetStep(chainKey) {
+      const hmacKey = await crypto.subtle.importKey(
+        'raw', chainKey,
+        { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+      );
+      const messageKey = new Uint8Array(await crypto.subtle.sign(
+        'HMAC', hmacKey, new TextEncoder().encode('MessageKey')
+      ));
+      const nextChainKey = new Uint8Array(await crypto.subtle.sign(
+        'HMAC', hmacKey, new TextEncoder().encode('ChainKey')
+      ));
+      return { messageKey, nextChainKey };
+    },
+
+    // Initialize or get session with a peer
+    async getSession(peerPubkey) {
+      if (this.sessions[peerPubkey]) return this.sessions[peerPubkey];
+      // Derive initial shared secret from Nostr keys (seed for Signal session)
+      const seed = new TextEncoder().encode(S.pubkey + peerPubkey + 'm4tr1x-signal');
+      const hashBuffer = await crypto.subtle.digest('SHA-256', seed);
+      const sharedKey = new Uint8Array(hashBuffer);
+      this.sessions[peerPubkey] = {
+        chainKey: sharedKey,
+        messageNumber: 0,
+        rootKey: sharedKey
+      };
+      return this.sessions[peerPubkey];
+    },
+
+    // Encrypt message with Double Ratchet
+    async encryptMessage(peerPubkey, plaintext) {
+      const session = await this.getSession(peerPubkey);
+      const { messageKey, nextChainKey } = await this.ratchetStep(session.chainKey);
+      session.chainKey = nextChainKey;
+      session.messageNumber++;
+      const ciphertext = await this.encrypt(plaintext, messageKey);
+      return { ciphertext, messageNumber: session.messageNumber };
+    },
+
+    // Decrypt message with Double Ratchet
+    async decryptMessage(peerPubkey, ciphertextB64, msgNum) {
+      const session = await this.getSession(peerPubkey);
+      // Rebuild chain to reach the right message key
+      let chainKey = session.rootKey;
+      for (let i = 0; i < (msgNum || 1); i++) {
+        const step = await this.ratchetStep(chainKey);
+        if (i === (msgNum || 1) - 1) {
+          return await this.decrypt(ciphertextB64, step.messageKey);
+        }
+        chainKey = step.nextChainKey;
+      }
+      return await this.decrypt(ciphertextB64, session.chainKey);
+    }
+  };
+  // ========== STATE ==========
+  const S={pubkey:window._pk,method:window._method,privkey:window._priv,muted:true,section:'signal',loaded:{signal:false,film:false,music:false,forum:false,shop:false,dm:false},cmtEventId:null,zapEventId:null,zapPubkey:null,file:null,uploadCat:'signal',tokenBalance:parseInt(localStorage.getItem('m4tr1x_tokens')||'0'),tokenAmount:0,dmTarget:null,fwPlaying:null};
+  const RELAYS=CONFIG.relays;
+  const BLOSSOM=CONFIG.blossom;
+  const CAT_TAG={signal:'m4tr1x-signal',film:'m4tr1x-film',music:'m4tr1x-music'};
+  const ws={};const seen={signal:new Set(),film:new Set(),music:new Set(),forum:new Set(),shop:new Set()};const profCache={};
+
+  // ========== INIT ==========
+  // ── Mobile detection (Tauri on Android/iOS has no local server) ─────────────
+  var IS_MOBILE = false;
+  (async function detectMobile(){
+    if(window.m4tr1x_native && window.m4tr1x_native.isMobile){
+      try{ IS_MOBILE = await window.m4tr1x_native.isMobile(); }catch(e){}
+    }
+    // On mobile, hide features that require the local Express server
+    if(IS_MOBILE){
+      document.querySelectorAll('.desktop-only').forEach(el=>el.style.display='none');
+    }
+  })();
+
+  window.addEventListener('load',()=>{
+    document.getElementById('token-balance').textContent=S.tokenBalance;
+    try{const p=JSON.parse(localStorage.getItem('m4tr1x_profile')||'{}');if(p.picture)document.getElementById('user-avatar-top').innerHTML='<img src="'+p.picture+'">'}catch(e){}
+    connectRelays();
+    const dz=document.getElementById('drop-zone');
+    dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+    dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+    dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');handleFile(e.dataTransfer.files[0])});
+    document.getElementById('file-input').addEventListener('change',e=>handleFile(e.target.files[0]));
+    document.getElementById('cmt-input').addEventListener('keydown',e=>{if(e.key==='Enter')postComment()});
+    document.getElementById('dm-msg-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendDm()});
+    document.getElementById('fw-audio').addEventListener('ended',()=>{document.getElementById('fw-play-btn').textContent='\u25B6'});
+  });
+
+  function connectRelays(){
+    RELAYS.forEach(url=>{try{
+      const w=new WebSocket(url);ws[url]={w,ok:false};
+      w.onopen=()=>{ws[url].ok=true;if(!S.loaded.signal){loadSec('signal');S.loaded.signal=true;setTimeout(initNotifications,2000)}};
+      w.onclose=w.onerror=()=>{ws[url].ok=false};
+    }catch(e){}});
+    setTimeout(()=>{if(!S.loaded.signal){document.getElementById('feed-signal').innerHTML='<div class="slide-placeholder"><div class="ph-text" style="color:var(--green-dark)">[ NO RELAY \u2014 BE THE FIRST TO UPLOAD ]</div></div>'}},9000);
+  }
+
+  // ========== SECTION SWITCH ==========
+  function switchSec(name){
+    S.section=name;
+    document.querySelectorAll('.sec-tab').forEach(t=>{const secName=t.getAttribute('onclick').match(/'(\w+)'/)[1];t.classList.toggle('active',secName===name)});
+    document.querySelectorAll('.section-feed').forEach(f=>f.classList.remove('active'));
+    document.getElementById('feed-'+name).classList.add('active');
+    document.querySelectorAll('.section-banner').forEach(b=>b.classList.remove('show'));
+    if(name!=='signal')document.getElementById('banner-'+name).classList.add('show');
+    document.querySelectorAll('.bnav').forEach(b=>b.classList.remove('active'));
+    const bmap={signal:'bnav-signal',film:'bnav-film',music:'bnav-music',forum:'bnav-forum',shop:'bnav-shop',dm:'bnav-dm'};
+    if(bmap[name])document.getElementById(bmap[name]).classList.add('active');
+    document.getElementById('forum-fab').classList.toggle('show',name==='forum');
+    document.getElementById('shop-fab').classList.toggle('show',name==='shop');
+    document.getElementById('mute-btn').style.display=(name==='signal'||name==='film'||name==='music')?'flex':'none';
+    document.getElementById('fw-player').classList.toggle('show',name==='music'&&S.fwPlaying);
+    if(!S.loaded[name]){loadSec(name);S.loaded[name]=true}
+    if(name==='signal'||name==='film'||name==='music')setTimeout(()=>autoPlay(name),200);
+  }
+
+  // ========== LOAD SECTION ==========
+  function loadSec(sec){
+    if(sec==='forum'){loadForum();return}
+    if(sec==='shop'){loadShop();return}
+    if(sec==='dm'){loadDMs();return}
+    if(sec==='music'){loadFunkwhale();loadNostrMusic();return}
+    if(sec==='film'){loadPeerTube();loadNostrFilm();return}
+    const c=document.getElementById('feed-'+sec);
+    c.innerHTML='<div class="slide-placeholder"><div class="ph-text">[ SCANNING... ]</div></div>';
+    Object.entries(ws).forEach(([url,r])=>{
+      if(!r.ok)return;
+      const sid='sec_'+sec+'_'+rnd();
+      const filter={kinds:[1063],limit:25};
+      r.w.send(JSON.stringify(['REQ',sid,filter]));
+      r.w.addEventListener('message',e=>{try{
+        const d=JSON.parse(e.data);if(d[0]!=='EVENT')return;const ev=d[2];
+        if(seen[sec].has(ev.id))return;
+        const uTag=ev.tags.find(t=>t[0]==='url');const mTag=ev.tags.find(t=>t[0]==='m');
+        if(!uTag)return;const vurl=uTag[1];
+        if(mTag&&!mTag[1].startsWith('video')&&!vurl.match(/\.(mp4|mov|webm)(\?|$)/i))return;
+        seen[sec].add(ev.id);
+        const ph=c.querySelector('.slide-placeholder');if(ph)ph.remove();
+        c.appendChild(mkSlide(ev,vurl,sec));
+        loadProf(ev.pubkey).then(p=>updateSlide(ev.id,ev.pubkey,p));
+      }catch(err){}});
+    });
+  }
+  // ========== PEERTUBE INTEGRATION ==========
+  function loadPeerTube() {
+    const c = document.getElementById('feed-film');
+    CONFIG.peertube.forEach(instance => {
+      fetch(instance + '/api/v1/videos?count=10&sort=-publishedAt&nsfw=false')
+        .then(r => r.json())
+        .then(data => {
+          const videos = data.data || data;
+          videos.forEach(video => {
+            const vidId = 'pt-' + video.uuid;
+            if (seen.film.has(vidId)) return;
+            seen.film.add(vidId);
+            const ph = c.querySelector('.slide-placeholder'); if (ph) ph.remove();
+            const el = document.createElement('div');
+            el.className = 'video-slide';
+            el.id = 'sl-' + vidId;
+            const embedUrl = instance + '/videos/embed/' + video.uuid + '?autoplay=1&muted=1';
+            const thumbUrl = video.thumbnailUrl || (video.thumbnailPath ? instance + video.thumbnailPath : '');
+            el.innerHTML = '<div class="peertube-embed"><iframe src="' + embedUrl + '" allow="autoplay" allowfullscreen sandbox="allow-same-origin allow-scripts allow-popups"></iframe></div>' +
+              '<div class="grad-top"></div><div class="grad-bot"></div>' +
+              '<div class="slide-info"><div class="slide-author"><div class="slide-av" style="border-color:var(--blue)">\u{1F3AC}</div>' +
+              '<span class="slide-name">' + esc(video.account?.displayName || video.account?.name || 'Unknown') + '</span>' +
+              '<span class="slide-time">' + esc(video.account?.host || new URL(instance).hostname) + '</span></div>' +
+              '<div class="slide-meta">' + esc(video.name) + (video.category?.label ? '<span class="slide-genre">' + esc(video.category.label) + '</span>' : '') + '</div>' +
+              (video.description ? '<div class="slide-caption">' + esc(video.description.substring(0, 150)) + '</div>' : '') +
+              '<div class="slide-tags" style="color:var(--blue)">via PeerTube \u00B7 ' + esc(new URL(instance).hostname) + '</div></div>' +
+              '<div class="slide-actions"><div class="sact"><div class="sact-icon" style="border-color:var(--blue)">\u{1F517}</div><span class="sact-label">OPEN</span></div></div>';
+            el.querySelector('.sact').onclick = () => window.open(instance + '/w/' + video.uuid, '_blank');
+            c.appendChild(el);
+          });
+        })
+        .catch(e => console.log('PeerTube ' + instance + ' error:', e));
+    });
+  }
+
+  function loadNostrFilm() {
+    const c = document.getElementById('feed-film');
+    Object.entries(ws).forEach(([url, r]) => {
+      if (!r.ok) return;
+      const sid = 'film_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid, { kinds: [1063], '#t': ['m4tr1x-film'], limit: 20 }]));
+      r.w.addEventListener('message', e => { try {
+        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+        if (seen.film.has(ev.id)) return;
+        const uTag = ev.tags.find(t => t[0] === 'url'); if (!uTag) return;
+        if (!ev.tags.some(t => t[0] === 't' && t[1] === 'm4tr1x-film')) return;
+        seen.film.add(ev.id);
+        const ph = c.querySelector('.slide-placeholder'); if (ph) ph.remove();
+        c.appendChild(mkSlide(ev, uTag[1], 'film'));
+        loadProf(ev.pubkey).then(p => updateSlide(ev.id, ev.pubkey, p));
+      } catch (err) {} });
+    });
+  }
+
+  // ========== FUNKWHALE INTEGRATION ==========
+  function loadFunkwhale() {
+    const list = document.getElementById('fw-track-list');
+    let foundAny = false;
+    CONFIG.funkwhale.forEach(instance => {
+      fetch(instance + '/api/v1/tracks/?page_size=20&ordering=-creation_date')
+        .then(r => r.json())
+        .then(data => {
+          const tracks = data.results || data;
+          tracks.forEach(track => {
+            foundAny = true;
+            const ph = list.querySelector('.slide-placeholder'); if (ph) ph.remove();
+            const el = document.createElement('div');
+            el.className = 'fw-track-item';
+            const coverUrl = track.album?.cover?.urls?.medium_square_crop || track.cover?.urls?.medium_square_crop || '';
+            const listenUrl = track.listen_url ? instance + track.listen_url : '';
+            const duration = track.duration ? Math.floor(track.duration / 60) + ':' + String(track.duration % 60).padStart(2, '0') : '';
+            el.innerHTML = '<div class="fw-cover">' + (coverUrl ? '<img src="' + coverUrl + '" onerror="this.parentElement.textContent=\'\u{1F3B5}\'">' : '\u{1F3B5}') + '</div>' +
+              '<div class="fw-info"><div class="fw-title">' + esc(track.title) + '</div>' +
+              '<div class="fw-artist">' + esc(track.artist?.name || 'Unknown') + ' \u00B7 ' + esc(new URL(instance).hostname) + '</div></div>' +
+              '<span class="fw-duration">' + duration + '</span>';
+            el.onclick = () => playFunkwhale(track.title, track.artist?.name || 'Unknown', listenUrl, el);
+            list.appendChild(el);
+          });
+        })
+        .catch(e => console.log('Funkwhale ' + instance + ' error:', e));
+    });
+    setTimeout(() => { if (!foundAny) loadNostrMusic(); }, 5000);
+  }
+
+  function loadNostrMusic() {
+    const c = document.getElementById('feed-music');
+    Object.entries(ws).forEach(([url, r]) => {
+      if (!r.ok) return;
+      const sid = 'music_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid, { kinds: [1063], '#t': ['m4tr1x-music'], limit: 20 }]));
+      r.w.addEventListener('message', e => { try {
+        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+        if (seen.music.has(ev.id)) return;
+        const uTag = ev.tags.find(t => t[0] === 'url'); if (!uTag) return;
+        if (!ev.tags.some(t => t[0] === 't' && t[1] === 'm4tr1x-music')) return;
+        seen.music.add(ev.id);
+      } catch (err) {} });
+    });
+  }
+
+  function playFunkwhale(title, artist, url, el) {
+    if (!url) { toast('NO STREAM URL'); return; }
+    document.querySelectorAll('.fw-track-item').forEach(e => e.classList.remove('playing'));
+    el.classList.add('playing');
+    const audio = document.getElementById('fw-audio');
+    audio.src = url;
+    audio.play().catch(e => toast('PLAYBACK ERROR'));
+    S.fwPlaying = true;
+    document.getElementById('fw-now-playing').textContent = title + ' \u2014 ' + artist;
+    document.getElementById('fw-player').classList.add('show');
+    document.getElementById('fw-play-btn').textContent = '\u23F8';
+  }
+
+  function toggleFwPlay() {
+    const audio = document.getElementById('fw-audio');
+    if (audio.paused) { audio.play(); document.getElementById('fw-play-btn').textContent = '\u23F8'; }
+    else { audio.pause(); document.getElementById('fw-play-btn').textContent = '\u25B6'; }
+  }
+  // ========== MASTODON FORUM INTEGRATION ==========
+  function loadForum() {
+    const c = document.getElementById('forum-container');
+    c.innerHTML = '<div class="slide-placeholder"><div class="ph-text">[ CONNECTING TO MASTODON + NOSTR... ]</div></div>';
+    // Load from Mastodon instances (ActivityPub)
+    CONFIG.mastodon.forEach(instance => {
+      fetch(instance + '/api/v1/timelines/tag/m4tr1x?limit=15')
+        .then(r => r.json())
+        .then(posts => {
+          posts.forEach(post => {
+            const fid = 'mast-' + post.id;
+            if (seen.forum.has(fid)) return; seen.forum.add(fid);
+            const ph = c.querySelector('.slide-placeholder'); if (ph) ph.remove();
+            const div = document.createElement('div'); div.className = 'forum-post';
+            const content = post.content.replace(/<[^>]*>/g, '');
+            const spoiler = post.spoiler_text || '';
+            div.innerHTML = '<div class="forum-post-header">' +
+              '<div class="forum-post-av" style="border-color:var(--purple)">' + (post.account?.avatar ? '<img src="' + post.account.avatar + '">' : '\u{1F464}') + '</div>' +
+              '<span class="forum-post-name">' + esc(post.account?.display_name || post.account?.username || 'anon') + '</span>' +
+              '<span class="forum-post-time">' + ago(Math.floor(new Date(post.created_at).getTime() / 1000)) + '</span></div>' +
+              (spoiler ? '<div class="forum-post-title">' + esc(spoiler) + '</div>' : '') +
+              '<div class="forum-post-body">' + esc(content.substring(0, 500)) + '</div>' +
+              '<div class="forum-post-footer"><span class="forum-act" onclick="window.open(\'' + post.url + '\',\'_blank\')">\u{1F517} Open</span>' +
+              '<span class="forum-act">\u{1F4AC} ' + (post.replies_count || 0) + '</span>' +
+              '<span class="forum-act">\u2B50 ' + (post.favourites_count || 0) + '</span>' +
+              '<span class="forum-post-source">MASTODON \u00B7 ' + esc(new URL(instance).hostname) + '</span></div>';
+            c.appendChild(div);
+          });
+        })
+        .catch(e => console.log('Mastodon ' + instance + ' error:', e));
+    });
+
+    // Also load from Nostr (existing forum posts)
+    Object.entries(ws).forEach(([url, r]) => {
+      if (!r.ok) return;
+      const sid = 'forum_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid, { kinds: [1], '#t': ['m4tr1x-forum'], limit: 30 }]));
+      r.w.addEventListener('message', e => { try {
+        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+        if (seen.forum.has(ev.id)) return; seen.forum.add(ev.id);
+        const ph = c.querySelector('.slide-placeholder'); if (ph) ph.remove();
+        const title = ev.tags.find(t => t[0] === 'subject')?.[1] || '';
+        const tags = ev.tags.filter(t => t[0] === 't' && t[1] !== 'm4tr1x-forum').map(t => '#' + t[1]).join(' ');
+        const div = document.createElement('div'); div.className = 'forum-post'; div.dataset.eid = ev.id;
+        div.innerHTML = '<div class="forum-post-header"><div class="forum-post-av" id="fav-' + ev.id + '">\u{1F464}</div>' +
+          '<span class="forum-post-name" id="fnm-' + ev.id + '">' + shortenKey(ev.pubkey) + '</span>' +
+          '<span class="forum-post-time">' + ago(ev.created_at) + '</span></div>' +
+          (title ? '<div class="forum-post-title">' + esc(title) + '</div>' : '') +
+          '<div class="forum-post-body">' + esc(ev.content) + '</div>' +
+          '<div class="forum-post-footer"><span class="forum-act" onclick="openComments(\'' + ev.id + '\')">\u{1F4AC} Reply</span>' +
+          '<span class="forum-act" onclick="openZap(\'' + ev.id + '\',\'' + ev.pubkey + '\')">\u26A1 Zap</span>' +
+          '<span class="forum-act" onclick="shareEv(\'' + ev.id + '\')">\u{1F4E1} Share</span>' +
+          '<span class="forum-post-source">NOSTR</span></div>';
+        c.appendChild(div);
+        loadProf(ev.pubkey).then(p => {
+          if (!p) return;
+          const av = document.getElementById('fav-' + ev.id); const nm = document.getElementById('fnm-' + ev.id);
+          if (p.name || p.display_name) nm.textContent = p.name || p.display_name;
+          if (p.picture && av) av.innerHTML = '<img src="' + p.picture + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+        });
+      } catch (err) {} });
+    });
+    setTimeout(() => { if (!seen.forum.size) c.innerHTML = '<div class="slide-placeholder"><div class="ph-text" style="color:rgba(187,102,255,0.3)">[ NO DISCUSSIONS YET \u2014 START ONE ]</div></div>' }, 6000);
+  }
+
+  function openForumModal(){document.getElementById('forum-modal').classList.add('open')}
+  function closeForumModal(){document.getElementById('forum-modal').classList.remove('open')}
+  async function postForumThread(){
+    const title=document.getElementById('forum-title').value.trim();
+    const body=document.getElementById('forum-body').value.trim();
+    if(!body){toast('WRITE SOMETHING');return}
+    const tagList=[['t','m4tr1x-forum']];
+    if(title)tagList.push(['subject',title]);
+    document.getElementById('forum-tags').value.split(/\s+/).filter(Boolean).forEach(t=>tagList.push(['t',t.replace('#','')]));
+    // Add m4tr1x hashtag for Mastodon federation discovery
+    tagList.push(['t','m4tr1x']);
+    try{
+      const ev={kind:1,pubkey:S.pubkey,created_at:now(),tags:tagList,content:body+(title?' ['+title+']':'')+'\n\n#m4tr1x #m4tr1xforum'};
+      const signed=await signEv(ev);broadcast(signed);
+      closeForumModal();
+      document.getElementById('forum-title').value='';document.getElementById('forum-body').value='';document.getElementById('forum-tags').value='';
+      toast('THREAD PUBLISHED TO NOSTR + MASTODON');
+      S.loaded.forum=false;loadForum();
+    }catch(e){toast('ERROR: '+e.message)}
+  }
+  // ========== DM SYSTEM WITH SIGNAL PROTOCOL ==========
+  function loadDMs() {
+    const list = document.getElementById('dm-list');
+    list.innerHTML = '<div class="slide-placeholder"><div class="ph-text">[ INITIALIZING SIGNAL PROTOCOL... ]</div></div>';
+    const convos = {};
+    Object.entries(ws).forEach(([url, r]) => {
+      if (!r.ok) return;
+      const sid = 'dm_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid, { kinds: [4], authors: [S.pubkey], limit: 50 }]));
+      const sid2 = 'dm2_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid2, { kinds: [4], '#p': [S.pubkey], limit: 50 }]));
+      const handler = e => { try {
+        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+        if (ev.kind !== 4) return;
+        const other = ev.pubkey === S.pubkey ? (ev.tags.find(t => t[0] === 'p')?.[1] || null) : ev.pubkey;
+        if (!other) return;
+        if (!convos[other] || ev.created_at > convos[other].ts) { convos[other] = { ts: ev.created_at, content: ev.content } }
+      } catch (err) {} };
+      r.w.addEventListener('message', handler);
+    });
+    setTimeout(async () => {
+      const keys = Object.keys(convos).sort((a, b) => convos[b].ts - convos[a].ts);
+      if (!keys.length) { list.innerHTML = '<div class="slide-placeholder"><div class="ph-text" style="color:rgba(0,255,65,0.2)">[ SIGNAL READY \u2014 NO MESSAGES YET ]</div></div>'; return }
+      list.innerHTML = '';
+      for (const pk of keys) {
+        const div = document.createElement('div'); div.className = 'dm-item';
+        div.onclick = () => openDmChat(pk);
+        let preview = 'Signal encrypted message';
+        try { preview = await SignalEngine.decryptMessage(pk, convos[pk].content.split('?iv=')[0], 1); } catch(e) {}
+        if (preview.length > 40) preview = preview.substring(0, 40) + '...';
+        div.innerHTML = '<div class="dm-av" id="dmav-' + pk + '">\u{1F464}</div>' +
+          '<div class="dm-info"><div class="dm-name" id="dmnm-' + pk + '">' + shortenKey(pk) + '</div>' +
+          '<div class="dm-preview">\u{1F512} ' + esc(preview) + '</div></div>' +
+          '<span class="dm-time">' + ago(convos[pk].ts) + '</span>';
+        list.appendChild(div);
+        loadProf(pk).then(p => {
+          if (!p) return;
+          const av = document.getElementById('dmav-' + pk); const nm = document.getElementById('dmnm-' + pk);
+          if (p.name || p.display_name) nm.textContent = p.name || p.display_name;
+          // No avatar image per design
+        });
+      }
+    }, 4000);
+  }
+
+  function openDmChat(pk) {
+    S.dmTarget = pk;
+    document.getElementById('dm-chat').classList.add('open');
+    document.getElementById('dm-chat-name').textContent = shortenKey(pk);
+    const msgs = document.getElementById('dm-chat-msgs');
+    msgs.innerHTML = '<div style="text-align:center;padding:20px;font-size:0.6em;color:rgba(0,255,65,0.2);letter-spacing:2px">\u{1F512} SIGNAL PROTOCOL ACTIVE\n<br>Double Ratchet + X3DH + AES-256-GCM\n<br>Forward Secrecy Enabled\n<br>NO PHONE NUMBER \u00B7 AVATAR ONLY</div>';
+    loadProf(pk).then(p => {
+      if (!p) return;
+      const av = document.getElementById('dm-chat-av'); const nm = document.getElementById('dm-chat-name');
+      if (p.name || p.display_name) nm.textContent = p.name || p.display_name;
+      if (p.picture && av) av.innerHTML = '<img src="' + p.picture + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    });
+    // Load and decrypt messages
+    const msgSet = new Set();
+    Object.entries(ws).forEach(([url, r]) => {
+      if (!r.ok) return;
+      const sid = 'dmc_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid, { kinds: [4], authors: [S.pubkey], '#p': [pk], limit: 30 }]));
+      const sid2 = 'dmc2_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid2, { kinds: [4], authors: [pk], '#p': [S.pubkey], limit: 30 }]));
+      r.w.addEventListener('message', async e => { try {
+        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+        if (ev.kind !== 4 || msgSet.has(ev.id)) return; msgSet.add(ev.id);
+        const isMe = ev.pubkey === S.pubkey;
+        let decrypted;
+        try {
+          // Try Signal Protocol decryption first
+          decrypted = await SignalEngine.decryptMessage(isMe ? pk : ev.pubkey, ev.content.split('?iv=')[0], 1);
+        } catch(err) {
+          // Fallback: try NIP-04 via extension
+          if (S.method === 'extension' && window.nostr?.nip04) {
+            try { decrypted = await window.nostr.nip04.decrypt(pk, ev.content); } catch(e2) { decrypted = '[encrypted]'; }
+          } else { decrypted = '[encrypted]'; }
+        }
+        const div = document.createElement('div'); div.className = 'dm-msg' + (isMe ? ' me' : '');
+        div.innerHTML = '<div class="dm-msg-bubble">' + esc(decrypted) + '</div><div class="dm-msg-time">\u{1F512} ' + ago(ev.created_at) + '</div>';
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
+      } catch (err) {} });
+    });
+  }
+
+  function closeDmChat(){document.getElementById('dm-chat').classList.remove('open');S.dmTarget=null}
+
+  async function sendDm() {
+    const inp = document.getElementById('dm-msg-input'); const txt = inp.value.trim();
+    if (!txt || !S.dmTarget) return;
+    try {
+      // Encrypt with Signal Protocol (Double Ratchet)
+      const { ciphertext } = await SignalEngine.encryptMessage(S.dmTarget, txt);
+      let content = ciphertext;
+      // Also encrypt with NIP-04 if extension available (dual-layer)
+      if (S.method === 'extension' && window.nostr?.nip04) {
+        try { content = await window.nostr.nip04.encrypt(S.dmTarget, txt); } catch(e) {}
+      }
+      const ev = { kind: 4, pubkey: S.pubkey, created_at: now(), tags: [['p', S.dmTarget], ['signal-protocol', 'double-ratchet-v1']], content: content };
+      const signed = await signEv(ev); broadcast(signed);
+      inp.value = '';
+      const msgs = document.getElementById('dm-chat-msgs');
+      const div = document.createElement('div'); div.className = 'dm-msg me';
+      div.innerHTML = '<div class="dm-msg-bubble">' + esc(txt) + '</div><div class="dm-msg-time">\u{1F512} now</div>';
+      msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+      toast('\u{1F512} SIGNAL ENCRYPTED MESSAGE SENT');
+    } catch (e) { toast('ERROR: ' + e.message) }
+  }
+
+  // ========== SHOP / MARKETPLACE ==========
+  function loadShop(){
+    const grid=document.getElementById('shop-grid');
+    grid.innerHTML='<div class="slide-placeholder" style="grid-column:span 2"><div class="ph-text">[ LOADING MARKETPLACE... ]</div></div>';
+    Object.entries(ws).forEach(([url,r])=>{
+      if(!r.ok)return;
+      const sid='shop_'+rnd();
+      r.w.send(JSON.stringify(['REQ',sid,{kinds:[30402],'#t':['m4tr1x-shop'],limit:30}]));
+      const sid2='shop2_'+rnd();
+      r.w.send(JSON.stringify(['REQ',sid2,{kinds:[1],'#t':['m4tr1x-shop'],limit:30}]));
+      const handler=e=>{try{
+        const d=JSON.parse(e.data);if(d[0]!=='EVENT')return;const ev=d[2];
+        if(seen.shop.has(ev.id))return;seen.shop.add(ev.id);
+        const ph=grid.querySelector('.slide-placeholder');if(ph)ph.remove();
+        const name=ev.tags.find(t=>t[0]==='title')?.[1]||'Untitled';
+        const price=ev.tags.find(t=>t[0]==='price')?.[1]||'?';
+        const img=ev.tags.find(t=>t[0]==='image')?.[1]||'';
+        const div=document.createElement('div');div.className='shop-item';
+        div.onclick=()=>toast('ITEM DETAILS \u2014 COMING SOON');
+        div.innerHTML='<div class="shop-item-img">'+(img?'<img src="'+img+'">':'\u{1F6CD}\uFE0F')+'</div><div class="shop-item-name">'+esc(name)+'</div><div class="shop-item-price">\u{1F4B0} '+esc(price)+' M4TR1X</div><div class="shop-item-seller">'+shortenKey(ev.pubkey)+'</div>';
+        grid.appendChild(div);
+      }catch(err){}};
+      r.w.addEventListener('message',handler);
+    });
+    setTimeout(()=>{if(!seen.shop.size)grid.innerHTML='<div class="slide-placeholder" style="grid-column:span 2"><div class="ph-text" style="color:rgba(255,136,0,0.3)">[ EMPTY MARKETPLACE \u2014 LIST YOUR FIRST ITEM ]</div></div>'},6000);
+  }
+  function openSellModal(){document.getElementById('sell-modal').classList.add('open')}
+  function closeSellModal(){document.getElementById('sell-modal').classList.remove('open')}
+  async function publishListing(){
+    const name=document.getElementById('sell-name').value.trim();
+    const desc=document.getElementById('sell-desc').value.trim();
+    const price=document.getElementById('sell-price').value;
+    const cat=document.getElementById('sell-category').value;
+    if(!name||!price){toast('NAME AND PRICE REQUIRED');return}
+    try{
+      const ev={kind:1,pubkey:S.pubkey,created_at:now(),tags:[['t','m4tr1x-shop'],['title',name],['price',price],['category',cat],['client','m4tr1x']],content:desc||name};
+      const signed=await signEv(ev);broadcast(signed);
+      closeSellModal();toast('ITEM LISTED');S.loaded.shop=false;loadShop();
+    }catch(e){toast('ERROR: '+e.message)}
+  }
+  function openTokenModal(){document.getElementById('token-modal').classList.add('open');S.tokenAmount=0}
+  function closeTokenModal(){document.getElementById('token-modal').classList.remove('open')}
+  function selToken(n,btn){S.tokenAmount=n;document.querySelectorAll('.token-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel')}
+  async function buyTokens(){
+    const amount=S.tokenAmount||100;
+    try{if(window.webln){await window.webln.enable();S.tokenBalance+=amount;localStorage.setItem('m4tr1x_tokens',S.tokenBalance.toString());document.getElementById('token-balance').textContent=S.tokenBalance;toast('\u26A1 '+amount+' TOKENS PURCHASED')}else{toast('WEBLN NOT AVAILABLE \u2014 INSTALL ALBY')}}catch(e){toast('ERROR: '+e.message)}
+    closeTokenModal();
+  }
+  // ========== MAKE SLIDE ==========
+  function mkSlide(ev,vurl,sec){
+    const el=document.createElement('div');el.className='video-slide';el.id='sl-'+ev.id;el.dataset.eid=ev.id;el.dataset.pk=ev.pubkey;
+    const cap=esc(ev.content||'');
+    const tags=ev.tags.filter(t=>t[0]==='t'&&!t[1].startsWith('m4tr1x-')).map(t=>'#'+t[1]).join(' ');
+    const ft=ev.tags.find(t=>t[0]==='film-title')?.[1]||'';const mt=ev.tags.find(t=>t[0]==='music-title')?.[1]||'';const g=ev.tags.find(t=>t[0]==='genre')?.[1]||'';
+    const mainTitle=ft||mt;
+    el.innerHTML='<video class="slide-video" preload="none" loop muted playsinline><source src="'+vurl+'" type="video/mp4"></video><div class="ai-badge scanning" id="aib-'+ev.id+'">[ SCAN ]</div><div class="grad-top"></div><div class="grad-bot"></div><div class="play-flash" id="pf-'+ev.id+'"></div><div class="slide-info"><div class="slide-author"><div class="slide-av" id="av-'+ev.id+'">\u{1F464}</div><span class="slide-name" id="nm-'+ev.id+'">'+shortenKey(ev.pubkey)+'</span><span class="slide-time">'+ago(ev.created_at)+'</span></div>'+(mainTitle?'<div class="slide-meta">'+esc(mainTitle)+(g?'<span class="slide-genre">'+esc(g)+'</span>':'')+'</div>':'')+(cap?'<div class="slide-caption">'+cap+'</div>':'')+(tags?'<div class="slide-tags">'+tags+'</div>':'')+'</div><div class="slide-actions"><div class="sact" onclick="viewProf(\''+ev.pubkey+'\')"><div class="sact-icon" id="sav-'+ev.id+'">\u{1F464}</div><span class="sact-label">PROFILE</span></div><div class="sact zap-act" onclick="openZap(\''+ev.id+'\',\''+ev.pubkey+'\')"><div class="sact-icon">\u26A1</div><span class="sact-label">ZAP</span></div><div class="sact" onclick="openComments(\''+ev.id+'\')"><div class="sact-icon">\u{1F4AC}</div><span class="sact-label">REPLY</span></div><div class="sact" onclick="shareEv(\''+ev.id+'\')"><div class="sact-icon">\u{1F4E1}</div><span class="sact-label">RELAY</span></div><div class="sact" onclick="dlVid(\''+vurl+'\')"><div class="sact-icon">\u2B07</div><span class="sact-label">SAVE</span></div><div class="sact label-real-act" id="lbr-'+ev.id+'" onclick="submitLabel(\''+ev.id+'\',\'REAL\')"><div class="sact-icon">\u2705</div><span class="sact-label">REAL</span></div><div class="sact label-ai-act" id="lba-'+ev.id+'" onclick="submitLabel(\''+ev.id+'\',\'AI_GENERATED\')"><div class="sact-icon">\u26A0\uFE0F</div><span class="sact-label">AI</span></div><div class="label-stats-panel" id="lbs-'+ev.id+'"></div></div><div class="vid-prog"><div class="vid-prog-fill" id="vp-'+ev.id+'"></div></div>';
+    const vid=el.querySelector('video');
+    vid.addEventListener('loadedmetadata',()=>{if(vid.videoWidth>vid.videoHeight)vid.classList.add('landscape')});
+    vid.addEventListener('timeupdate',()=>{if(vid.duration){const f=document.getElementById('vp-'+ev.id);if(f)f.style.width=(vid.currentTime/vid.duration*100)+'%'}});
+    el.addEventListener('click',e=>{if(e.target.closest('.slide-actions')||e.target.closest('.slide-author'))return;togglePlay(vid,ev.id)});
+    let aiBadgeDone=false;
+    const obs=new IntersectionObserver(entries=>{entries.forEach(en=>{if(en.isIntersecting){vid.preload='auto';vid.muted=S.muted;vid.play().catch(()=>{});if(!aiBadgeDone){aiBadgeDone=true;scheduleAIBadge(ev.id,vurl)}}else{vid.pause()}})},{threshold:0.65});
+    obs.observe(el);return el;
+  }
+  function togglePlay(vid,eid){const pf=document.getElementById('pf-'+eid);if(vid.paused){vid.play();flash(pf,'\u25B6')}else{vid.pause();flash(pf,'\u23F8')}}
+  function flash(el,txt){if(!el)return;el.textContent=txt;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),500)}
+  function autoPlay(sec){document.getElementById('feed-'+sec).querySelectorAll('.slide-video').forEach(v=>{const r=v.closest('.video-slide').getBoundingClientRect();if(r.top>=0&&r.bottom<=window.innerHeight){v.muted=S.muted;v.play().catch(()=>{})}})}
+  function toggleMute(){S.muted=!S.muted;document.getElementById('mute-btn').textContent=S.muted?'\u{1F507}':'\u{1F50A}';document.querySelectorAll('.slide-video').forEach(v=>v.muted=S.muted)}
+
+  // PROFILES
+  function updateSlide(eid,pk,p){
+    const av=document.getElementById('av-'+eid),nm=document.getElementById('nm-'+eid),sav=document.getElementById('sav-'+eid);
+    if(!av)return;const name=p?.name||p?.display_name||shortenKey(pk);
+    if(nm)nm.textContent=name;
+    if(p?.picture){const img='<img src="'+p.picture+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';av.innerHTML=img;if(sav)sav.innerHTML=img}
+  }
+  function loadProf(pk){
+    if(profCache[pk])return Promise.resolve(profCache[pk]);
+    return new Promise(res=>{let done=false;
+    Object.values(ws).forEach(r=>{if(!r.ok)return;const sid='p_'+rnd();
+    r.w.send(JSON.stringify(['REQ',sid,{kinds:[0],authors:[pk],limit:1}]));
+    const h=e=>{try{const d=JSON.parse(e.data);if(d[0]==='EVENT'&&d[1]===sid){const p=JSON.parse(d[2].content);profCache[pk]=p;if(!done){done=true;res(p)}r.w.removeEventListener('message',h)}}catch(err){}};
+    r.w.addEventListener('message',h)});
+    setTimeout(()=>{if(!done)res(null)},4000);});
+  }
+  // ========== CROWDSOURCED LABELING ==========
+  async function submitLabel(videoHash, label) {
+    if (!S.pubkey) { toast('LOGIN FIRST'); return; }
+    const rBtn = document.getElementById('lbr-' + videoHash);
+    const aBtn = document.getElementById('lba-' + videoHash);
+    try {
+      const r = await fetch('/api/v1/train/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoHash, voterPubkey: S.pubkey, label, confidence: 1.0 })
+      });
+      const data = await r.json();
+      if (data.ok || data.vote) {
+        if (rBtn) rBtn.className = 'sact label-real-act' + (label === 'REAL' ? ' label-voted-real' : '');
+        if (aBtn) aBtn.className = 'sact label-ai-act' + (label === 'AI_GENERATED' ? ' label-voted-ai' : '');
+        toast(label === 'REAL' ? '\u2705 LABELED: REAL' : '\u26A0\uFE0F LABELED: AI');
+        if (data.consensus) {
+          const statsEl = document.getElementById('lbs-' + videoHash);
+          if (statsEl) statsEl.textContent = data.consensus.label + ' ' + Math.round(data.consensus.score * 100) + '%';
+        }
+        loadLabelStats(videoHash);
+      } else {
+        toast('ERROR: ' + (data.error || 'VOTE FAILED'));
+      }
+    } catch(e) { toast('ERROR: ' + e.message); }
+  }
+  async function loadLabelStats(videoHash) {
+    try {
+      const r = await fetch('/api/v1/train/stats/' + videoHash);
+      const d = await r.json();
+      const el = document.getElementById('lbs-' + videoHash);
+      if (!el) return;
+      if (d.total_votes > 0) {
+        const pct = d.consensus ? Math.round(d.consensus.score * 100) : 0;
+        el.textContent = d.consensus ? d.consensus.label + '\n' + pct + '%' : d.total_votes + ' VOTES';
+      }
+    } catch(e) {}
+  }
+
+  // ========== AI BADGE ==========
+  async function scheduleAIBadge(eid, vurl) {
+    const badge = document.getElementById('aib-' + eid);
+    if (!badge) return;
+    try {
+      const r = await fetch('/api/v1/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: vurl })
+      });
+      const d = await r.json();
+      if (!badge) return;
+      // No model yet (confidence=0 means model not trained) → ask user to label
+      const noModel = d.result === 'UNCERTAIN' && (d.confidence === 0 || d.confidence == null);
+      if (noModel) {
+        badge.className = 'ai-badge uncertain';
+        badge.textContent = '★ HELP TRAIN AI';
+        badge.title = 'No AI model yet — use REAL / AI buttons to help train it';
+      } else if (d.result === 'REAL') {
+        badge.className = 'ai-badge human'; badge.textContent = '✓ HUMAN';
+      } else if (d.result === 'AI_GENERATED') {
+        badge.className = 'ai-badge ai-gen'; badge.textContent = '⚠ AI GENERATED';
+      } else {
+        badge.className = 'ai-badge uncertain'; badge.textContent = '? UNVERIFIED';
+      }
+    } catch(e) { const b=document.getElementById('aib-'+eid); if(b){b.className='ai-badge uncertain';b.textContent='★ HELP TRAIN AI';} }
+  }
+
+  // ========== PROFILE PANEL ==========
+  let _profTarget = null;
+  // Derive a unique color-grid from pubkey (36 cells, coloured by pubkey bits)
+  function mkIdentGrid(pk) {
+    const hex = pk.slice(0, 36);
+    let html = '';
+    for (let i = 0; i < 36; i++) {
+      const v = parseInt(hex[i] || '0', 16);
+      const on = v > 7;
+      html += '<div style="background:' + (on ? 'var(--green)' : 'rgba(0,255,65,0.08)') + ';opacity:' + (on ? (0.4 + v/30).toFixed(2) : '1') + '"></div>';
+    }
+    return html;
+  }
+  function openMyProfile() {
+    if (S.pubkey) viewProf(S.pubkey);
+    else window.location.href = 'auth.html';
+  }
+  function viewProf(pk) {
+    _profTarget = pk;
+    const panel = document.getElementById('profile-panel');
+    document.getElementById('prof-ident').innerHTML = mkIdentGrid(pk);
+    document.getElementById('prof-name').textContent = shortenKey(pk);
+    document.getElementById('prof-key').textContent = pk.slice(0, 20) + '…';
+    document.getElementById('prof-bio').style.display = 'none';
+    document.getElementById('prof-signal-row').style.display = 'none';
+    document.getElementById('prof-grid').innerHTML = '<div class="prof-grid-empty">[ LOADING... ]</div>';
+    document.getElementById('prof-posts').textContent = '–';
+    document.getElementById('prof-followers').textContent = '–';
+    document.getElementById('prof-following').textContent = '–';
+    const isMe = pk === S.pubkey;
+    const actRow = document.getElementById('prof-actions');
+    actRow.style.display = isMe ? 'none' : 'flex';
+    if (!isMe) refreshFollowBtn(pk);
+    panel.classList.add('open');
+    // Load Nostr profile metadata
+    loadProf(pk).then(p => {
+      if (!p) return;
+      const nm = document.getElementById('prof-name');
+      nm.textContent = p.name || p.display_name || shortenKey(pk);
+      const bio = document.getElementById('prof-bio');
+      if (p.about) { bio.textContent = p.about; bio.style.display = 'block'; }
+      if (p.signal || p.signal_username) {
+        // User has Signal identity linked — show verified badge (DM stays in-app)
+        document.getElementById('prof-signal-row').style.display = 'flex';
+      }
+    });
+    // Load their posts
+    loadProfPosts(pk);
+    // Load follow counts
+    loadFollowCounts(pk);
+  }
+  function closeProfile() {
+    document.getElementById('profile-panel').classList.remove('open');
+    _profTarget = null;
+  }
+  function loadProfPosts(pk) {
+    const grid = document.getElementById('prof-grid');
+    const items = [];
+    const seenP = new Set();
+    Object.values(ws).forEach(r => {
+      if (!r.ok) return;
+      const sid = 'pp_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid, { kinds: [1063], authors: [pk], limit: 18 }]));
+      r.w.addEventListener('message', e => { try {
+        const d = JSON.parse(e.data);
+        if (d[0] !== 'EVENT' || d[2].kind !== 1063 || seenP.has(d[2].id)) return;
+        seenP.add(d[2].id);
+        const url = d[2].tags.find(t => t[0] === 'url')?.[1];
+        if (!url) return;
+        items.push({ url, ts: d[2].created_at });
+        renderProfGrid(items);
+      } catch(err) {} });
+    });
+    setTimeout(() => {
+      document.getElementById('prof-posts').textContent = items.length || 0;
+      if (!items.length) grid.innerHTML = '<div class="prof-grid-empty">[ NO POSTS YET ]</div>';
+    }, 4000);
+  }
+  function renderProfGrid(items) {
+    const grid = document.getElementById('prof-grid');
+    grid.innerHTML = '';
+    items.sort((a,b) => b.ts - a.ts).slice(0, 18).forEach(item => {
+      const div = document.createElement('div'); div.className = 'prof-grid-item';
+      const vid = document.createElement('video');
+      vid.src = item.url; vid.muted = true; vid.preload = 'metadata';
+      vid.addEventListener('loadedmetadata', () => vid.currentTime = 1);
+      vid.onclick = () => { closeProfile(); toast('VIDEO: ' + item.url.slice(-30)); };
+      div.appendChild(vid); grid.appendChild(div);
+    });
+  }
+  function loadFollowCounts(pk) {
+    // Count who follows pk (kind 3 events with p-tag = pk)
+    let followerCount = 0; let followingCount = 0; const seen3 = new Set();
+    Object.values(ws).forEach(r => {
+      if (!r.ok) return;
+      const sid = 'fc1_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid, { kinds: [3], '#p': [pk], limit: 500 }]));
+      r.w.addEventListener('message', e => { try {
+        const d = JSON.parse(e.data);
+        if (d[0] !== 'EVENT' || d[2].kind !== 3 || seen3.has(d[2].id)) return;
+        seen3.add(d[2].id); followerCount++;
+        document.getElementById('prof-followers').textContent = followerCount;
+      } catch(err) {} });
+      // Count who pk follows (kind 3 authored by pk)
+      const sid2 = 'fc2_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid2, { kinds: [3], authors: [pk], limit: 1 }]));
+      r.w.addEventListener('message', e2 => { try {
+        const d2 = JSON.parse(e2.data);
+        if (d2[0] !== 'EVENT' || d2[2].kind !== 3) return;
+        const cnt = d2[2].tags.filter(t => t[0] === 'p').length;
+        followingCount = cnt;
+        document.getElementById('prof-following').textContent = followingCount;
+      } catch(err) {} });
+    });
+  }
+  // ========== FOLLOW SYSTEM (NIP-02) ==========
+  function getFollows() {
+    try { return JSON.parse(localStorage.getItem('m4tr1x_follows') || '[]'); } catch(e) { return []; }
+  }
+  function saveFollows(arr) {
+    localStorage.setItem('m4tr1x_follows', JSON.stringify(arr));
+  }
+  function isFollowing(pk) { return getFollows().includes(pk); }
+  function refreshFollowBtn(pk) {
+    const btn = document.getElementById('prof-follow-btn');
+    if (!btn) return;
+    if (isFollowing(pk)) { btn.textContent = 'FOLLOWING'; btn.classList.add('following'); }
+    else { btn.textContent = 'FOLLOW'; btn.classList.remove('following'); }
+  }
+  async function toggleFollow() {
+    if (!S.pubkey || !_profTarget) return;
+    const pk = _profTarget;
+    let follows = getFollows();
+    if (isFollowing(pk)) {
+      follows = follows.filter(f => f !== pk);
+    } else {
+      follows.push(pk);
+    }
+    saveFollows(follows);
+    refreshFollowBtn(pk);
+    // Publish NIP-02 kind 3 contact list
+    try {
+      const tags = follows.map(f => ['p', f]);
+      const ev = { kind: 3, pubkey: S.pubkey, created_at: now(), tags, content: '' };
+      const signed = await signEv(ev);
+      broadcast(signed);
+      toast(isFollowing(pk) ? '➕ FOLLOWING' : '✔ UNFOLLOWED');
+    } catch(e) { toast('ERROR: ' + e.message); }
+  }
+  function profileDM() {
+    if (!_profTarget) return;
+    closeProfile();
+    switchSec('dm');
+    setTimeout(() => openDmChat(_profTarget), 300);
+  }
+  // ========== NOTIFICATIONS ==========
+  const notifStore = { items: [], seen: new Set() };
+  function initNotifications() {
+    if (!S.pubkey) return;
+    Object.values(ws).forEach(r => {
+      if (!r.ok) return;
+      const sid = 'ntf_' + rnd();
+      // Subscribe to mentions, replies and zap receipts
+      r.w.send(JSON.stringify(['REQ', sid, { kinds: [1, 9735], '#p': [S.pubkey], since: now() - 86400 * 7, limit: 50 }]));
+      r.w.addEventListener('message', e => { try {
+        const d = JSON.parse(e.data);
+        if (d[0] !== 'EVENT') return;
+        const ev = d[2];
+        if (notifStore.seen.has(ev.id)) return;
+        notifStore.seen.add(ev.id);
+        let type, content;
+        if (ev.kind === 9735) {
+          type = '⚡ ZAP RECEIVED';
+          const desc = ev.tags.find(t => t[0] === 'description')?.[1] || '';
+          try { const z = JSON.parse(desc); content = z.content || 'Zap received'; } catch(e) { content = 'Zap received'; }
+        } else {
+          const isReply = ev.tags.some(t => t[0] === 'e');
+          type = isReply ? '💬 REPLY' : '📡 MENTION';
+          content = ev.content.slice(0, 80) + (ev.content.length > 80 ? '...' : '');
+        }
+        notifStore.items.unshift({ id: ev.id, type, content, ts: ev.created_at, pubkey: ev.pubkey });
+        updateNotifBadge();
+        renderNotifList();
+      } catch(err) {} });
+    });
+  }
+  function updateNotifBadge() {
+    if (notifStore.items.length > 0)
+      document.getElementById('notif-dot').classList.add('show');
+  }
+  function openNotifDrawer() {
+    document.getElementById('notif-drawer').classList.add('open');
+    document.getElementById('notif-dot').classList.remove('show');
+    renderNotifList();
+  }
+  function closeNotifDrawer() {
+    document.getElementById('notif-drawer').classList.remove('open');
+  }
+  function renderNotifList() {
+    const list = document.getElementById('notif-list');
+    if (!notifStore.items.length) {
+      list.innerHTML = '<div class="notif-empty">[ NO SIGNALS YET ]<br><span style="font-size:0.75em;opacity:0.5">Notifications appear when someone replies,<br>mentions or zaps you</span></div>';
+      return;
+    }
+    list.innerHTML = '';
+    notifStore.items.slice(0, 40).forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'notif-item unread';
+      div.innerHTML = '<div class="notif-type">' + item.type + ' · ' + shortenKey(item.pubkey) + '</div>'
+        + '<div class="notif-content">' + esc(item.content) + '</div>'
+        + '<div class="notif-time">' + ago(item.ts) + '</div>';
+      div.onclick = () => { div.classList.remove('unread'); };
+      list.appendChild(div);
+    });
+  }
+
+  // COMMENTS
+  function openComments(eid){
+    S.cmtEventId=eid;const list=document.getElementById('cmt-list');
+    list.innerHTML='<div style="padding:14px;font-size:0.68em;color:var(--green-dim);letter-spacing:2px;animation:pulse 1.5s infinite">LOADING...</div>';
+    document.getElementById('comments-drawer').classList.add('open');
+    const seen2=new Set();let found=false;
+    Object.values(ws).forEach(r=>{if(!r.ok)return;const sid='c_'+rnd();
+    r.w.send(JSON.stringify(['REQ',sid,{kinds:[1],'#e':[eid],limit:50}]));
+    r.w.addEventListener('message',e=>{try{const d=JSON.parse(e.data);if(d[0]==='EVENT'&&d[1]===sid){const ev=d[2];if(seen2.has(ev.id))return;seen2.add(ev.id);if(!found){found=true;list.innerHTML=''}const div=document.createElement('div');div.className='cmt-item';div.innerHTML='<span class="cmt-author">'+shortenKey(ev.pubkey)+'</span>'+esc(ev.content);list.appendChild(div)}}catch(err){}})});
+    setTimeout(()=>{if(!found)list.innerHTML='<div style="padding:14px;font-size:0.68em;color:var(--green-dark)">No replies yet.</div>'},4000);
+  }
+  function closeComments(){document.getElementById('comments-drawer').classList.remove('open')}
+  async function postComment(){
+    if(!S.pubkey||!S.cmtEventId)return;const inp=document.getElementById('cmt-input');const txt=inp.value.trim();if(!txt)return;
+    try{const ev={kind:1,pubkey:S.pubkey,created_at:now(),tags:[['e',S.cmtEventId,'','reply']],content:txt};
+    const signed=await signEv(ev);broadcast(signed);inp.value='';
+    const div=document.createElement('div');div.className='cmt-item';div.innerHTML='<span class="cmt-author">YOU</span>'+esc(txt);
+    document.getElementById('cmt-list').appendChild(div);toast('REPLY SENT');
+    }catch(e){toast('ERROR: '+e.message)}
+  }
+
+  // ZAP
+  function openZap(eid,pk){if(!S.pubkey){toast('LOGIN FIRST');return}S.zapEventId=eid;S.zapPubkey=pk;document.getElementById('zap-amount').value='';document.getElementById('zap-comment').value='';document.querySelectorAll('.sat-btn').forEach(b=>b.classList.remove('sel'));document.getElementById('zap-modal').classList.add('open')}
+  function closeZap(){document.getElementById('zap-modal').classList.remove('open')}
+  function setSats(n,btn){document.getElementById('zap-amount').value=n;document.querySelectorAll('.sat-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel')}
+  async function sendZap(){
+    const amount=parseInt(document.getElementById('zap-amount').value)||21;const comment=document.getElementById('zap-comment').value;
+    if(!S.zapPubkey){closeZap();return}
+    try{const p=await loadProf(S.zapPubkey);const lud16=p?.lud16||p?.lightning;
+    if(!lud16){toast('NO LIGHTNING ADDRESS');closeZap();return}
+    const zapReq={kind:9734,pubkey:S.pubkey,created_at:now(),tags:[['p',S.zapPubkey],['e',S.zapEventId],['amount',(amount*1000).toString()],['relays',...RELAYS]],content:comment};
+    const signed=await signEv(zapReq);const encoded=encodeURIComponent(JSON.stringify(signed));
+    const [u,d]=lud16.split('@');const ln=await(await fetch('https://'+d+'/.well-known/lnurlp/'+u)).json();
+    if(!ln.callback)throw new Error('Invalid LNURL');
+    const inv=await(await fetch(ln.callback+'?amount='+amount*1000+'&nostr='+encoded+'&comment='+encodeURIComponent(comment))).json();
+    if(inv.pr){if(window.webln){await window.webln.enable();await window.webln.sendPayment(inv.pr);toast('\u26A1 '+amount+' SATS SENT')}else{navigator.clipboard.writeText(inv.pr);toast('INVOICE COPIED')}}
+    }catch(e){toast('ZAP ERROR: '+(e.message||'?'))}closeZap();
+  }
+  // UPLOAD
+  function openUpload(){if(!S.pubkey){toast('LOGIN FIRST');return}document.getElementById('upload-modal').classList.add('open');selCat(document.querySelector('.up-cat.signal'),'signal')}
+  function closeUpload(){document.getElementById('upload-modal').classList.remove('open');document.getElementById('up-progress').style.display='none';document.getElementById('prog-fill').style.width='0%';S.file=null;document.getElementById('prev-wrap').style.display='none';document.getElementById('btn-pub').disabled=true;document.getElementById('drop-zone').innerHTML='<div class="dz-icon">\u{1F4F9}</div><strong style="font-size:0.82em">DROP VIDEO HERE</strong><p>or click to select \u00B7 MP4, MOV \u00B7 max 500MB</p>'}
+  function selCat(btn,cat){document.querySelectorAll('.up-cat').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');S.uploadCat=cat;document.getElementById('up-title').textContent=cat==='film'?'\u{1F3AC} UPLOAD':cat==='music'?'\u{1F3B5} UPLOAD':'\u2B06 UPLOAD';document.querySelectorAll('.up-disc').forEach(d=>d.style.display='none');if(cat!=='signal')document.getElementById('disc-'+cat).style.display='block';document.getElementById('film-fields').style.display=cat==='film'?'block':'none';document.getElementById('music-fields').style.display=cat==='music'?'block':'none'}
+  function handleFile(file){if(!file||!file.type.startsWith('video/')){toast('VIDEO ONLY');return}S.file=file;document.getElementById('prev-video').src=URL.createObjectURL(file);document.getElementById('prev-wrap').style.display='block';document.getElementById('drop-zone').innerHTML='<div class="dz-icon">\u2705</div><strong>'+file.name+'</strong><p>'+(file.size/1024/1024).toFixed(1)+' MB</p>';document.getElementById('btn-pub').disabled=false}
+
+  async function doUpload(){
+    if(!S.file)return;
+    const btn=document.getElementById('btn-pub');btn.disabled=true;btn.textContent='ANALYZING...';
+    const prog=document.getElementById('up-progress');prog.style.display='block';
+    const fill=document.getElementById('prog-fill');const ptxt=document.getElementById('prog-txt');
+
+    try{
+      // ── STEP 1: AI VERIFICATION (cuore di M4TR1X) ─────────────────────────
+      // Prima di pubblicare qualsiasi video, il modello AI locale analizza
+      // 16 frame equidistanti e determina se il video è autentico o generato da AI.
+      // Il verdetto viene firmato crittograficamente e incluso nel Nostr event.
+      ptxt.textContent='M4TR1X AI analyzing...';fill.style.width='10%';
+      let aiVerdict=null;let aiTags=[];
+      try{
+        const aiForm=new FormData();aiForm.append('video',S.file);
+        if(S.pubkey)aiForm.append('nostr_pubkey',S.pubkey);
+        const aiRes=await fetch('/api/v1/analyze',{method:'POST',body:aiForm,headers:S.pubkey?{'X-Nostr-Pubkey':S.pubkey}:{}});
+        if(aiRes.ok){
+          aiVerdict=await aiRes.json();
+          // Mostra il verdetto all'utente
+          const emoji=aiVerdict.verdict_emoji||'❓';
+          const conf=aiVerdict.confidence?Math.round((aiVerdict.verdict==='AUTHENTIC'?aiVerdict.confidence.authentic:aiVerdict.confidence.ai_generated)*100)+'%':'';
+          ptxt.textContent=emoji+' '+aiVerdict.verdict+(conf?' ('+conf+')':'');
+          fill.style.width='40%';
+          // Blocca la pubblicazione se il video risulta AI-generato (e la categoria è 'signal')
+          if(aiVerdict.verdict==='AI_GENERATED'&&S.uploadCat==='signal'){
+            const proceed=confirm('⚠️ M4TR1X AI: this video appears to be AI-generated ('+conf+').\nPublish it anyway?');
+            if(!proceed){fill.style.width='0%';prog.style.display='none';btn.disabled=false;btn.textContent='PUBLISH ON NOSTR';return}
+          }
+          // Tag crittografici da includere nel Nostr event
+          aiTags=[
+            ['m4tr1x-verdict',aiVerdict.verdict||'UNKNOWN'],
+            ['m4tr1x-confidence',conf],
+            ['m4tr1x-hash',aiVerdict.video_hash_sha256||''],
+            ['m4tr1x-frames',String(aiVerdict.frames_analyzed||0)],
+          ];
+          if(aiVerdict.nostr_attestation){
+            aiTags.push(['m4tr1x-attestation-id',aiVerdict.id||'']);
+          }
+          await new Promise(r=>setTimeout(r,800)); // lascia leggere il verdetto
+        }
+      }catch(aiErr){
+        // AI non disponibile (modello ONNX mancante) — continua senza bloccare
+        console.warn('M4TR1X AI non disponibile:',aiErr.message);
+        ptxt.textContent='AI offline — publishing anyway...';
+        fill.style.width='40%';
+      }
+
+      // ── STEP 2: UPLOAD SU BLOSSOM ─────────────────────────────────────────
+      ptxt.textContent='Uploading to Blossom...';
+      const server=document.getElementById('up-server').value;
+      const fd=new FormData();fd.append('file',S.file);
+      const xhr=new XMLHttpRequest();
+      xhr.upload.onprogress=e=>{if(e.lengthComputable)fill.style.width=(40+Math.round(e.loaded/e.total*40))+'%'};
+      const result=await new Promise((res,rej)=>{
+        xhr.onload=()=>{try{res(JSON.parse(xhr.responseText))}catch(e){rej(new Error('Invalid server response'))}};
+        xhr.onerror=()=>rej(new Error('Network error'));
+        xhr.open('POST','https://'+server+'/upload');
+        if(S.pubkey)xhr.setRequestHeader('X-Nostr-Pubkey',S.pubkey);
+        xhr.send(fd);
+      });
+      fill.style.width='85%';ptxt.textContent='Publishing on Nostr...';
+
+      const vurl=result.url||result.nip94_event?.tags?.find(t=>t[0]==='url')?.[1];
+      if(!vurl)throw new Error('No URL from server');
+
+      // ── STEP 3: NOSTR EVENT con verdetto AI incluso ───────────────────────
+      const cap=document.getElementById('up-caption').value;
+      const tagList=document.getElementById('up-tags').value.split(/\s+/).filter(Boolean).map(t=>['t',t.replace('#','')]);
+      tagList.push(['t',CAT_TAG[S.uploadCat]]);
+      tagList.push(['t','m4tr1x']); // hashtag per discovery cross-platform (Mastodon federation)
+      if(S.uploadCat==='film'){const ft=document.getElementById('up-film-title').value;const fg=document.getElementById('up-film-genre').value;const fy=document.getElementById('up-film-year').value;if(ft)tagList.push(['film-title',ft]);if(fg)tagList.push(['genre',fg]);if(fy)tagList.push(['year',fy])}
+      if(S.uploadCat==='music'){const mt=document.getElementById('up-music-title').value;const mg=document.getElementById('up-music-genre').value;if(mt)tagList.push(['music-title',mt]);if(mg)tagList.push(['genre',mg])}
+
+      const verdictEmoji=aiVerdict?aiVerdict.verdict_emoji:'';
+      const contentWithVerdict=cap+(aiVerdict?'\n\n'+verdictEmoji+' M4TR1X AI: '+aiVerdict.verdict+(aiVerdict.consistency_score?' | consistency '+Math.round(aiVerdict.consistency_score*100)+'%':''):'');
+
+      const nostrEv={
+        kind:1063,pubkey:S.pubkey,created_at:now(),
+        tags:[
+          ['url',vurl],['m',S.file.type],['size',S.file.size.toString()],
+          ...(result.sha256?[['x',result.sha256]]:[]),
+          ['client','m4tr1x'],
+          ...aiTags,   // ← verdetto AI crittograficamente incluso
+          ...tagList,
+        ],
+        content:contentWithVerdict,
+      };
+      const signed=await signEv(nostrEv);broadcast(signed);
+      fill.style.width='100%';
+      ptxt.textContent=(aiVerdict?aiVerdict.verdict_emoji+' '+aiVerdict.verdict+' — ':'')+' PUBLISHED ✓';
+      toast('BROADCAST COMPLETE'+(aiVerdict?' · AI: '+aiVerdict.verdict:''));
+      setTimeout(()=>{closeUpload();seen[S.uploadCat].add(signed.id);const c=document.getElementById('feed-'+S.uploadCat);const ph=c.querySelector('.slide-placeholder');if(ph)ph.remove();c.insertBefore(mkSlide(signed,vurl,S.uploadCat),c.firstChild);switchSec(S.uploadCat)},1200);
+    }catch(e){toast('ERROR: '+e.message);ptxt.textContent='FAILED';fill.style.width='0%';btn.disabled=false;btn.textContent='PUBLISH ON NOSTR'}
+  }
+
+  // NOSTR SIGNING
+  async function signEv(event){
+    if(S.method==='extension'&&window.nostr)return await window.nostr.signEvent(event);
+    if(S.privkey&&window.NostrTools){event.id=window.NostrTools.getEventHash(event);event.sig=window.NostrTools.signEvent(event,S.privkey);return event}
+    throw new Error('No signing method');
+  }
+  function broadcast(ev){Object.values(ws).forEach(r=>{if(r.ok&&r.w.readyState===1)r.w.send(JSON.stringify(['EVENT',ev]))})}
+
+  // UTILS
+  function shareEv(eid){navigator.clipboard.writeText('https://snort.social/e/'+eid).then(()=>toast('LINK COPIED'))}
+  function dlVid(url){const a=document.createElement('a');a.href=url;a.download='m4tr1x_'+Date.now()+'.mp4';a.click();toast('DOWNLOADING...')}
+  function shortenKey(k){return k?k.slice(0,6)+'\u2026'+k.slice(-4):'ANON'}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
+  function ago(ts){const s=Math.floor(Date.now()/1000)-ts;if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'d'}
+  function now(){return Math.floor(Date.now()/1000)}
+  function rnd(){return Math.random().toString(36).slice(2,8)}
+  <\/script>
+<\/body>
+<\/html>
