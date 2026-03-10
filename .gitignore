@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+
+# Environment variables (contain secrets)
+.env
+
+# Database files (generated at runtime)
+*.db
+*.db-shm
+*.db-wal
+
+# Uploaded videos (temp files)
+uploads/
+tmp/
+temp/
+
+# Encryption keys (NEVER commit these)
+*.key
+nexus.key
+
+# AI models (downloaded automatically at runtime)
+models/*.onnx
+models/*.onnx.backup_*
+
+# Tauri build output
+src-tauri/target/
+
+# Electron build output
+dist/
+dist-electron/
+release/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary git files
+*.orig

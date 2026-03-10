@@ -1,0 +1,14 @@
+{
+  "$schema":    "../gen/schemas/mobile-schema.json",
+  "identifier": "mobile-extra",
+  "description": "Extra capabilities required on Android and iOS",
+  "platforms":  ["android", "iOS"],
+  "windows":    ["main"],
+  "permissions": [
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
+    "fs:allow-read-dir",
+    "dialog:allow-open",
+    "http:allow-fetch"
+  ]
+}

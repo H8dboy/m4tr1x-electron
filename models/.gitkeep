@@ -1,0 +1,3 @@
+# Metti qui il file m4tr1x_detector.onnx
+# Esportalo dal progetto Python con: python train_detector.py --export-onnx
+# oppure con: python ai_detector.py --export-onnx

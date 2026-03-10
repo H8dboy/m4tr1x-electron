@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  M4TR1X iOS Info.plist additions
+  Merged into the main Info.plist by Tauri's build system.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Privacy descriptions shown to users on iOS -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>M4TR1X needs access to your photo library to upload videos you want to share anonymously.</string>
+
+    <key>NSCameraUsageDescription</key>
+    <string>M4TR1X needs camera access to record videos directly in-app.</string>
+
+    <key>NSMicrophoneUsageDescription</key>
+    <string>M4TR1X needs microphone access when recording video with audio.</string>
+
+    <!-- App Transport Security: allow localhost for dev, Tor for production -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
+</dict>
+</plist>

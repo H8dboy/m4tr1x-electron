@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>M4TR1X — Stay Safe</title>
+<script src="/m4tr1x-bridge.js"></script>
+<style>
+  :root {
+    --green:  #00ff41;
+    --red:    #ff003c;
+    --yellow: #ffdd00;
+    --bg:     #000;
+    --card:   #0a0a0a;
+    --border: #1a1a1a;
+    --text:   #ccc;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Courier New',monospace; min-height:100vh; padding:16px 16px 30px; }
+  .lang-bar { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:14px; }
+  .lang-btn { background:var(--card); border:1px solid var(--border); color:var(--text); padding:5px 12px; cursor:pointer; font-size:12px; letter-spacing:0.5px; transition:all 0.15s; }
+  .lang-btn:hover, .lang-btn.active { border-color:var(--green); color:var(--green); }
+  .header { text-align:center; margin-bottom:24px; }
+  .header h1 { font-size:clamp(18px,5vw,28px); color:var(--green); letter-spacing:3px; margin-bottom:6px; }
+  .header .sub { color:#555; font-size:12px; }
+  .alert { border:1px solid var(--red); padding:14px 18px; margin-bottom:20px; background:rgba(255,0,60,0.05); }
+  .alert h2 { color:var(--red); font-size:13px; letter-spacing:1.5px; margin-bottom:8px; }
+  .alert p { font-size:13px; line-height:1.7; }
+  .section { margin-bottom:22px; border:1px solid var(--border); background:var(--card); }
+  .section-header { background:var(--border); padding:10px 18px; display:flex; align-items:center; gap:10px; }
+  .section-header .num { color:var(--green); font-size:11px; font-weight:bold; }
+  .section-header h3 { color:#fff; font-size:13px; letter-spacing:1px; }
+  .section-body { padding:14px 18px; font-size:12.5px; line-height:1.8; }
+  .bridge-box { background:#000; border:1px solid #1f1f1f; padding:10px 14px; margin:10px 0; font-family:monospace; font-size:10px; color:#00ff41; overflow-x:auto; white-space:pre-wrap; word-break:break-all; }
+  .copy-btn { background:none; border:1px solid var(--green); color:var(--green); padding:4px 10px; cursor:pointer; font-size:10px; margin-top:4px; letter-spacing:1px; }
+  .copy-btn:hover { background:rgba(0,255,65,0.1); }
+  .tip { border-left:2px solid var(--yellow); padding:7px 12px; margin:8px 0; font-size:12px; color:#aaa; }
+  .tip strong { color:var(--yellow); }
+  .step { display:flex; gap:12px; margin:8px 0; align-items:flex-start; }
+  .step .n { color:var(--green); font-weight:bold; min-width:18px; padding-top:1px; }
+  .step .t { flex:1; }
+  a { color:var(--green); }
+  .rtl { direction:rtl; text-align:right; }
+  .hidden { display:none; }
+  .tor-status { padding:10px 18px; margin-bottom:18px; display:flex; align-items:center; gap:10px; font-size:12px; }
+  .tor-on  { border:1px solid var(--green); background:rgba(0,255,65,0.05); color:var(--green); }
+  .tor-off { border:1px solid var(--red);   background:rgba(255,0,60,0.05);  color:var(--red); }
+  footer { text-align:center; color:#333; font-size:10px; margin-top:32px; padding-top:16px; border-top:1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<!-- Language bar -->
+<div class="lang-bar" id="lang-bar">
+  <button class="lang-btn active" onclick="setLang('en')">🇺🇸 EN</button>
+  <button class="lang-btn" onclick="setLang('fr')">🇫🇷 FR</button>
+  <button class="lang-btn" onclick="setLang('de')">🇩🇪 DE</button>
+  <button class="lang-btn" onclick="setLang('it')">🇮🇹 IT</button>
+  <button class="lang-btn" onclick="setLang('pt')">🇧🇷 PT</button>
+  <button class="lang-btn" onclick="setLang('es')">🇲🇽 ES</button>
+  <button class="lang-btn" onclick="setLang('fa')">🇮🇷 FA</button>
+  <button class="lang-btn" onclick="setLang('ar')">🇵🇸 AR</button>
+  <button class="lang-btn" onclick="setLang('tr')">🇹🇷 TR</button>
+  <button class="lang-btn" onclick="setLang('ru')">🇷🇺 RU</button>
+  <button class="lang-btn" onclick="setLang('uk')">🇺🇦 UK</button>
+  <button class="lang-btn" onclick="setLang('pl')">🇵🇱 PL</button>
+  <button class="lang-btn" onclick="setLang('sr')">🇷🇸 SR</button>
+  <button class="lang-btn" onclick="setLang('sq')">🇦🇱 SQ</button>
+  <button class="lang-btn" onclick="setLang('zh')">🇨🇳 ZH</button>
+  <button class="lang-btn" onclick="setLang('vi')">🇻🇳 VI</button>
+  <button class="lang-btn" onclick="setLang('my')">🇲🇲 MY</button>
+  <button class="lang-btn" onclick="setLang('sw')">🇰🇪 SW</button>
+  <button class="lang-btn" onclick="setLang('bn')">🇧🇩 BN</button>
+  <button class="lang-btn" onclick="setLang('id')">🇮🇩 ID</button>
+  <button class="lang-btn" onclick="setLang('ur')">🇵🇰 UR</button>
+  <button class="lang-btn" onclick="setLang('ja')">🇯🇵 JA</button>
+  <button class="lang-btn" onclick="setLang('tl')">🇵🇭 TL</button>
+  <button class="lang-btn" onclick="setLang('ko')">🇰🇷 KO</button>
+  <button class="lang-btn" onclick="setLang('ha')">🇳🇬 HA</button>
+  <button class="lang-btn" onclick="setLang('th')">🇹🇭 TH</button>
+  <button class="lang-btn" onclick="setLang('ku')">🏴 KU</button>
+  <button class="lang-btn" onclick="setLang('am')">🇪🇹 AM</button>
+  <button class="lang-btn" onclick="setLang('ro')">🇷🇴 RO</button>
+  <button class="lang-btn" onclick="setLang('nl')">🇳🇱 NL</button>
+  <button class="lang-btn" onclick="setLang('el')">🇬🇷 EL</button>
+  <button class="lang-btn" onclick="setLang('ps')">🇦🇫 PS</button>
+  <button class="lang-btn" onclick="setLang('so')">🇸🇴 SO</button>
+  <button class="lang-btn" onclick="setLang('az')">🇦🇿 AZ</button>
+</div>
+
+<div class="header">
+  <h1>M4TR1X // STAY SAFE</h1>
+  <div class="sub">Your security is not optional — در هر کجا که هستی</div>
+</div>
+
+<div id="tor-status-bar" class="tor-status tor-off">
+  ⚠ Tor not detected — your IP is visible. Follow the guide below.
+</div>
+
+<!-- Snowflake bridge (shared across all langs) -->
+<div id="bridge-sf-en" class="bridge-box" style="display:none">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+<div id="bridge-obfs4-en" class="bridge-box" style="display:none">obfs4 193.11.166.194:27015 2D82C2E354D531A68469ADF7F878390640087A33 cert=4TLQPJrTSaDffMK7Nbao6LC7G9OW/NHkUwIdjLSS3KYf06igE7t05ipN9m6BoNp37UFgeg iat-mode=0</div>
+
+
+<!-- ═══════════ ENGLISH ═══════════ -->
+<div id="lang-en">
+  <div class="alert"><h2>⚠ READ THIS IF YOU ARE IN A COUNTRY THAT CENSORS THE INTERNET</h2>
+    <p>Without Tor, your Internet provider can see that you are using M4TR1X, who you talk to, and what you publish. This guide takes 5 minutes. Do it now.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>INSTALL TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Go to <a href="https://www.torproject.org/download/" target="_blank">torproject.org/download</a> and download Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">If the site is blocked, use the mirror: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Open Tor Browser and keep it open in the background.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Restart M4TR1X — it detects Tor automatically. The 🧅 symbol means you are protected.</span></div>
+      <div class="tip"><strong>Iran / China:</strong> Click "Configure Connection" → "Use a bridge" → select <strong>snowflake</strong>. It disguises your traffic as a video call.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>BRIDGES (if Tor is blocked)</h3></div>
+    <div class="section-body">
+      <p>Copy these bridge lines into Tor Browser → "Use a bridge" → "Enter bridge address manually":</p>
+      <p style="margin-top:10px;color:#888;font-size:11px">SNOWFLAKE (best for Iran, China, Russia)</p>
+      <div class="bridge-box" id="b-sf-en">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-en',this)">COPY</button>
+      <p style="margin-top:12px;color:#888;font-size:11px">OBFS4 (alternative)</p>
+      <div class="bridge-box" id="b-ob-en">obfs4 193.11.166.194:27015 2D82C2E354D531A68469ADF7F878390640087A33 cert=4TLQPJrTSaDffMK7Nbao6LC7G9OW/NHkUwIdjLSS3KYf06igE7t05ipN9m6BoNp37UFgeg iat-mode=0</div>
+      <button class="copy-btn" onclick="copyEl('b-ob-en',this)">COPY</button>
+      <div class="tip"><strong>Need fresh bridges?</strong> Email <strong>bridges@torproject.org</strong> — message: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>OPERATIONAL SECURITY</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Never upload videos from your phone without scrubbing metadata. M4TR1X does this automatically.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Use a Nostr key created inside M4TR1X — never your real name.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Encrypted DMs use NIP-44 (ChaCha20-Poly1305) — no server can read them.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">If arrested and your phone searched: encrypt your local data folder with VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ FRENCH ═══════════ -->
+<div id="lang-fr" class="hidden">
+  <div class="alert"><h2>⚠ LISEZ CECI SI VOUS ÊTES DANS UN PAYS QUI CENSURE INTERNET</h2>
+    <p>Sans Tor, votre fournisseur d'accès peut voir que vous utilisez M4TR1X, avec qui vous communiquez et ce que vous publiez. Ce guide prend 5 minutes. Faites-le maintenant.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>INSTALLER TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Allez sur <strong>torproject.org/download</strong> et téléchargez Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Si le site est bloqué, utilisez le miroir : <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Ouvrez Tor Browser et gardez-le ouvert en arrière-plan.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Redémarrez M4TR1X — il détecte Tor automatiquement. Le symbole 🧅 signifie que vous êtes protégé.</span></div>
+      <div class="tip"><strong>Afrique francophone :</strong> Choisissez "Configurer la connexion" → "Utiliser un pont" → <strong>snowflake</strong>. Ça déguise votre trafic en appel vidéo.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>PONTS (si Tor est bloqué)</h3></div>
+    <div class="section-body">
+      <p>Copiez ces lignes dans Tor Browser → "Utiliser un pont" → "Entrer l'adresse manuellement" :</p>
+      <div class="bridge-box" id="b-sf-fr">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-fr',this)">COPIER</button>
+      <div class="tip"><strong>Besoin de ponts frais ?</strong> Envoyez un email à <strong>bridges@torproject.org</strong> — message : "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>SÉCURITÉ OPÉRATIONNELLE</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Ne jamais télécharger une vidéo de votre téléphone sans supprimer les métadonnées. M4TR1X le fait automatiquement.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Utilisez une clé Nostr créée dans M4TR1X — jamais votre vrai nom.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Les DMs chiffrés utilisent NIP-44 — aucun serveur ne peut les lire.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Si arrêté et votre téléphone fouillé : chiffrez votre dossier local avec VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ GERMAN ═══════════ -->
+<div id="lang-de" class="hidden">
+  <div class="alert"><h2>⚠ LESEN SIE DIES, WENN SIE IN EINEM LAND MIT INTERNETZENSUR LEBEN</h2>
+    <p>Ohne Tor kann Ihr Internetanbieter sehen, dass Sie M4TR1X verwenden, mit wem Sie kommunizieren und was Sie veröffentlichen. Diese Anleitung dauert 5 Minuten. Tun Sie es jetzt.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>TOR BROWSER INSTALLIEREN</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Gehen Sie zu <strong>torproject.org/download</strong> und laden Sie Tor Browser herunter.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Wenn die Seite blockiert ist, nutzen Sie den Spiegel: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Öffnen Sie Tor Browser und lassen Sie ihn im Hintergrund laufen.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Starten Sie M4TR1X neu — es erkennt Tor automatisch. Das Symbol 🧅 bedeutet: Sie sind geschützt.</span></div>
+      <div class="tip"><strong>Tipp:</strong> Wählen Sie bei der Einrichtung "Verbindung konfigurieren" → "Bridge verwenden" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>BRIDGES (wenn Tor blockiert ist)</h3></div>
+    <div class="section-body">
+      <p>Kopieren Sie diese Zeilen in Tor Browser → "Bridge verwenden" → "Bridge-Adresse manuell eingeben":</p>
+      <div class="bridge-box" id="b-sf-de">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-de',this)">KOPIEREN</button>
+      <div class="tip"><strong>Neue Bridges benötigt?</strong> E-Mail an <strong>bridges@torproject.org</strong> — Nachricht: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>OPERATIONELLE SICHERHEIT</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Laden Sie niemals Videos von Ihrem Telefon hoch, ohne Metadaten zu entfernen. M4TR1X erledigt das automatisch.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Verwenden Sie einen Nostr-Schlüssel aus M4TR1X — niemals Ihren echten Namen.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Verschlüsselte DMs verwenden NIP-44 — kein Server kann sie lesen.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Bei Verhaftung und Durchsuchung: verschlüsseln Sie Ihren lokalen Datenordner mit VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ITALIAN ═══════════ -->
+<div id="lang-it" class="hidden">
+  <div class="alert"><h2>⚠ LEGGI QUESTO SE SEI IN UN PAESE CHE CENSURA INTERNET</h2>
+    <p>Senza Tor, il tuo provider può vedere che usi M4TR1X, con chi parli e cosa pubblichi. Questa guida richiede 5 minuti. Falla adesso.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>INSTALLA TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Vai su <strong>torproject.org/download</strong> e scarica Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Se il sito è bloccato, usa lo specchio: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Apri Tor Browser e tienilo aperto in background.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Riavvia M4TR1X — rileva Tor automaticamente. Il simbolo 🧅 significa che sei protetto.</span></div>
+      <div class="tip"><strong>Consiglio:</strong> Durante la configurazione scegli "Configura connessione" → "Usa un bridge" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>BRIDGE (se Tor è bloccato)</h3></div>
+    <div class="section-body">
+      <p>Copia queste righe in Tor Browser → "Usa un bridge" → "Inserisci indirizzo bridge manualmente":</p>
+      <div class="bridge-box" id="b-sf-it">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-it',this)">COPIA</button>
+      <div class="tip"><strong>Hai bisogno di bridge freschi?</strong> Scrivi a <strong>bridges@torproject.org</strong> — messaggio: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>SICUREZZA OPERATIVA</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Non caricare mai video dal tuo telefono senza rimuovere i metadati. M4TR1X lo fa in automatico.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Usa una chiave Nostr creata dentro M4TR1X — mai il tuo vero nome.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">I DM cifrati usano NIP-44 — nessun server può leggerli.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Se arrestato e il telefono perquisito: cifra la cartella dati con VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PORTUGUESE ═══════════ -->
+<div id="lang-pt" class="hidden">
+  <div class="alert"><h2>⚠ LEIA ISTO SE VOCÊ ESTÁ EM UM PAÍS QUE CENSURA A INTERNET</h2>
+    <p>Sem Tor, seu provedor de internet pode ver que você usa M4TR1X, com quem fala e o que publica. Este guia leva 5 minutos. Faça agora.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>INSTALAR TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Acesse <strong>torproject.org/download</strong> e baixe o Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Se o site estiver bloqueado, use o espelho: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Abra o Tor Browser e mantenha-o aberto em segundo plano.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Reinicie o M4TR1X — ele detecta o Tor automaticamente. O símbolo 🧅 significa que você está protegido.</span></div>
+      <div class="tip"><strong>Brasil / Cuba / Venezuela:</strong> Escolha "Configurar conexão" → "Usar uma ponte" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>PONTES (se o Tor estiver bloqueado)</h3></div>
+    <div class="section-body">
+      <p>Copie estas linhas no Tor Browser → "Usar uma ponte" → "Inserir endereço de ponte manualmente":</p>
+      <div class="bridge-box" id="b-sf-pt">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-pt',this)">COPIAR</button>
+      <div class="tip"><strong>Precisa de pontes novas?</strong> Email para <strong>bridges@torproject.org</strong> — mensagem: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>SEGURANÇA OPERACIONAL</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Nunca suba vídeos do seu celular sem remover os metadados. O M4TR1X faz isso automaticamente.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Use uma chave Nostr criada dentro do M4TR1X — nunca seu nome real.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">As DMs criptografadas usam NIP-44 — nenhum servidor pode lê-las.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Se preso e seu telefone for revistado: criptografe sua pasta de dados com VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SPANISH ═══════════ -->
+<div id="lang-es" class="hidden">
+  <div class="alert"><h2>⚠ LEE ESTO SI ESTÁS EN UN PAÍS CON CENSURA DE INTERNET</h2>
+    <p>Sin Tor, tu proveedor puede ver que usas M4TR1X, con quién hablas y qué publicas. Esta guía toma 5 minutos. Hazlo ahora.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>INSTALAR TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Ve a <strong>torproject.org/download</strong> y descarga Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Si el sitio está bloqueado: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Abre Tor Browser y mantenlo abierto en segundo plano.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Reinicia M4TR1X — detecta Tor automáticamente. El símbolo 🧅 significa que estás protegido.</span></div>
+      <div class="tip"><strong>Cuba, Venezuela, México:</strong> "Configurar conexión" → "Usar un puente" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>PUENTES (si Tor está bloqueado)</h3></div>
+    <div class="section-body">
+      <p>Copia estas líneas en Tor Browser → "Usar un puente" → "Ingresar dirección manualmente":</p>
+      <div class="bridge-box" id="b-sf-es">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-es',this)">COPIAR</button>
+      <div class="tip"><strong>¿Necesitas puentes nuevos?</strong> Email a <strong>bridges@torproject.org</strong> — mensaje: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>SEGURIDAD OPERACIONAL</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Nunca subas videos de tu teléfono sin eliminar metadatos. M4TR1X lo hace automáticamente.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Usa una clave Nostr creada en M4TR1X — nunca tu nombre real.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Los DMs cifrados usan NIP-44 — ningún servidor puede leerlos.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Si te detienen y revisan tu teléfono: cifra tu carpeta de datos con VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ FARSI ═══════════ -->
+<div id="lang-fa" class="hidden rtl">
+  <div class="alert"><h2>⚠ اگر در ایران یا هر کشوری با سانسور اینترنت هستید این را بخوانید</h2>
+    <p>بدون Tor، ارائه‌دهنده اینترنت شما می‌تواند ببیند که از M4TR1X استفاده می‌کنید. این راهنما ۵ دقیقه وقت می‌برد. همین الان انجامش بده.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">۰۱</span><h3>نصب Tor Browser</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">۱.</span><span class="t">به <strong>torproject.org/download</strong> بروید و Tor Browser را دانلود کنید.</span></div>
+      <div class="step"><span class="n">۲.</span><span class="t">اگر سایت مسدود است: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">۳.</span><span class="t">Tor Browser را باز کنید و در پس‌زمینه باز نگه دارید.</span></div>
+      <div class="step"><span class="n">۴.</span><span class="t">M4TR1X را مجدداً راه‌اندازی کنید. علامت 🧅 یعنی محافظت شده‌اید.</span></div>
+      <div class="tip"><strong>ایران:</strong> "پیکربندی اتصال" ← "استفاده از پل" ← <strong>snowflake</strong> را انتخاب کنید. ترافیک شما به شکل تماس ویدیویی درمی‌آید.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">۰۲</span><h3>پل‌های آماده (اگر Tor مسدود است)</h3></div>
+    <div class="section-body">
+      <p>این خطوط پل را در تنظیمات Tor Browser کپی کنید:</p>
+      <div class="bridge-box" id="b-sf-fa">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-fa',this)">کپی</button>
+      <div class="tip"><strong>پل‌های جدید نیاز دارید؟</strong> به <strong>bridges@torproject.org</strong> ایمیل بزنید: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">۰۳</span><h3>امنیت عملیاتی</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">هرگز ویدیویی را بدون پاک‌سازی ابرداده آپلود نکنید. M4TR1X این کار را خودکار انجام می‌دهد.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">از کلید Nostr درون M4TR1X استفاده کنید. هرگز نام واقعی نگذارید.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">پیام‌های رمزنگاری‌شده با NIP-44 محافظت می‌شوند — هیچ سروری نمی‌تواند بخواند.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">اگر دستگیر شدید: پوشه داده‌ها را با VeraCrypt رمزنگاری کنید.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ARABIC ═══════════ -->
+<div id="lang-ar" class="hidden rtl">
+  <div class="alert"><h2>⚠ اقرأ هذا إذا كنت في دولة تفرض رقابة على الإنترنت</h2>
+    <p>بدون Tor، مزود الإنترنت يرى كل شيء. هذا الدليل يستغرق 5 دقائق. افعله الآن.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">٠١</span><h3>تثبيت متصفح Tor</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">١.</span><span class="t">انتقل إلى <strong>torproject.org/download</strong> وقم بتنزيل متصفح Tor.</span></div>
+      <div class="step"><span class="n">٢.</span><span class="t">إذا كان الموقع محجوباً: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">٣.</span><span class="t">افتح متصفح Tor وأبقه مفتوحاً في الخلفية.</span></div>
+      <div class="step"><span class="n">٤.</span><span class="t">أعد تشغيل M4TR1X — سيكتشف Tor تلقائياً. رمز 🧅 يعني أنك محمي.</span></div>
+      <div class="tip"><strong>غزة والضفة والعالم العربي:</strong> اختر snowflake كجسر — يخفي حركة المرور على أنها مكالمة فيديو.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">٠٢</span><h3>الجسور (إذا كان Tor محجوباً)</h3></div>
+    <div class="section-body">
+      <p>انسخ هذه الأسطر في إعدادات Tor Browser:</p>
+      <div class="bridge-box" id="b-sf-ar">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-ar',this)">نسخ</button>
+      <div class="tip"><strong>تحتاج جسوراً جديدة؟</strong> أرسل بريداً إلى <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">٠٣</span><h3>الأمن التشغيلي</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">لا تحمّل أبداً مقاطع فيديو دون مسح البيانات الوصفية. M4TR1X يفعل ذلك تلقائياً.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">استخدم مفتاح Nostr من داخل M4TR1X — لا اسمك الحقيقي أبداً.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">الرسائل المشفرة محمية بـ NIP-44 — لا يمكن لأي خادم قراءتها.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">إذا اعتُقلت: شفّر مجلد بياناتك المحلية بـ VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ TURKISH ═══════════ -->
+<div id="lang-tr" class="hidden">
+  <div class="alert"><h2>⚠ İNTERNETİ SANSÜRLEYEN BİR ÜLKEDEYSENIZ BUNU OKUYUN</h2>
+    <p>Tor olmadan, internet sağlayıcınız M4TR1X kullandığınızı, kiminle iletişim kurduğunuzu ve ne yayınladığınızı görebilir. Bu rehber 5 dakika sürer. Şimdi yapın.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>TOR BROWSER YÜKLE</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t"><strong>torproject.org/download</strong> adresine gidin ve Tor Browser indirin.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Site engelliyse ayna kullanın: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Tor Browser'ı açın ve arka planda açık tutun.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">M4TR1X'i yeniden başlatın — Tor'u otomatik algılar. 🧅 simgesi korunduğunuzu gösterir.</span></div>
+      <div class="tip"><strong>Türkiye:</strong> Kurulumda "Bağlantıyı Yapılandır" → "Köprü kullan" → <strong>snowflake</strong> seçin.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>KÖPRÜLER (Tor engellenirse)</h3></div>
+    <div class="section-body">
+      <p>Bu satırları Tor Browser'a kopyalayın → "Köprü kullan" → "Köprü adresini manuel gir":</p>
+      <div class="bridge-box" id="b-sf-tr">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-tr',this)">KOPYALA</button>
+      <div class="tip"><strong>Yeni köprü gerekiyor?</strong> <strong>bridges@torproject.org</strong> adresine e-posta: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>OPERASYONEL GÜVENLİK</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Meta veriler temizlenmeden telefonunuzdan video yüklemeyin. M4TR1X bunu otomatik yapar.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">M4TR1X içinde oluşturduğunuz Nostr anahtarını kullanın — asla gerçek adınızı değil.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Şifreli DM'ler NIP-44 ile korunur — hiçbir sunucu okuyamaz.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Gözaltına alınırsanız: yerel veri klasörünüzü VeraCrypt ile şifreleyin.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ RUSSIAN ═══════════ -->
+<div id="lang-ru" class="hidden">
+  <div class="alert"><h2>⚠ ПРОЧТИТЕ ЭТО, ЕСЛИ ВЫ В СТРАНЕ С ИНТЕРНЕТ-ЦЕНЗУРОЙ</h2>
+    <p>Без Tor ваш провайдер видит всё. Это руководство займёт 5 минут. Сделайте это сейчас.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>УСТАНОВИТЕ TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Перейдите на <strong>torproject.org/download</strong> и скачайте Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Если сайт заблокирован: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Откройте Tor Browser и держите его в фоне.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Перезапустите M4TR1X — он обнаружит Tor автоматически. Символ 🧅 — вы защищены.</span></div>
+      <div class="tip"><strong>Россия, Беларусь:</strong> При настройке выберите "Мост" → <strong>obfs4</strong> или <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>МОСТЫ (если Tor заблокирован)</h3></div>
+    <div class="section-body">
+      <p>Скопируйте эти строки в Tor Browser → "Использовать мост" → "Ввести адрес вручную":</p>
+      <div class="bridge-box" id="b-sf-ru">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-ru',this)">КОПИРОВАТЬ</button>
+      <div class="tip"><strong>Нужны новые мосты?</strong> Email на <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>ОПЕРАЦИОННАЯ БЕЗОПАСНОСТЬ</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Никогда не загружайте видео без удаления метаданных. M4TR1X делает это автоматически.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Используйте ключ Nostr из M4TR1X — никогда настоящее имя.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Зашифрованные DM защищены NIP-44 — ни один сервер не прочитает.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">При аресте: зашифруйте папку с данными с помощью VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ UKRAINIAN ═══════════ -->
+<div id="lang-uk" class="hidden">
+  <div class="alert"><h2>⚠ ПРОЧИТАЙТЕ ЦЕ, ЯКЩО ВИ В КРАЇНІ З ЦЕНЗУРОЮ ІНТЕРНЕТУ</h2>
+    <p>Без Tor ваш провайдер бачить усе — з ким ви спілкуєтесь і що публікуєте. Цей посібник займе 5 хвилин. Зробіть це зараз.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>ВСТАНОВІТЬ TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Перейдіть на <strong>torproject.org/download</strong> і завантажте Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Якщо сайт заблокований: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Відкрийте Tor Browser і тримайте його у фоні.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Перезапустіть M4TR1X — він виявить Tor автоматично. Символ 🧅 — ви захищені.</span></div>
+      <div class="tip"><strong>Україна / окуповані території:</strong> Оберіть "Міст" → <strong>snowflake</strong> — ваш трафік виглядає як відеодзвінок.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>МОСТИ (якщо Tor заблоковано)</h3></div>
+    <div class="section-body">
+      <p>Скопіюйте ці рядки в Tor Browser → "Використати міст" → "Ввести адресу вручну":</p>
+      <div class="bridge-box" id="b-sf-uk">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-uk',this)">КОПІЮВАТИ</button>
+      <div class="tip"><strong>Потрібні нові мости?</strong> Email на <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>ОПЕРАЦІЙНА БЕЗПЕКА</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Ніколи не завантажуйте відео без видалення метаданих. M4TR1X робить це автоматично.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Використовуйте ключ Nostr з M4TR1X — ніколи не справжнє ім'я.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Зашифровані DM захищені NIP-44 — жоден сервер не прочитає.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">При арешті: зашифруйте папку з даними за допомогою VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ POLISH ═══════════ -->
+<div id="lang-pl" class="hidden">
+  <div class="alert"><h2>⚠ PRZECZYTAJ TO, JEŚLI JESTEŚ W KRAJU Z CENZURĄ INTERNETU</h2>
+    <p>Bez Tor twój dostawca internetu widzi wszystko. Ten przewodnik zajmuje 5 minut. Zrób to teraz.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>ZAINSTALUJ TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Przejdź na <strong>torproject.org/download</strong> i pobierz Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Jeśli strona jest zablokowana: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Otwórz Tor Browser i trzymaj go otwartego w tle.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Uruchom ponownie M4TR1X — automatycznie wykryje Tor. Symbol 🧅 = jesteś chroniony.</span></div>
+      <div class="tip"><strong>Polska / Białoruś:</strong> Wybierz "Konfiguruj połączenie" → "Użyj mostu" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>MOSTY (jeśli Tor jest zablokowany)</h3></div>
+    <div class="section-body">
+      <p>Skopiuj te linie do Tor Browser → "Użyj mostu" → "Wprowadź adres ręcznie":</p>
+      <div class="bridge-box" id="b-sf-pl">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-pl',this)">KOPIUJ</button>
+      <div class="tip"><strong>Potrzebujesz nowych mostów?</strong> Email na <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>BEZPIECZEŃSTWO OPERACYJNE</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Nigdy nie przesyłaj filmów bez usunięcia metadanych. M4TR1X robi to automatycznie.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Używaj klucza Nostr z M4TR1X — nigdy prawdziwego imienia.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Zaszyfrowane DM są chronione NIP-44 — żaden serwer nie może ich odczytać.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Przy zatrzymaniu: zaszyfruj folder danych za pomocą VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SERBIAN/CROATIAN ═══════════ -->
+<div id="lang-sr" class="hidden">
+  <div class="alert"><h2>⚠ PROČITAJ OVO AKO SI U ZEMLJI SA CENZUROM INTERNETA</h2>
+    <p>Bez Tora, tvoj internet provajder vidi sve. Ovaj vodič traje 5 minuta. Uradi to sada.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>INSTALIRAJ TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Idi na <strong>torproject.org/download</strong> i preuzmi Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Ako je sajt blokiran: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Otvori Tor Browser i drži ga otvorenim u pozadini.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Ponovo pokreni M4TR1X — automatski prepoznaje Tor. Simbol 🧅 znači da si zaštićen.</span></div>
+      <div class="tip"><strong>Srbija / Hrvatska / BiH:</strong> Odaberi "Konfiguriši vezu" → "Koristi most" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>MOSTOVI (ako je Tor blokiran)</h3></div>
+    <div class="section-body">
+      <p>Kopiraj ove linije u Tor Browser → "Koristi most" → "Unesi adresu ručno":</p>
+      <div class="bridge-box" id="b-sf-sr">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-sr',this)">KOPIRAJ</button>
+      <div class="tip"><strong>Trebaš nove mostove?</strong> Email na <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>OPERATIVNA SIGURNOST</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Nikad ne uploaduj video bez brisanja metapodataka. M4TR1X to radi automatski.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Koristi Nostr ključ iz M4TR1X — nikad pravo ime.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Šifrovane DM poruke koriste NIP-44 — nijedan server ne može da ih pročita.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Ako budeš uhapšen: šifruj lokalnu mapu podataka s VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ALBANIAN ═══════════ -->
+<div id="lang-sq" class="hidden">
+  <div class="alert"><h2>⚠ LEXO KËTË NËSE JE NË NJË VEND QU CENSURON INTERNETIN</h2>
+    <p>Pa Tor, operatori yt i internetit sheh gjithçka. Ky udhëzues merr 5 minuta. Bëje tani.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>INSTALO TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Shko tek <strong>torproject.org/download</strong> dhe shkarko Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Nëse faqja është bllokuar: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Hap Tor Browser dhe mbaje hapur në sfond.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Rinis M4TR1X — zbulon Tor automatikisht. Simboli 🧅 do të thotë je i mbrojtur.</span></div>
+      <div class="tip"><strong>Shqipëri / Kosovë:</strong> Zgjedh "Konfiguro lidhjen" → "Përdor urë" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>URA (nëse Tor është bllokuar)</h3></div>
+    <div class="section-body">
+      <p>Kopjo këto rreshta në Tor Browser → "Përdor urë" → "Fut adresën manualisht":</p>
+      <div class="bridge-box" id="b-sf-sq">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-sq',this)">KOPJO</button>
+      <div class="tip"><strong>Duhen ura të reja?</strong> Email tek <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>SIGURIA OPERACIONALE</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Mos ngarko kurrë video nga telefoni pa fshirë metadata. M4TR1X e bën automatikisht.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Përdor çelësin Nostr nga M4TR1X — kurrë emrin tënd të vërtetë.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">DM-et e enkriptuara përdorin NIP-44 — asnjë server nuk mund t'i lexojë.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Nëse arrestohesh: enkroto dosjen lokale me VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CHINESE ═══════════ -->
+<div id="lang-zh" class="hidden">
+  <div class="alert"><h2>⚠ 如果你在审查互联网的国家，请阅读此内容</h2>
+    <p>没有Tor，你的运营商可以看到你在使用M4TR1X，以及你在和谁通话。本指南需要5分钟。现在就做。</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>安装 Tor 浏览器</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">访问 <strong>torproject.org/download</strong> 下载 Tor 浏览器。</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">如果网站被封锁，使用镜像：<strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">打开 Tor 浏览器并在后台保持运行。</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">重启 M4TR1X — 它会自动检测 Tor。🧅 符号表示你已受到保护。</span></div>
+      <div class="tip"><strong>中国用户：</strong> 点击"配置连接" → "使用网桥" → 选择 <strong>snowflake</strong>。Snowflake 将流量伪装成视频通话。</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>内置网桥（如果 Tor 被封锁）</h3></div>
+    <div class="section-body">
+      <p>将这些网桥行复制到 Tor 浏览器设置 → "使用网桥" → "手动输入网桥地址"：</p>
+      <div class="bridge-box" id="b-sf-zh">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-zh',this)">复制</button>
+      <div class="tip"><strong>需要新网桥？</strong> 发送邮件至 <strong>bridges@torproject.org</strong>，内容："get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>操作安全</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">永远不要在未清除元数据的情况下上传视频。M4TR1X 会自动完成此操作。</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">使用在 M4TR1X 内创建的 Nostr 密钥——永远不要使用真实姓名。</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">加密私信使用 NIP-44 保护——任何服务器都无法读取。</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">如果被捕并搜查手机：使用 VeraCrypt 加密本地数据文件夹。</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ VIETNAMESE ═══════════ -->
+<div id="lang-vi" class="hidden">
+  <div class="alert"><h2>⚠ ĐỌC NÀY NẾU BẠN ĐANG Ở QUỐC GIA KIỂM DUYỆT INTERNET</h2>
+    <p>Không có Tor, nhà mạng của bạn có thể thấy bạn đang dùng M4TR1X, nói chuyện với ai và đăng gì. Hướng dẫn này mất 5 phút. Làm ngay bây giờ.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>CÀI TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Truy cập <strong>torproject.org/download</strong> và tải Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Nếu trang bị chặn, dùng gương: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Mở Tor Browser và giữ nó chạy nền.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Khởi động lại M4TR1X — tự động phát hiện Tor. Biểu tượng 🧅 nghĩa là bạn được bảo vệ.</span></div>
+      <div class="tip"><strong>Việt Nam:</strong> Chọn "Cấu hình kết nối" → "Dùng cầu nối" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>CẦU NỐI (nếu Tor bị chặn)</h3></div>
+    <div class="section-body">
+      <p>Sao chép các dòng này vào Tor Browser → "Dùng cầu nối" → "Nhập địa chỉ thủ công":</p>
+      <div class="bridge-box" id="b-sf-vi">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-vi',this)">SAO CHÉP</button>
+      <div class="tip"><strong>Cần cầu nối mới?</strong> Email đến <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>BẢO MẬT HOẠT ĐỘNG</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Không bao giờ tải video từ điện thoại mà không xóa metadata. M4TR1X tự động làm điều này.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Dùng khóa Nostr tạo trong M4TR1X — không bao giờ tên thật.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">DM mã hóa dùng NIP-44 — không máy chủ nào đọc được.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Nếu bị bắt và điện thoại bị kiểm tra: mã hóa thư mục dữ liệu bằng VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ BURMESE / MYANMAR ═══════════ -->
+<div id="lang-my" class="hidden">
+  <div class="alert"><h2>⚠ အင်တာနက်ကို ကန့်သတ်သည့်နိုင်ငံတွင် ရှိပါက ဤအချက်ကို ဖတ်ပါ</h2>
+    <p>Tor မပါဘဲ သင်၏ အင်တာနက်ပေးသူသည် M4TR1X ကို သင်အသုံးပြုကြောင်း၊ မည်သူနှင့် ဆက်သွယ်ကြောင်းနှင့် မည်သည်ကို ထုတ်ဝေကြောင်းကို မြင်နိုင်သည်။ ဤလမ်းညွှန်မှာ မိနစ် ၅ ကြာသည်။ ယခုပဲ လုပ်ဆောင်ပါ။</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>TOR BROWSER ထည့်သွင်းပါ</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t"><strong>torproject.org/download</strong> သို့ သွားပြီး Tor Browser ကို ဒေါင်းလုပ်ပါ။</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">ဝဘ်ဆိုက် ပိတ်ဆို့ထားပါက ဤမှတ်တမ်းကို သုံးပါ: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Tor Browser ကို ဖွင့်ပြီး နောက်ခံတွင် ဖွင့်ထားပါ။</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">M4TR1X ကို ပြန်ဖွင့်ပါ — Tor ကို အလိုအလျောက် သိရှိမည်။ 🧅 သင်ကောင်းမွန်စွာ ကာကွယ်ထားသည်။</span></div>
+      <div class="tip"><strong>မြန်မာ:</strong> "ချိတ်ဆက်မှု ပြင်ဆင်ရန်" → "တံတား သုံးပါ" → <strong>snowflake</strong> ကို ရွေးပါ။</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>တံတားများ (Tor ပိတ်ဆို့ထားလျှင်)</h3></div>
+    <div class="section-body">
+      <p>ဤစာကြောင်းများကို Tor Browser → "တံတား သုံးပါ" → "တံတားလိပ်စာ ကိုယ်တိုင်ထည့်ပါ" တွင် ကူးထည့်ပါ:</p>
+      <div class="bridge-box" id="b-sf-my">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-my',this)">ကူးပါ</button>
+      <div class="tip"><strong>တံတားအသစ် လိုသလား?</strong> <strong>bridges@torproject.org</strong> သို့ အီးမေးလ်ပို့ပါ: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>လုံခြုံရေး အချက်များ</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">မက်တာဒေတာ မဖျက်ဘဲ ဗီဒီယိုတင်ခြင်း မပြုပါနှင့်။ M4TR1X သည် ဤအရာကို အလိုအလျောက် လုပ်ဆောင်သည်။</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">M4TR1X တွင် ဖန်တီးထားသော Nostr သော့ကို သုံးပါ — မည်သောအခါမျှ သင်၏ အမည်မစစ်ကို မသုံးပါနှင့်။</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">စာဝှက် DM များသည် NIP-44 ဖြင့် ကာကွယ်ထားသည် — မည်သည့် ဆာဗာမျှ ဖတ်မရပါ။</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">ဖမ်းဆီးခံရပါက: VeraCrypt ဖြင့် ဒေသဆိုင်ရာ ဒေတာဖိုင်ကို ကုဒ်ဝှက်ပါ။</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SWAHILI ═══════════ -->
+<div id="lang-sw" class="hidden">
+  <div class="alert"><h2>⚠ SOMA HIKI KAMA UKO NCHI INAYODHIBITI MTANDAO</h2>
+    <p>Bila Tor, mtoa huduma wako wa mtandao anaweza kuona unachotumia, unazungumza na nani na unachochapisha. Mwongozo huu unahitaji dakika 5. Fanya sasa.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>SAKINISHA TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Nenda kwa <strong>torproject.org/download</strong> na upakue Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Kama tovuti imezuiwa, tumia kioo: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Fungua Tor Browser na uiacha ikifanya kazi nyuma.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Anzisha upya M4TR1X — itagundua Tor kiotomatiki. Alama 🧅 inamaanisha uko salama.</span></div>
+      <div class="tip"><strong>Afrika Mashariki:</strong> Chagua "Sanidi Muunganisho" → "Tumia daraja" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>MADARAJA (kama Tor imezuiwa)</h3></div>
+    <div class="section-body">
+      <p>Nakili mistari hii katika Tor Browser → "Tumia daraja" → "Ingiza anwani ya daraja kwa mkono":</p>
+      <div class="bridge-box" id="b-sf-sw">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-sw',this)">NAKILI</button>
+      <div class="tip"><strong>Unahitaji madaraja mapya?</strong> Tuma barua pepe kwa <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>USALAMA WA UTENDAJI</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Usipakiwe video kutoka kwa simu bila kuondoa metadata. M4TR1X hufanya hivi kiotomatiki.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Tumia ufunguo wa Nostr uliotengenezwa ndani ya M4TR1X — kamwe jina lako la kweli.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">DM zilizosimbwa zinatumia NIP-44 — hakuna seva inayoweza kuzisoma.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Ukikamatwa na simu yako ikaguliwa: simba folda ya data yako na VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ BENGALI ═══════════ -->
+<div id="lang-bn" class="hidden">
+  <div class="alert"><h2>⚠ আপনি যদি ইন্টারনেট সেন্সর করে এমন দেশে থাকেন তাহলে এটি পড়ুন</h2>
+    <p>Tor ছাড়া, আপনার ইন্টারনেট প্রদানকারী দেখতে পাচ্ছে যে আপনি M4TR1X ব্যবহার করছেন, কার সাথে কথা বলছেন এবং কী প্রকাশ করছেন। এই গাইডটি ৫ মিনিট নেয়। এখনই করুন।</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">০১</span><h3>TOR BROWSER ইনস্টল করুন</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">১.</span><span class="t"><strong>torproject.org/download</strong> এ যান এবং Tor Browser ডাউনলোড করুন।</span></div>
+      <div class="step"><span class="n">২.</span><span class="t">যদি সাইট ব্লক হয়: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">৩.</span><span class="t">Tor Browser খুলুন এবং ব্যাকগ্রাউন্ডে চালু রাখুন।</span></div>
+      <div class="step"><span class="n">৪.</span><span class="t">M4TR1X পুনরায় চালু করুন — এটি স্বয়ংক্রিয়ভাবে Tor সনাক্ত করবে। 🧅 মানে আপনি সুরক্ষিত।</span></div>
+      <div class="tip"><strong>বাংলাদেশ:</strong> "সংযোগ কনফিগার করুন" → "ব্রিজ ব্যবহার করুন" → <strong>snowflake</strong> বেছে নিন।</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">০২</span><h3>ব্রিজ (যদি Tor ব্লক হয়)</h3></div>
+    <div class="section-body">
+      <p>এই লাইনগুলি Tor Browser → "ব্রিজ ব্যবহার করুন" → "ম্যানুয়ালি ব্রিজ ঠিকানা লিখুন" এ কপি করুন:</p>
+      <div class="bridge-box" id="b-sf-bn">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-bn',this)">কপি করুন</button>
+      <div class="tip"><strong>নতুন ব্রিজ দরকার?</strong> <strong>bridges@torproject.org</strong> এ ইমেইল করুন: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">০৩</span><h3>অপারেশনাল নিরাপত্তা</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">মেটাডেটা মুছে না করে কখনো ফোন থেকে ভিডিও আপলোড করবেন না। M4TR1X এটি স্বয়ংক্রিয়ভাবে করে।</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">M4TR1X এর ভেতরে তৈরি Nostr কী ব্যবহার করুন — কখনো আসল নাম নয়।</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">এনক্রিপ্টেড DM গুলি NIP-44 দিয়ে সুরক্ষিত — কোনো সার্ভার পড়তে পারে না।</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">গ্রেপ্তার হলে এবং ফোন তল্লাশি হলে: VeraCrypt দিয়ে স্থানীয় ডেটা ফোল্ডার এনক্রিপ্ট করুন।</span></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  M4TR1X — The Unfiltered Eye &nbsp;|&nbsp; Open Source &nbsp;|&nbsp; No servers. No algorithms. No censorship.<br>
+  <span style="color:#1a1a1a;font-size:9px">EN · FR · DE · IT · PT · ES · FA · AR · TR · RU · UK · PL · SR · SQ · ZH · VI · MY · SW · BN · ID · UR · JA · TL · KO · HA · TH · KU · AM · RO · NL · EL · PS · SO · AZ</span>
+</footer>
+
+<script>
+const LANGS = ['en','fr','de','it','pt','es','fa','ar','tr','ru','uk','pl','sr','sq','zh','vi','my','sw','bn','id','ur','ja','tl','ko','ha','th','ku','am','ro','nl','el','ps','so','az']
+
+function setLang(lang) {
+  LANGS.forEach(l => {
+    const el = document.getElementById('lang-' + l)
+    if (el) el.classList.toggle('hidden', l !== lang)
+  })
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick') === `setLang('${lang}')`)
+  })
+  const rtlLangs = ['fa','ar']
+  document.body.dir = rtlLangs.includes(lang) ? 'rtl' : 'ltr'
+  localStorage.setItem('m4tr1x_lang', lang)
+}
+
+async function checkTorStatus() {
+  const bar = document.getElementById('tor-status-bar')
+  try {
+    if (window.m4tr1x_native && window.m4tr1x_native.getTorStatus) {
+      const status = await window.m4tr1x_native.getTorStatus()
+      if (status && status.torEnabled) {
+        bar.className = 'tor-status tor-on'
+        bar.textContent = `🧅 Tor active (${status.source}) — your traffic is anonymous`
+      } else {
+        bar.className = 'tor-status tor-off'
+        bar.textContent = '⚠ Tor not detected — your IP is visible. Follow the guide below.'
+      }
+    }
+  } catch(e) {}
+}
+
+function copyEl(id, btn) {
+  const text = document.getElementById(id)?.innerText || ''
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      const orig = btn.textContent
+      btn.textContent = '✓ OK'
+      setTimeout(() => btn.textContent = orig, 2000)
+    })
+  }
+}
+
+function autoLang() {
+  const saved = localStorage.getItem('m4tr1x_lang')
+  if (saved && LANGS.includes(saved)) return setLang(saved)
+  const nav = (navigator.language || 'en').toLowerCase()
+  if (nav.startsWith('fa')) return setLang('fa')
+  if (nav.startsWith('ar')) return setLang('ar')
+  if (nav.startsWith('zh')) return setLang('zh')
+  if (nav.startsWith('vi')) return setLang('vi')
+  if (nav.startsWith('my')) return setLang('my')
+  if (nav.startsWith('sw')) return setLang('sw')
+  if (nav.startsWith('bn')) return setLang('bn')
+  if (nav.startsWith('tr')) return setLang('tr')
+  if (nav.startsWith('uk')) return setLang('uk')
+  if (nav.startsWith('pl')) return setLang('pl')
+  if (nav.startsWith('sr') || nav.startsWith('hr') || nav.startsWith('bs')) return setLang('sr')
+  if (nav.startsWith('sq')) return setLang('sq')
+  if (nav.startsWith('ru')) return setLang('ru')
+  if (nav.startsWith('de')) return setLang('de')
+  if (nav.startsWith('it')) return setLang('it')
+  if (nav.startsWith('fr')) return setLang('fr')
+  if (nav.startsWith('pt')) return setLang('pt')
+  if (nav.startsWith('es')) return setLang('es')
+  if (nav.startsWith('id') || nav.startsWith('ms')) return setLang('id')
+  if (nav.startsWith('ur')) return setLang('ur')
+  if (nav.startsWith('ja')) return setLang('ja')
+  if (nav.startsWith('tl') || nav.startsWith('fil')) return setLang('tl')
+  if (nav.startsWith('ko')) return setLang('ko')
+  if (nav.startsWith('ha')) return setLang('ha')
+  if (nav.startsWith('th')) return setLang('th')
+  if (nav.startsWith('ku')) return setLang('ku')
+  if (nav.startsWith('am')) return setLang('am')
+  if (nav.startsWith('ro')) return setLang('ro')
+  if (nav.startsWith('nl')) return setLang('nl')
+  if (nav.startsWith('el')) return setLang('el')
+  if (nav.startsWith('ps')) return setLang('ps')
+  if (nav.startsWith('so')) return setLang('so')
+  if (nav.startsWith('az')) return setLang('az')
+}
+
+autoLang()
+checkTorStatus()
+</script>
+
+<!-- ═══════════ INDONESIAN ═══════════ -->
+<div id="lang-id" class="hidden">
+  <div class="alert"><h2>⚠ BACA INI JIKA KAMU DI NEGARA YANG MENYENSOR INTERNET</h2>
+    <p>Tanpa Tor, penyedia internet kamu bisa melihat bahwa kamu menggunakan M4TR1X, dengan siapa kamu berbicara, dan apa yang kamu publikasikan. Panduan ini butuh 5 menit. Lakukan sekarang.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>INSTAL TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Buka <strong>torproject.org/download</strong> dan unduh Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Jika situs diblokir, gunakan cermin: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Buka Tor Browser dan biarkan berjalan di latar belakang.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Mulai ulang M4TR1X — ia akan mendeteksi Tor secara otomatis. Simbol 🧅 berarti kamu terlindungi.</span></div>
+      <div class="tip"><strong>Indonesia / Malaysia:</strong> Pilih "Konfigurasi Koneksi" → "Gunakan jembatan" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>JEMBATAN (jika Tor diblokir)</h3></div>
+    <div class="section-body">
+      <p>Salin baris ini ke Tor Browser → "Gunakan jembatan" → "Masukkan alamat jembatan secara manual":</p>
+      <div class="bridge-box" id="b-sf-id">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-id',this)">SALIN</button>
+      <div class="tip"><strong>Butuh jembatan baru?</strong> Email ke <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>KEAMANAN OPERASIONAL</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Jangan pernah mengunggah video dari ponselmu tanpa menghapus metadata. M4TR1X melakukan ini secara otomatis.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Gunakan kunci Nostr yang dibuat di dalam M4TR1X — jangan pernah nama aslimu.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">DM terenkripsi menggunakan NIP-44 — tidak ada server yang bisa membacanya.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Jika ditangkap dan ponselmu digeledah: enkripsi folder data lokalmu dengan VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ URDU ═══════════ -->
+<div id="lang-ur" class="hidden rtl">
+  <div class="alert"><h2>⚠ اگر آپ انٹرنیٹ سنسر کرنے والے ملک میں ہیں تو یہ پڑھیں</h2>
+    <p>Tor کے بغیر، آپ کا انٹرنیٹ فراہم کنندہ دیکھ سکتا ہے کہ آپ M4TR1X استعمال کر رہے ہیں، آپ کس سے بات کر رہے ہیں اور کیا شائع کر رہے ہیں۔ یہ گائیڈ 5 منٹ لیتا ہے۔ ابھی کریں۔</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">۰۱</span><h3>Tor Browser انسٹال کریں</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">۱.</span><span class="t"><strong>torproject.org/download</strong> پر جائیں اور Tor Browser ڈاؤنلوڈ کریں۔</span></div>
+      <div class="step"><span class="n">۲.</span><span class="t">اگر سائٹ بلاک ہے: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">۳.</span><span class="t">Tor Browser کھولیں اور اسے پس منظر میں کھلا رکھیں۔</span></div>
+      <div class="step"><span class="n">۴.</span><span class="t">M4TR1X دوبارہ شروع کریں — یہ خود بخود Tor کا پتہ لگائے گا۔ 🧅 علامت کا مطلب آپ محفوظ ہیں۔</span></div>
+      <div class="tip"><strong>پاکستان / افغانستان:</strong> "کنیکشن ترتیب دیں" → "برج استعمال کریں" → <strong>snowflake</strong> منتخب کریں۔</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">۰۲</span><h3>برج (اگر Tor بلاک ہو)</h3></div>
+    <div class="section-body">
+      <p>یہ لائنیں Tor Browser میں کاپی کریں → "برج استعمال کریں" → "برج کا پتہ دستی درج کریں":</p>
+      <div class="bridge-box" id="b-sf-ur">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-ur',this)">کاپی کریں</button>
+      <div class="tip"><strong>نئے برج چاہیے؟</strong> <strong>bridges@torproject.org</strong> کو ای میل کریں: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">۰۳</span><h3>آپریشنل سیکیورٹی</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">میٹا ڈیٹا صاف کیے بغیر اپنے فون سے کبھی ویڈیو اپلوڈ نہ کریں۔ M4TR1X یہ خود بخود کرتا ہے۔</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">M4TR1X کے اندر بنائی گئی Nostr کلید استعمال کریں — کبھی اپنا اصل نام نہیں۔</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">خفیہ DMs NIP-44 سے محفوظ ہیں — کوئی سرور انہیں نہیں پڑھ سکتا۔</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">گرفتار ہونے پر: VeraCrypt سے اپنا مقامی ڈیٹا فولڈر خفیہ کریں۔</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ JAPANESE ═══════════ -->
+<div id="lang-ja" class="hidden">
+  <div class="alert"><h2>⚠ インターネットを検閲している国にいる方はお読みください</h2>
+    <p>Torなしでは、あなたのインターネットプロバイダーはM4TR1Xを使用していること、誰と話しているか、何を公開しているかを見ることができます。このガイドは5分で完了します。今すぐ行ってください。</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>TOR BROWSERをインストール</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t"><strong>torproject.org/download</strong>にアクセスしてTor Browserをダウンロードします。</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">サイトがブロックされている場合はミラーを使用: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Tor Browserを開いてバックグラウンドで実行したままにします。</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">M4TR1Xを再起動すると、Torを自動的に検出します。🧅シンボルは保護されていることを意味します。</span></div>
+      <div class="tip"><strong>ヒント:</strong>「接続を設定」→「ブリッジを使用」→<strong>snowflake</strong>を選択してください。</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>ブリッジ（Torがブロックされている場合）</h3></div>
+    <div class="section-body">
+      <p>これらの行をTor Browserにコピーしてください → 「ブリッジを使用」→「ブリッジアドレスを手動で入力」:</p>
+      <div class="bridge-box" id="b-sf-ja">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-ja',this)">コピー</button>
+      <div class="tip"><strong>新しいブリッジが必要ですか？</strong><strong>bridges@torproject.org</strong>にメール: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>運用セキュリティ</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">メタデータを削除せずに携帯からビデオをアップロードしないでください。M4TR1Xはこれを自動的に行います。</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">M4TR1X内で作成したNostrキーを使用してください — 本名は絶対に使わないでください。</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">暗号化されたDMはNIP-44で保護されています — どのサーバーも読めません。</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">逮捕されて携帯を調べられた場合: VeraCryptでローカルデータフォルダを暗号化してください。</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ TAGALOG / FILIPINO ═══════════ -->
+<div id="lang-tl" class="hidden">
+  <div class="alert"><h2>⚠ BASAHIN ITO KUNG NASA BANSANG MAY CENSORSHIP KA</h2>
+    <p>Kung wala ang Tor, makikita ng iyong internet provider na gumagamit ka ng M4TR1X, kung kanino ka nakikipag-usap, at kung ano ang iyong inilalathala. 5 minuto lang ang gabay na ito. Gawin mo ngayon.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>I-INSTALL ANG TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Pumunta sa <strong>torproject.org/download</strong> at i-download ang Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Kung naka-block ang site, gamitin ang mirror: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Buksan ang Tor Browser at panatilihing bukas sa background.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">I-restart ang M4TR1X — awtomatiko itong makaka-detect ng Tor. Ang simbolong 🧅 ay nangangahulugang protektado ka.</span></div>
+      <div class="tip"><strong>Pilipinas:</strong> Piliin ang "I-configure ang Koneksyon" → "Gumamit ng tulay" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>MGA TULAY (kung naka-block ang Tor)</h3></div>
+    <div class="section-body">
+      <p>Kopyahin ang mga linyang ito sa Tor Browser → "Gumamit ng tulay" → "Manu-manong ilagay ang address ng tulay":</p>
+      <div class="bridge-box" id="b-sf-tl">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-tl',this)">KOPYAHIN</button>
+      <div class="tip"><strong>Kailangan ng mga bagong tulay?</strong> Mag-email sa <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>SEGURIDAD SA OPERASYON</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Huwag mag-upload ng video mula sa iyong telepono nang hindi inililinis ang metadata. Awtomatiko itong ginagawa ng M4TR1X.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Gumamit ng Nostr key na ginawa sa loob ng M4TR1X — huwag gamitin ang iyong tunay na pangalan.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Gumagamit ang mga naka-encrypt na DM ng NIP-44 — walang server ang makakabasa nito.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Kung huli ka at sinesiyasat ang iyong telepono: i-encrypt ang iyong lokal na folder ng data gamit ang VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ KOREAN ═══════════ -->
+<div id="lang-ko" class="hidden">
+  <div class="alert"><h2>⚠ 인터넷을 검열하는 국가에 있다면 이것을 읽으세요</h2>
+    <p>Tor 없이는 인터넷 제공업체가 M4TR1X를 사용하고 있다는 것, 누구와 대화하는지, 무엇을 게시하는지 볼 수 있습니다. 이 가이드는 5분이 걸립니다. 지금 하세요.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>TOR BROWSER 설치</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t"><strong>torproject.org/download</strong>에 접속하여 Tor Browser를 다운로드하세요.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">사이트가 차단되어 있다면 미러를 사용하세요: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Tor Browser를 열고 백그라운드에서 실행 상태로 유지하세요.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">M4TR1X를 재시작하면 Tor를 자동으로 감지합니다. 🧅 기호는 보호받고 있음을 의미합니다.</span></div>
+      <div class="tip"><strong>북한 탈북자 / 한국:</strong> "연결 구성" → "브리지 사용" → <strong>snowflake</strong>를 선택하세요.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>브리지 (Tor가 차단된 경우)</h3></div>
+    <div class="section-body">
+      <p>이 줄을 Tor Browser에 복사하세요 → "브리지 사용" → "브리지 주소 수동 입력":</p>
+      <div class="bridge-box" id="b-sf-ko">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-ko',this)">복사</button>
+      <div class="tip"><strong>새 브리지가 필요하신가요?</strong> <strong>bridges@torproject.org</strong>로 이메일: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>운영 보안</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">메타데이터를 제거하지 않고 휴대폰에서 동영상을 업로드하지 마세요. M4TR1X가 자동으로 처리합니다.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">M4TR1X 내에서 생성한 Nostr 키를 사용하세요 — 절대 실명을 사용하지 마세요.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">암호화된 DM은 NIP-44로 보호됩니다 — 어떤 서버도 읽을 수 없습니다.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">체포되어 휴대폰이 수색당할 경우: VeraCrypt로 로컬 데이터 폴더를 암호화하세요.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ HAUSA ═══════════ -->
+<div id="lang-ha" class="hidden">
+  <div class="alert"><h2>⚠ KARANTA WANNAN IDAN KA KASANCE A KASA DA TAKE TACE INTANET</h2>
+    <p>Ba tare da Tor ba, mai ba da sabis ɗin intanet ɗinka zai iya ganin cewa kana amfani da M4TR1X, da wane kake magana, da abin da kake buga. Wannan jagora yana ɗaukar minti 5. Yi yanzu.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>SAKA TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Je zuwa <strong>torproject.org/download</strong> kuma sauke Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Idan shafin ya toshe: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Buɗe Tor Browser ka ajiye a bayan aiki.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Sake farawa M4TR1X — zai gano Tor ta atomatik. Alamar 🧅 na nufin an kare ka.</span></div>
+      <div class="tip"><strong>Najeriya / Nijar:</strong> Zaɓi "Daidaita Haɗin" → "Yi amfani da gada" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>GADOJI (idan an toshe Tor)</h3></div>
+    <div class="section-body">
+      <p>Kwafi waɗannan layukan zuwa Tor Browser → "Yi amfani da gada" → "Shigar da adresin gada da hannu":</p>
+      <div class="bridge-box" id="b-sf-ha">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-ha',this)">KWAFI</button>
+      <div class="tip"><strong>Kana buƙatar sabbin gadoji?</strong> Aika imel zuwa <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>TSARO NA AIKI</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Kada ka taba loda bidiyo daga wayarka ba tare da share metadata ba. M4TR1X yana yin wannan ta atomatik.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Yi amfani da maɓallin Nostr da aka ƙirƙira a cikin M4TR1X — kada ya zama sunanka na gaske.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">DM na ɓoyayyun suna amfani da NIP-44 — babu uwar garken da zai iya karantawa.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Idan an kama ka kuma an bincika wayar ka: ɓoye fayil ɗin bayananka na gida da VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ THAI ═══════════ -->
+<div id="lang-th" class="hidden">
+  <div class="alert"><h2>⚠ อ่านนี้ถ้าคุณอยู่ในประเทศที่เซ็นเซอร์อินเทอร์เน็ต</h2>
+    <p>หากไม่มี Tor ผู้ให้บริการอินเทอร์เน็ตของคุณสามารถเห็นได้ว่าคุณใช้ M4TR1X คุยกับใคร และเผยแพร่อะไร คู่มือนี้ใช้เวลา 5 นาที ทำเดี๋ยวนี้เลย</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>ติดตั้ง TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">ไปที่ <strong>torproject.org/download</strong> และดาวน์โหลด Tor Browser</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">หากเว็บไซต์ถูกบล็อก ใช้กระจก: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">เปิด Tor Browser และทิ้งไว้ในพื้นหลัง</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">รีสตาร์ท M4TR1X — จะตรวจพบ Tor โดยอัตโนมัติ สัญลักษณ์ 🧅 หมายความว่าคุณได้รับการปกป้อง</span></div>
+      <div class="tip"><strong>ไทย / เมียนมา:</strong> เลือก "กำหนดค่าการเชื่อมต่อ" → "ใช้บริดจ์" → <strong>snowflake</strong></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>บริดจ์ (ถ้า Tor ถูกบล็อก)</h3></div>
+    <div class="section-body">
+      <p>คัดลอกบรรทัดเหล่านี้ไปที่ Tor Browser → "ใช้บริดจ์" → "ป้อนที่อยู่บริดจ์ด้วยตนเอง":</p>
+      <div class="bridge-box" id="b-sf-th">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-th',this)">คัดลอก</button>
+      <div class="tip"><strong>ต้องการบริดจ์ใหม่?</strong> ส่งอีเมลไปที่ <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>ความปลอดภัยในการปฏิบัติการ</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">อย่าอัปโหลดวิดีโอจากโทรศัพท์โดยไม่ลบข้อมูลเมตา M4TR1X ทำสิ่งนี้โดยอัตโนมัติ</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">ใช้คีย์ Nostr ที่สร้างภายใน M4TR1X — ไม่ใช่ชื่อจริงของคุณ</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">DM ที่เข้ารหัสใช้ NIP-44 — ไม่มีเซิร์ฟเวอร์ใดอ่านได้</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">หากถูกจับกุมและโทรศัพท์ถูกค้น: เข้ารหัสโฟลเดอร์ข้อมูลของคุณด้วย VeraCrypt</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ KURDISH (Kurmanji) ═══════════ -->
+<div id="lang-ku" class="hidden">
+  <div class="alert"><h2>⚠ HEKE TU LI WELATEK Î KU ÎNTERNETÊ SANSUR DIKE YÎ, VÊYA BIXWÎNE</h2>
+    <p>Bê Tor, pêşkêşkara înternetê ya te dikare bibîne ku tu M4TR1X bikar tîne, bi kê re diaxivî û çi weşandî. Ev rêber 5 xulekê digire. Niha bike.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>TOR BROWSER SAZKIRÎ</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Biçe <strong>torproject.org/download</strong> û Tor Browser dakêşe.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Ger malpera girtî be: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Tor Browser veke û di paşzmîn de vekirî bihêle.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">M4TR1X ji nû ve dest pê bike — Tor bixweber nas dike. Nîşana 🧅 tê wateya ku tu parastî yî.</span></div>
+      <div class="tip"><strong>Kurdistanê (Tirkiye/Sûriye/Îran):</strong> "Girêdanê mîheng bike" → "Pir bikar bîne" → <strong>snowflake</strong> hilbijêre.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>PIR (heke Tor girtî be)</h3></div>
+    <div class="section-body">
+      <p>Van rêzan li Tor Browser kopî ke → "Pir bikar bîne" → "Navnîşana pirê bi destan bixe":</p>
+      <div class="bridge-box" id="b-sf-ku">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-ku',this)">KOPÎ KE</button>
+      <div class="tip"><strong>Pirên nû lazim in?</strong> E-name bişîne <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>EWLEHIYA OPERASYONÎ</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Metadatayan neyê rakirin, qet vîdyoyekê ji têlefona xwe neke. M4TR1X ev bixweber dike.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Mifteya Nostr ya ku di hundurê M4TR1X de hatiye çêkirin bikar bîne — qet navê xwe yê rastîn bikar neyîne.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">DM-yên şîfrekirî NIP-44 bikar tîne — ti serverek nikare wan bixwîne.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Ger hatiyî girtin û têlefona te hat lêgerîn: bi VeraCrypt pelrêça daneyên xwe yê herêmî şîfre bike.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ AMHARIC ═══════════ -->
+<div id="lang-am" class="hidden">
+  <div class="alert"><h2>⚠ ኢንተርኔት የሚያሳፍን ሀገር ውስጥ ካለህ ይህን አንብብ</h2>
+    <p>ቶር ሳይኖር፣ የኢንተርኔት አቅራቢህ M4TR1X እየተጠቀምክ መሆኑን፣ ከማን ጋር እያወራህ እንዳለህ እና ምን እያሳተምክ እንዳለህ ማየት ይችላል። ይህ መመሪያ 5 ደቂቃ ይወስዳል። አሁን ቶሎ ሥራ።</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>TOR BROWSER ጫን</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t"><strong>torproject.org/download</strong> ሂድና Tor Browser አውርድ።</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">ድህረ ገጹ ተዘግቶ ከሆነ፦ <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Tor Browser ክፈተውና በዳራ ክፍት አድርገው።</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">M4TR1X እንደገና ጀምር — ቶርን ራሱ ያወቀዋል። 🧅 ምልክት ማለት ተጠብቀሃል ማለት ነው።</span></div>
+      <div class="tip"><strong>ኢትዮጵያ / ኤርትራ:</strong> "ግንኙነት አዋቅር" → "ድልድይ ተጠቀም" → <strong>snowflake</strong> ምረጥ።</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>ድልድዮች (ቶር ተዘጋ ከሆነ)</h3></div>
+    <div class="section-body">
+      <p>እነዚህን መስመሮች ወደ Tor Browser ቅዳ → "ድልድይ ተጠቀም" → "የድልድይ አድራሻ እጅ ጻፍ":</p>
+      <div class="bridge-box" id="b-sf-am">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-am',this)">ቅዳ</button>
+      <div class="tip"><strong>አዲስ ድልድዮች ያስፈልጉሃል?</strong> ወደ <strong>bridges@torproject.org</strong> ኢሜይል ላክ: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>የሥራ ደህንነት</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">ሜታዳታ ሳታጸዳ ከስልክህ ምንም ቪዲዮ ሰቅለህ አትሂድ። M4TR1X ይህን ራሱ ያደርጋል።</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">ከM4TR1X ውስጥ የፈጠርኸውን Nostr ቁልፍ ተጠቀም — 真实ስምህን አትጠቀም።</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">የተመሰጠሩ DMs NIP-44 ይጠቀማሉ — ምንም አይነት ሰርቨር ሊያነብ አይችልም።</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">ከተያዝህና ስልክህ ቢፈተሽ: VeraCrypt ተጠቅምህ የሀገር ውስጥ ዳታ ፎልደርህን ቁልፍ ያዘው።</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ROMANIAN ═══════════ -->
+<div id="lang-ro" class="hidden">
+  <div class="alert"><h2>⚠ CITEȘTE ASTA DACĂ EȘTI ÎNTR-O ȚARĂ CARE CENZUREAZĂ INTERNETUL</h2>
+    <p>Fără Tor, furnizorul tău de internet poate vedea că folosești M4TR1X, cu cine vorbești și ce publici. Acest ghid durează 5 minute. Fă-o acum.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>INSTALEAZĂ TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Mergi la <strong>torproject.org/download</strong> și descarcă Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Dacă site-ul este blocat: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Deschide Tor Browser și lasă-l deschis în fundal.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Repornește M4TR1X — detectează Tor automat. Simbolul 🧅 înseamnă că ești protejat.</span></div>
+      <div class="tip"><strong>România / Moldova:</strong> Alege "Configurează conexiunea" → "Folosește un pod" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>PODURI (dacă Tor este blocat)</h3></div>
+    <div class="section-body">
+      <p>Copiază aceste linii în Tor Browser → "Folosește un pod" → "Introdu adresa podului manual":</p>
+      <div class="bridge-box" id="b-sf-ro">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-ro',this)">COPIAZĂ</button>
+      <div class="tip"><strong>Ai nevoie de poduri noi?</strong> Email la <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>SECURITATE OPERAȚIONALĂ</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Nu încărca niciodată videoclipuri de pe telefon fără a șterge metadatele. M4TR1X face asta automat.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Folosește o cheie Nostr creată în M4TR1X — niciodată numele tău real.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">DM-urile criptate folosesc NIP-44 — niciun server nu le poate citi.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Dacă ești arestat și telefonul tău este percheziționat: criptează dosarul local cu VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ DUTCH ═══════════ -->
+<div id="lang-nl" class="hidden">
+  <div class="alert"><h2>⚠ LEES DIT ALS JE IN EEN LAND BENT DAT INTERNET CENSUREERT</h2>
+    <p>Zonder Tor kan je internetprovider zien dat je M4TR1X gebruikt, met wie je praat en wat je publiceert. Deze gids duurt 5 minuten. Doe het nu.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>TOR BROWSER INSTALLEREN</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Ga naar <strong>torproject.org/download</strong> en download Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Als de site geblokkeerd is, gebruik de mirror: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Open Tor Browser en houd het open op de achtergrond.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Herstart M4TR1X — het detecteert Tor automatisch. Het 🧅 symbool betekent dat je beschermd bent.</span></div>
+      <div class="tip"><strong>Tip:</strong> Kies "Verbinding configureren" → "Een brug gebruiken" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>BRUGGEN (als Tor geblokkeerd is)</h3></div>
+    <div class="section-body">
+      <p>Kopieer deze regels naar Tor Browser → "Een brug gebruiken" → "Brugadres handmatig invoeren":</p>
+      <div class="bridge-box" id="b-sf-nl">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-nl',this)">KOPIEER</button>
+      <div class="tip"><strong>Nieuwe bruggen nodig?</strong> E-mail naar <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>OPERATIONELE VEILIGHEID</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Upload nooit video's van je telefoon zonder metadata te verwijderen. M4TR1X doet dit automatisch.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Gebruik een Nostr-sleutel gemaakt in M4TR1X — nooit je echte naam.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Versleutelde DM's gebruiken NIP-44 — geen server kan ze lezen.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Als je gearresteerd wordt en je telefoon doorzocht: versleutel je lokale gegevensmap met VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ GREEK ═══════════ -->
+<div id="lang-el" class="hidden">
+  <div class="alert"><h2>⚠ ΔΙΑΒΑΣΕ ΑΥΤΟ ΑΝ ΕΙΣΑΙ ΣΕ ΧΩΡΑ ΠΟΥ ΛΟΓΟΚΡΙΝΕΙ ΤΟ INTERNET</h2>
+    <p>Χωρίς Tor, ο πάροχος διαδικτύου σου μπορεί να δει ότι χρησιμοποιείς το M4TR1X, με ποιον μιλάς και τι δημοσιεύεις. Αυτός ο οδηγός χρειάζεται 5 λεπτά. Κάντο τώρα.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>ΕΓΚΑΤΑΣΤΑΣΗ TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Πήγαινε στο <strong>torproject.org/download</strong> και κατέβασε το Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Αν ο ιστότοπος είναι αποκλεισμένος: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Άνοιξε το Tor Browser και άφησέ το ανοιχτό στο παρασκήνιο.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Επανεκκίνησε το M4TR1X — εντοπίζει αυτόματα το Tor. Το σύμβολο 🧅 σημαίνει ότι είσαι προστατευμένος.</span></div>
+      <div class="tip"><strong>Ελλάδα / Τουρκία:</strong> Επίλεξε "Ρύθμιση σύνδεσης" → "Χρήση γέφυρας" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>ΓΕΦΥΡΕΣ (αν το Tor αποκλειστεί)</h3></div>
+    <div class="section-body">
+      <p>Αντίγραψε αυτές τις γραμμές στο Tor Browser → "Χρήση γέφυρας" → "Χειροκίνητη εισαγωγή διεύθυνσης":</p>
+      <div class="bridge-box" id="b-sf-el">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-el',this)">ΑΝΤΙΓΡΑΦΗ</button>
+      <div class="tip"><strong>Χρειάζεσαι νέες γέφυρες;</strong> Στείλε email στο <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>ΕΠΙΧΕΙΡΗΣΙΑΚΗ ΑΣΦΑΛΕΙΑ</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Ποτέ μην ανεβάζεις βίντεο από το τηλέφωνό σου χωρίς να αφαιρέσεις τα μεταδεδομένα. Το M4TR1X το κάνει αυτόματα.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Χρησιμοποίησε κλειδί Nostr δημιουργημένο μέσα στο M4TR1X — ποτέ το πραγματικό σου όνομα.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Τα κρυπτογραφημένα DM χρησιμοποιούν NIP-44 — κανένας διακομιστής δεν μπορεί να τα διαβάσει.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Αν συλληφθείς και ψαχτεί το τηλέφωνό σου: κρυπτογράφησε τον τοπικό φάκελο δεδομένων με VeraCrypt.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PASHTO / DARI ═══════════ -->
+<div id="lang-ps" class="hidden rtl">
+  <div class="alert"><h2>⚠ که چیرې تاسو په هغه هیواد کې یاست چې انترنت سانسوروي، دا ولولئ</h2>
+    <p>د Tor پرته، ستاسو د انترنت چمتو کوونکی کولای شي وګوري چې تاسو M4TR1X کاروئ، له چا سره خبرې کوئ، او څه خپروئ. دا لارښود ۵ دقیقې اخلي. اوس یې وکړئ.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">۰۱</span><h3>د TOR BROWSER نصب</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">۱.</span><span class="t"><strong>torproject.org/download</strong> ته لاړ شئ او Tor Browser ډاونلوډ کړئ.</span></div>
+      <div class="step"><span class="n">۲.</span><span class="t">که سایټ بند وي: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">۳.</span><span class="t">Tor Browser خلاص کړئ او شاته پرمخ پرانیستی وساتئ.</span></div>
+      <div class="step"><span class="n">۴.</span><span class="t">M4TR1X بیا پیل کړئ — دا به Tor په اتوماتیک ډول ومومي. 🧅 نښه معنی لري چې تاسو خوندي یاست.</span></div>
+      <div class="tip"><strong>افغانستان / پاکستان:</strong> "د اتصال ترتیب" → "د پل کارول" → <strong>snowflake</strong> غوره کړئ.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">۰۲</span><h3>پلونه (که Tor بند وي)</h3></div>
+    <div class="section-body">
+      <p>دا کرښې Tor Browser ته کاپي کړئ → "د پل کارول" → "د پل پته لاسي داخل کړئ":</p>
+      <div class="bridge-box" id="b-sf-ps">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-ps',this)">کاپي کړئ</button>
+      <div class="tip"><strong>نوي پلونه ته اړتیا لرئ؟</strong> <strong>bridges@torproject.org</strong> ته بریښنالیک: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">۰۳</span><h3>عملیاتي امنیت</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">هیڅکله د خپل تلیفون څخه د metadata پاکولو پرته ویډیو مه اپلوډ کوئ. M4TR1X دا اتوماتیک کوي.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">د M4TR1X دننه جوړ شوي Nostr کیلي وکاروئ — هیڅکله خپل ریښتیني نوم مه کاروئ.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">کوډ شوي DMs د NIP-44 لخوا خوندي دي — هیڅ سرور یې نشي لوستلای.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">که نیول شئ او تلیفون مو لټول شي: د VeraCrypt سره خپل محلي د معلوماتو فولډر کوډ کړئ.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SOMALI ═══════════ -->
+<div id="lang-so" class="hidden">
+  <div class="alert"><h2>⚠ AKHRI KANI HADDAAD JOOGTO DALKA XUKUUMADA INTERNET-KA XUKUMAYSO</h2>
+    <p>Tor la'aanteed, bixiyaha internetkaaga ayaa arki kara inaad isticmaalayso M4TR1X, cidda aad la hadasho, iyo waxa aad baahisid. Tilmaamahan waxay qaadataa 5 daqiiqo. Hadda samaee.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>KU RAKIB TOR BROWSER</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t">Tag <strong>torproject.org/download</strong> oo soo degso Tor Browser.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Haddii site-ku xidnaado: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Fur Tor Browser oo wax ka dhig inuu jiro gadaashiisa.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">Dib u bilow M4TR1X — si toos ah ayuu Tor u aqoonsanayaa. Calaamadda 🧅 waxay micnaysaa inaad ammaan tahay.</span></div>
+      <div class="tip"><strong>Soomaaliya / Itoobiya:</strong> Dooro "Habaynta Xiriirka" → "Isticmaal buundada" → <strong>snowflake</strong>.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>BUUNDOOYINKA (haddii Tor la xidho)</h3></div>
+    <div class="section-body">
+      <p>Koopi xariiqyadan Tor Browser → "Isticmaal buundada" → "Geli ciwaanka buundada si gacanta ah":</p>
+      <div class="bridge-box" id="b-sf-so">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-so',this)">KOOPI</button>
+      <div class="tip"><strong>Buundooyin cusub u baahan tahay?</strong> Email u dir <strong>bridges@torproject.org</strong>: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>AMMAANKA HAWLGALKA</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Marna ha soo gelin fiidiyaha taleefankaaga adigoon tuuri metadata. M4TR1X tan si otomaatig ah ayuu u sameeya.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Isticmaal fure Nostr ah oo laga sameeyay M4TR1X — marna magacaaga dhab ah ha isticmaalin.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">DM-yada la xidh-xidh ayaa NIP-44 u isticmaala — server kuma dhafiri karo.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Haddaad la qabanqaabato oo taleefankaaga la baadho: VeraCrypt ku xidh galka xogta maxalliga.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ AZERBAIJANI ═══════════ -->
+<div id="lang-az" class="hidden">
+  <div class="alert"><h2>⚠ İNTERNETİ SENZURA EDƏN BİR ÖLKƏDƏSINIZSƏ BUNU OXUYUN</h2>
+    <p>Tor olmadan, internet provayderiniz M4TR1X istifadə etdiyinizi, kimlərlə danışdığınızı ve nə paylaşdığınızı görə bilər. Bu bələdçi 5 dəqiqə çəkir. İndi edin.</p></div>
+  <div class="section">
+    <div class="section-header"><span class="num">01</span><h3>TOR BROWSER YÜKLƏYIN</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">1.</span><span class="t"><strong>torproject.org/download</strong> saytına keçin və Tor Browser yükləyin.</span></div>
+      <div class="step"><span class="n">2.</span><span class="t">Sayt bloklanıbsa güzgü istifadə edin: <strong>https://tor.calyxinstitute.org/</strong></span></div>
+      <div class="step"><span class="n">3.</span><span class="t">Tor Browser-i açın və arxa planda açıq saxlayın.</span></div>
+      <div class="step"><span class="n">4.</span><span class="t">M4TR1X-i yenidən başladın — Tor-u avtomatik aşkar edəcək. 🧅 simvolu qorunduğunuzu bildirir.</span></div>
+      <div class="tip"><strong>Azərbaycan / İran:</strong> "Əlaqəni konfiqurasiya edin" → "Körpü istifadə edin" → <strong>snowflake</strong> seçin.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">02</span><h3>KÖRPÜLƏR (Tor bloklanıbsa)</h3></div>
+    <div class="section-body">
+      <p>Bu sətirləri Tor Browser-ə kopyalayın → "Körpü istifadə edin" → "Körpü ünvanını əl ilə daxil edin":</p>
+      <div class="bridge-box" id="b-sf-az">snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 url=https://snowflake-broker.torproject.net.global.prod.fastly.net/ front=cdn.sstatic.net ice=stun:stun.l.google.com:19302 utls-imitate=hellorandomizedalpn</div>
+      <button class="copy-btn" onclick="copyEl('b-sf-az',this)">KOPYALA</button>
+      <div class="tip"><strong>Yeni körpülərə ehtiyacınız var?</strong> <strong>bridges@torproject.org</strong> ünvanına e-poçt: "get transport obfs4"</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="num">03</span><h3>ƏMƏLIYYAT TƏHLÜKƏSİZLİYİ</h3></div>
+    <div class="section-body">
+      <div class="step"><span class="n">▸</span><span class="t">Metadata silinmədən telefonunuzdan heç vaxt video yükləməyin. M4TR1X bunu avtomatik edir.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">M4TR1X daxilində yaradılmış Nostr açarından istifadə edin — heç vaxt həqiqi adınızı istifadə etməyin.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Şifrəli DM-lər NIP-44 ilə qorunur — heç bir server oxuya bilməz.</span></div>
+      <div class="step"><span class="n">▸</span><span class="t">Həbs edildiyiniz halda: VeraCrypt ilə yerli məlumat qovluğunuzu şifrələyin.</span></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
