@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "notes": "See the full changelog at https://github.com/H8dboy/m4tr1x-electron/releases",
+    "pub_date": "2026-11-03T00:00:00Z",
+    "platforms": {
+          "windows-x86_64": {
+                  "signature": "REPLACE_WITH_SIGNATURE_FROM_TAURI_BUILD",
+                  "url": "https://github.com/H8dboy/m4tr1x-electron/releases/download/v2.0.0/M4TR1X_2.0.0_x64-setup.nsis.zip"
+          },
+          "linux-x86_64": {
+                  "signature": "REPLACE_WITH_SIGNATURE_FROM_TAURI_BUILD",
+                  "url": "https://github.com/H8dboy/m4tr1x-electron/releases/download/v2.0.0/M4TR1X_2.0.0_amd64.AppImage.tar.gz"
+          },
+          "darwin-x86_64": {
+                  "signature": "REPLACE_WITH_SIGNATURE_FROM_TAURI_BUILD",
+                  "url": "https://github.com/H8dboy/m4tr1x-electron/releases/download/v2.0.0/M4TR1X_2.0.0_x64.app.tar.gz"
+          },
+          "darwin-aarch64": {
+                  "signature": "REPLACE_WITH_SIGNATURE_FROM_TAURI_BUILD",
+                  "url": "https://github.com/H8dboy/m4tr1x-electron/releases/download/v2.0.0/M4TR1X_2.0.0_aarch64.app.tar.gz"
+          }
+    }
+}
