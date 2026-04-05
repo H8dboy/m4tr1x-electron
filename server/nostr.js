@@ -30,6 +30,9 @@ const nip44 = require('nostr-tools/nip44')
 const nip19 = require('nostr-tools/nip19')
 
 const WebSocket = require('ws')
+const fs   = require('fs')
+const path = require('path')
+const crypto = require('crypto')
 
 // ─── Relay pubblici ───────────────────────────────────────────────────────────
 const DEFAULT_RELAYS = [
@@ -46,6 +49,16 @@ const DEFAULT_RELAYS = [
 let userPrivKey = null
 let userPubKey  = null
 let connections = {}   // url → WebSocket
+
+// ─── Percorso file chiavi ─────────────────────────────────────────────────────
+function getKeysPath() {
+  try {
+    const { app } = require('electron')
+    return path.join(app.getPath('userData'), 'nostr_keys.json')
+  } catch {
+    return path.join(process.cwd(), 'nostr_keys.json')
+  }
+}
 
 // ─── Gestione chiavi ─────────────────────────────────────────────────────────
 
@@ -64,6 +77,29 @@ function loadKeys(privkeyHex) {
   userPrivKey = Uint8Array.from(Buffer.from(privkeyHex, 'hex'))
   userPubKey  = getPublicKey(userPrivKey)
   console.log(`[NOSTR] Chiavi caricate: ${userPubKey.substring(0, 16)}...`)
+}
+
+/** Salva la chiave privata su disco (file JSON nella userData dir) */
+function saveKeys(privkeyHex) {
+  const keysPath = getKeysPath()
+  fs.writeFileSync(keysPath, JSON.stringify({ privkey: privkeyHex }), { mode: 0o600 })
+  console.log(`[NOSTR] Chiavi salvate: ${keysPath}`)
+}
+
+/** Carica le chiavi dal disco se esistono. Ritorna true se trovate. */
+function loadSavedKeys() {
+  try {
+    const keysPath = getKeysPath()
+    if (!fs.existsSync(keysPath)) return false
+    const { privkey } = JSON.parse(fs.readFileSync(keysPath, 'utf8'))
+    if (!privkey) return false
+    loadKeys(privkey)
+    console.log('[NOSTR] Chiavi ripristinate dal disco.')
+    return true
+  } catch (err) {
+    console.warn('[NOSTR] Impossibile caricare chiavi salvate:', err.message)
+    return false
+  }
 }
 
 function getCurrentPubkey() { return userPubKey }

@@ -11,6 +11,7 @@ const multer     = require('multer')
 const rateLimit  = require('express-rate-limit')
 const path       = require('path')
 const fs         = require('fs')
+const crypto     = require('crypto')
 const { v4: uuidv4 } = require('uuid')
 require('dotenv').config()
 
@@ -18,12 +19,18 @@ const { analyzeVideo }           = require('./ai_detector')
 const { cleanMetadata, isExifToolAvailable } = require('./core')
 const { initDb, saveResult, loadResult, listResults } = require('./db')
 const {
-  createWallet, restoreWallet, openWallet, walletExists,
-  syncWallet, getBalance, getPrimaryAddress,
-} = require('./monero')
+  generateIdentity, unlockIdentity, lockIdentity,
+  identityExists, getPublicInfo,
+} = require('./h8identity')
+const {
+  initH8Db, getBalance: h8Balance, getHistory: h8History,
+  getBoostScore, verifyChain,
+  mint: h8Mint, transfer: h8Transfer, tip: h8Tip,
+  boost: h8Boost, registerPubkey,
+} = require('./h8token')
 const {
   initShopDb, createListing, getListings, getListing,
-  deactivateListing, initiateOrder, verifyOrderPayment,
+  deactivateListing, buyListing,
   getOrder, getSellerOrders, getBuyerOrders,
 } = require('./shop')
 const {
@@ -43,6 +50,10 @@ const {
   getConfirmedLabels, registerModelVersion, getLatestModelVersion,
 } = require('./crowdtrain')
 const { checkAndUpdateModel } = require('./model_updater')
+const {
+  initBadgeDb, requestBadge, getApprovedBadge, getAllRequests,
+  approveRequest, rejectRequest, getUserRequest,
+} = require('./badges')
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const MAX_FILE_MB      = parseInt(process.env.MAX_FILE_SIZE_MB || '100')
@@ -50,8 +61,20 @@ const API_KEY          = process.env.M4TR1X_API_KEY || ''
 const ALLOWED_ORIGINS  = (process.env.ALLOWED_ORIGINS || 'http://localhost:8080').split(',')
 const ALLOWED_EXT      = new Set(['.mp4', '.mov', '.avi', '.webm', '.mkv'])
 
-const UPLOAD_DIR = path.join(process.cwd(), 'uploads')
+const DATA_DIR      = process.env.M4TR1X_DATA_DIR || process.cwd()
+const UPLOAD_DIR    = path.join(DATA_DIR, 'uploads')
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true })
+
+const ADMIN_KEY = (() => {
+  if (process.env.ADMIN_KEY) return process.env.ADMIN_KEY
+  const generated = crypto.randomBytes(32).toString('hex')
+  console.warn('[SECURITY] ⚠️  ADMIN_KEY non impostata! Chiave temporanea (solo questa sessione):')
+  console.warn(`[SECURITY]     ${generated}`)
+  console.warn('[SECURITY]     Imposta ADMIN_KEY=<valore> nelle variabili d\'ambiente per una chiave fissa.')
+  return generated
+})()
+const BADGE_DOCS_DIR = path.join(DATA_DIR, 'badge_docs')
+if (!fs.existsSync(BADGE_DOCS_DIR)) fs.mkdirSync(BADGE_DOCS_DIR, { recursive: true })
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 const app = express()
@@ -61,7 +84,7 @@ app.use(cors({
   origin: [...ALLOWED_ORIGINS, 'http://localhost:8080', 'http://127.0.0.1:8080'],
   credentials: false,
   methods: ['GET', 'POST'],
-  allowedHeaders: ['X-Nostr-Pubkey', 'X-API-Key', 'Content-Type'],
+  allowedHeaders: ['X-Nostr-Pubkey', 'X-API-Key', 'X-Admin-Key', 'Content-Type'],
 }))
 
 app.use(express.json())
@@ -70,6 +93,17 @@ app.use(express.json())
 const upload = multer({
   dest: UPLOAD_DIR,
   limits: { fileSize: MAX_FILE_MB * 1024 * 1024 },
+})
+
+// Badge document upload (PDF, JPG, PNG — max 10MB)
+const badgeUpload = multer({
+  dest: BADGE_DOCS_DIR,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.pdf', '.jpg', '.jpeg', '.png']
+    const ext = path.extname(file.originalname).toLowerCase()
+    cb(null, allowed.includes(ext))
+  },
 })
 
 // ─── Rate limiting ────────────────────────────────────────────────────────────
@@ -173,72 +207,120 @@ app.get('/api/v1/analyses', verifyApiKey, (req, res) => {
   res.json(listResults(limit))
 })
 
-// ─── Routes: Wallet XMR ───────────────────────────────────────────────────────
+// ─── Routes: H8 Wallet ────────────────────────────────────────────────────────
 
-// Stato wallet (esiste? saldo?)
-app.get('/api/v1/wallet/status', verifyApiKey, async (req, res) => {
+// Stato wallet H8 (esiste? saldo? address?)
+app.get('/api/v1/h8/wallet/status', verifyApiKey, (req, res) => {
   try {
-    const exists = walletExists()
+    const exists = identityExists()
     if (!exists) return res.json({ exists: false })
-    const balance = await getBalance()
-    const address = await getPrimaryAddress()
-    res.json({ exists: true, address, balance })
+    const info = getPublicInfo()
+    const balance = info ? h8Balance(info.address) : 0
+    res.json({ exists: true, address: info?.address, balance, locked: !require('./h8identity').getUnlockedIdentity() })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 })
 
-// Crea nuovo wallet
-app.post('/api/v1/wallet/create', verifyApiKey, async (req, res) => {
+// Crea nuova identità H8
+app.post('/api/v1/h8/wallet/create', verifyApiKey, async (req, res) => {
   try {
     const { password } = req.body
     if (!password) return res.status(400).json({ error: 'Password richiesta' })
-    const result = await createWallet(password)
-    // IMPORTANTE: il seed viene mostrato solo qui, una volta sola
-    res.json({
-      address: result.address,
-      seed:    result.seed,
-      warning: 'SALVA IL SEED ORA. Non verrà mostrato di nuovo.',
-    })
+    if (identityExists()) return res.status(409).json({ error: 'Identità H8 già esistente' })
+    const result = await generateIdentity(password)
+    registerPubkey(result.address, result.publicKey)
+    res.status(201).json({ address: result.address, message: 'H8 identity creata. Salva la tua password.' })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 })
 
-// Ripristina wallet da seed
-app.post('/api/v1/wallet/restore', verifyApiKey, async (req, res) => {
-  try {
-    const { seed, password, restoreHeight } = req.body
-    if (!seed || !password) return res.status(400).json({ error: 'seed e password richiesti' })
-    const result = await restoreWallet(seed, password, restoreHeight || 0)
-    res.json({ address: result.address })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
-
-// Apri wallet esistente (sblocco con password)
-app.post('/api/v1/wallet/open', verifyApiKey, async (req, res) => {
+// Sblocca wallet (password → secret key in memoria per la sessione)
+app.post('/api/v1/h8/wallet/unlock', verifyApiKey, async (req, res) => {
   try {
     const { password } = req.body
-    if (!password) return res.status(400).json({ error: 'Password required' })
-    const ok = await openWallet(password)
-    if (!ok) return res.status(404).json({ error: 'Wallet not found' })
-    res.json({ status: 'opened' })
+    if (!password) return res.status(400).json({ error: 'Password richiesta' })
+    const result = await unlockIdentity(password)
+    const balance = h8Balance(result.address)
+    res.json({ status: 'unlocked', address: result.address, balance })
+  } catch (err) {
+    res.status(401).json({ error: err.message })
+  }
+})
+
+// Blocca wallet
+app.post('/api/v1/h8/wallet/lock', verifyApiKey, (req, res) => {
+  lockIdentity()
+  res.json({ status: 'locked' })
+})
+
+// Saldo + storico
+app.get('/api/v1/h8/balance', verifyApiKey, (req, res) => {
+  try {
+    const { address } = req.query
+    const info = address ? { address } : getPublicInfo()
+    if (!info) return res.status(404).json({ error: 'Wallet non trovato' })
+    res.json({ address: info.address, balance: h8Balance(info.address) })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 })
 
-// Sync wallet (aggiorna saldo)
-app.post('/api/v1/wallet/sync', verifyApiKey, async (req, res) => {
+app.get('/api/v1/h8/history', verifyApiKey, (req, res) => {
   try {
-    await syncWallet()
-    const balance = await getBalance()
-    res.json({ status: 'synced', balance })
+    const info = getPublicInfo()
+    if (!info) return res.status(404).json({ error: 'Wallet non trovato' })
+    res.json(h8History(info.address, parseInt(req.query.limit || '50')))
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
+})
+
+// Trasferimento diretto
+app.post('/api/v1/h8/transfer', verifyApiKey, async (req, res) => {
+  try {
+    const { toAddress, amount, note } = req.body
+    if (!toAddress || !amount) return res.status(400).json({ error: 'toAddress e amount richiesti' })
+    const hash = await h8Transfer(toAddress, parseInt(amount), note || '')
+    res.json({ status: 'confirmed', txHash: hash })
+  } catch (err) {
+    res.status(400).json({ error: err.message })
+  }
+})
+
+// Tip a creator (split 50/20/30)
+app.post('/api/v1/h8/tip', verifyApiKey, async (req, res) => {
+  try {
+    const { creatorAddress, amount, contentId } = req.body
+    if (!creatorAddress || !amount) return res.status(400).json({ error: 'creatorAddress e amount richiesti' })
+    const result = await h8Tip(creatorAddress, parseInt(amount), contentId || '')
+    res.json({ status: 'confirmed', ...result })
+  } catch (err) {
+    res.status(400).json({ error: err.message })
+  }
+})
+
+// Boost visibilità contenuto
+app.post('/api/v1/h8/boost', verifyApiKey, async (req, res) => {
+  try {
+    const { contentId, amount } = req.body
+    if (!contentId || !amount) return res.status(400).json({ error: 'contentId e amount richiesti' })
+    const hash = await h8Boost(contentId, parseInt(amount))
+    res.json({ status: 'confirmed', txHash: hash, boostScore: getBoostScore(contentId) })
+  } catch (err) {
+    res.status(400).json({ error: err.message })
+  }
+})
+
+// Boost score di un contenuto
+app.get('/api/v1/h8/boost/:contentId', (req, res) => {
+  res.json({ contentId: req.params.contentId, score: getBoostScore(req.params.contentId) })
+})
+
+// Verifica integrità catena
+app.get('/api/v1/h8/chain/verify', verifyApiKey, (req, res) => {
+  res.json(verifyChain())
 })
 
 // ─── Routes: Shop ─────────────────────────────────────────────────────────────
@@ -260,13 +342,13 @@ app.get('/api/v1/shop/listings/:id', async (req, res) => {
   res.json(item)
 })
 
-// Crea prodotto
+// Crea prodotto (prezzo in H8)
 app.post('/api/v1/shop/listings', verifyApiKey, async (req, res) => {
   try {
-    const { sellerPubkey, title, description, priceXMR, category, imageEmoji } = req.body
-    if (!sellerPubkey || !title || !priceXMR)
-      return res.status(400).json({ error: 'sellerPubkey, title e priceXMR richiesti' })
-    const id = createListing({ sellerPubkey, title, description, priceXMR, category, imageEmoji })
+    const { sellerPubkey, title, description, priceH8, category, imageEmoji } = req.body
+    if (!sellerPubkey || !title || !priceH8)
+      return res.status(400).json({ error: 'sellerPubkey, title e priceH8 richiesti' })
+    const id = createListing({ sellerPubkey, title, description, priceH8: parseInt(priceH8), category, imageEmoji })
     res.status(201).json({ id })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -280,25 +362,15 @@ app.delete('/api/v1/shop/listings/:id', verifyApiKey, async (req, res) => {
   res.json({ status: 'deactivated' })
 })
 
-// Start purchase (generates XMR address for payment)
+// Acquisto con H8 token (pagamento istantaneo)
 app.post('/api/v1/shop/orders', async (req, res) => {
   try {
-    const { listingId, buyerPubkey } = req.body
+    const { listingId, buyerH8Id } = req.body
     if (!listingId) return res.status(400).json({ error: 'listingId richiesto' })
-    const order = await initiateOrder(listingId, buyerPubkey)
-    res.status(201).json(order)
+    const result = await buyListing(listingId, buyerH8Id || '')
+    res.status(201).json(result)
   } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
-
-// Verifica pagamento ordine
-app.get('/api/v1/shop/orders/:id/verify', async (req, res) => {
-  try {
-    const result = await verifyOrderPayment(req.params.id)
-    res.json(result)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(400).json({ error: err.message })
   }
 })
 
@@ -495,7 +567,9 @@ app.post('/api/v1/train/vote', async (req, res) => {
     const result = await submitVote(videoHash, voterPubkey, label, confidence || 1.0)
 
     // Publish to Nostr in background (non-blocking)
-    publishVoteToNostr(videoHash, label, confidence || 1.0).catch(() => {})
+    publishVoteToNostr(videoHash, label, confidence || 1.0).catch(err =>
+      console.warn('[CROWDTRAIN] Nostr publish failed:', err.message)
+    )
 
     res.json({
       success:   true,
@@ -590,13 +664,133 @@ app.post('/api/v1/train/model/update', verifyApiKey, async (req, res) => {
   }
 })
 
+// ─── Routes: Professional Badge System ───────────────────────────────────────
+
+// Middleware: solo localhost per endpoint admin
+function localhostOnly(req, res, next) {
+  const ip = req.ip || req.connection.remoteAddress || ''
+  if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') return next()
+  return res.status(403).json({ error: 'Admin access restricted to localhost' })
+}
+
+// Middleware: verifica x-admin-key header (timing-safe per prevenire timing attack)
+function verifyAdminKey(req, res, next) {
+  const key = req.headers['x-admin-key']
+  if (!key) return res.status(401).json({ error: 'Invalid or missing admin key' })
+  try {
+    const a = Buffer.from(key.padEnd(ADMIN_KEY.length))
+    const b = Buffer.from(ADMIN_KEY.padEnd(key.length))
+    const valid = key.length === ADMIN_KEY.length &&
+      crypto.timingSafeEqual(Buffer.from(key), Buffer.from(ADMIN_KEY))
+    if (!valid) return res.status(401).json({ error: 'Invalid or missing admin key' })
+  } catch {
+    return res.status(401).json({ error: 'Invalid or missing admin key' })
+  }
+  next()
+}
+
+// POST /api/v1/badge/request — utente invia richiesta con documento
+app.post('/api/v1/badge/request', badgeUpload.single('document'), async (req, res) => {
+  try {
+    const { pubkey, category } = req.body
+    if (!pubkey || !category) {
+      if (req.file) fs.unlinkSync(req.file.path)
+      return res.status(400).json({ error: 'pubkey e category sono richiesti' })
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'Documento obbligatorio (PDF, JPG o PNG)' })
+    }
+    // Controlla se esiste già una richiesta pending o approvata
+    const existing = getUserRequest(pubkey)
+    if (existing && (existing.status === 'pending' || existing.status === 'approved')) {
+      fs.unlinkSync(req.file.path)
+      return res.status(409).json({
+        error: 'Hai già una richiesta in corso o un badge approvato',
+        status: existing.status,
+      })
+    }
+    // Sanitizza: prendi solo la basename e poi solo l'estensione — nessun path traversal
+    const safeName = path.basename(req.file.originalname || '')
+    const ext      = path.extname(safeName).toLowerCase()
+    const allowedExts = new Set(['.pdf', '.jpg', '.jpeg', '.png'])
+    if (!allowedExts.has(ext)) {
+      fs.unlinkSync(req.file.path)
+      return res.status(400).json({ error: 'Estensione non consentita' })
+    }
+    const filename = req.file.filename + ext
+    // Rinomina il file con estensione corretta
+    fs.renameSync(req.file.path, path.join(BADGE_DOCS_DIR, filename))
+    const id = requestBadge(pubkey, category, filename)
+    res.status(201).json({ success: true, id, status: 'pending' })
+  } catch (err) {
+    console.error('[BADGES] Errore richiesta:', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// GET /api/v1/badge/my/:pubkey — stato richiesta dell'utente stesso (must be before /:pubkey)
+app.get('/api/v1/badge/my/:pubkey', (req, res) => {
+  try {
+    const request = getUserRequest(req.params.pubkey)
+    if (!request) return res.json({ request: null })
+    res.json({ request })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// GET /api/v1/badge/:pubkey — badge approvato pubblico di un utente
+app.get('/api/v1/badge/:pubkey', (req, res) => {
+  try {
+    const badge = getApprovedBadge(req.params.pubkey)
+    if (!badge) return res.json({ badge: null })
+    res.json({ badge })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// GET /api/v1/admin/badges — lista tutte le richieste (admin only)
+app.get('/api/v1/admin/badges', localhostOnly, verifyAdminKey, (req, res) => {
+  try {
+    const { status } = req.query
+    const requests = getAllRequests(status || null)
+    res.json(requests)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// POST /api/v1/admin/badge/:id/approve — approva richiesta (admin only)
+app.post('/api/v1/admin/badge/:id/approve', localhostOnly, verifyAdminKey, (req, res) => {
+  try {
+    const { category } = req.body
+    if (!category) return res.status(400).json({ error: 'category richiesta' })
+    approveRequest(req.params.id, category)
+    res.json({ success: true, status: 'approved' })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// POST /api/v1/admin/badge/:id/reject — rifiuta richiesta (admin only)
+app.post('/api/v1/admin/badge/:id/reject', localhostOnly, verifyAdminKey, (req, res) => {
+  try {
+    const { notes } = req.body
+    rejectRequest(req.params.id, notes || '')
+    res.json({ success: true, status: 'rejected' })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // ─── Serve nostr-tools bundle da node_modules (evita dipendenza CDN esterna) ──
 // Cerca il bundle in ordine: build CommonJS → bundle UMD → fallback 404
 app.get('/libs/nostr.bundle.js', (req, res) => {
   const candidates = [
-    path.join(__dirname, '..', 'node_modules', 'nostr-tools', 'lib', 'nostr.bundle.js'),
-    path.join(__dirname, '..', 'node_modules', 'nostr-tools', 'lib', 'nostr.bundle.cjs'),
-    path.join(__dirname, '..', 'node_modules', 'nostr-tools', 'dist', 'nostr.bundle.js'),
+    path.join(__dirname, 'node_modules', 'nostr-tools', 'lib', 'nostr.bundle.js'),
+    path.join(__dirname, 'node_modules', 'nostr-tools', 'lib', 'nostr.bundle.cjs'),
+    path.join(__dirname, 'node_modules', 'nostr-tools', 'dist', 'nostr.bundle.js'),
   ]
   for (const p of candidates) {
     if (fs.existsSync(p)) {
@@ -607,13 +801,20 @@ app.get('/libs/nostr.bundle.js', (req, res) => {
 })
 
 // Serve il frontend (HTML statico)
-const frontendPath = path.join(__dirname, '..', 'frontend')
+// In production, Tauri passes the bundled frontend path via env var.
+// In dev, fall back to the local ../frontend directory.
+const frontendPath = process.env.M4TR1X_FRONTEND_PATH || path.join(__dirname, '..', 'frontend')
 if (fs.existsSync(frontendPath)) {
   app.use('/app', express.static(frontendPath))
 
   // Route esplicita per la pagina sicurezza (6 lingue per utenti a rischio)
   app.get('/app/safety', (req, res) => {
     res.sendFile(path.join(frontendPath, 'safety.html'))
+  })
+
+  // Admin panel — solo localhost
+  app.get('/admin', localhostOnly, (req, res) => {
+    res.sendFile(path.join(frontendPath, 'admin.html'))
   })
 
   // Fallback SPA — rimanda a index.html per qualsiasi route non trovata
@@ -627,8 +828,10 @@ let server
 
 function startServer(port = 8080) {
   initDb()
+  initH8Db()
   initShopDb()
   initCrowdtrainDb()
+  initBadgeDb()
   // Check for model updates at startup (background, non-blocking)
   setTimeout(() => checkAndUpdateModel().catch(() => {}), 5000)
   return new Promise((resolve, reject) => {
@@ -647,3 +850,11 @@ function stopServer() {
 }
 
 module.exports = { startServer, stopServer, app }
+
+// Auto-start when run directly (e.g. node index.js)
+if (require.main === module) {
+  startServer().catch(err => {
+    console.error('[SERVER] Errore avvio:', err)
+    process.exit(1)
+  })
+}
