@@ -83,7 +83,7 @@ const app = express()
 app.use(cors({
   origin: [...ALLOWED_ORIGINS, 'http://localhost:8080', 'http://127.0.0.1:8080'],
   credentials: false,
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['X-Nostr-Pubkey', 'X-API-Key', 'X-Admin-Key', 'Content-Type'],
 }))
 
@@ -113,6 +113,15 @@ const analyzeLimit = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Troppe richieste. Riprova tra un minuto.' },
+})
+
+// Rate limit per operazioni di pagamento (10 al minuto)
+const paymentLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Troppe transazioni. Riprova tra un minuto.' },
 })
 
 // ─── API Key middleware ───────────────────────────────────────────────────────
@@ -278,11 +287,14 @@ app.get('/api/v1/h8/history', verifyApiKey, (req, res) => {
 })
 
 // Trasferimento diretto
-app.post('/api/v1/h8/transfer', verifyApiKey, async (req, res) => {
+app.post('/api/v1/h8/transfer', verifyApiKey, paymentLimit, async (req, res) => {
   try {
     const { toAddress, amount, note } = req.body
     if (!toAddress || !amount) return res.status(400).json({ error: 'toAddress e amount richiesti' })
-    const hash = await h8Transfer(toAddress, parseInt(amount), note || '')
+    const amt = parseInt(amount)
+    if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'amount deve essere un intero positivo' })
+    if (amt > 1_000_000) return res.status(400).json({ error: 'amount supera il massimo consentito (1.000.000 H8)' })
+    const hash = await h8Transfer(toAddress, amt, note || '')
     res.json({ status: 'confirmed', txHash: hash })
   } catch (err) {
     res.status(400).json({ error: err.message })
@@ -290,11 +302,14 @@ app.post('/api/v1/h8/transfer', verifyApiKey, async (req, res) => {
 })
 
 // Tip a creator (split 50/20/30)
-app.post('/api/v1/h8/tip', verifyApiKey, async (req, res) => {
+app.post('/api/v1/h8/tip', verifyApiKey, paymentLimit, async (req, res) => {
   try {
     const { creatorAddress, amount, contentId } = req.body
     if (!creatorAddress || !amount) return res.status(400).json({ error: 'creatorAddress e amount richiesti' })
-    const result = await h8Tip(creatorAddress, parseInt(amount), contentId || '')
+    const amt = parseInt(amount)
+    if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'amount deve essere un intero positivo' })
+    if (amt > 100_000) return res.status(400).json({ error: 'tip supera il massimo consentito (100.000 H8)' })
+    const result = await h8Tip(creatorAddress, amt, contentId || '')
     res.json({ status: 'confirmed', ...result })
   } catch (err) {
     res.status(400).json({ error: err.message })
@@ -302,11 +317,14 @@ app.post('/api/v1/h8/tip', verifyApiKey, async (req, res) => {
 })
 
 // Boost visibilità contenuto
-app.post('/api/v1/h8/boost', verifyApiKey, async (req, res) => {
+app.post('/api/v1/h8/boost', verifyApiKey, paymentLimit, async (req, res) => {
   try {
     const { contentId, amount } = req.body
     if (!contentId || !amount) return res.status(400).json({ error: 'contentId e amount richiesti' })
-    const hash = await h8Boost(contentId, parseInt(amount))
+    const amt = parseInt(amount)
+    if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'amount deve essere un intero positivo' })
+    if (amt > 100_000) return res.status(400).json({ error: 'boost supera il massimo consentito (100.000 H8)' })
+    const hash = await h8Boost(contentId, amt)
     res.json({ status: 'confirmed', txHash: hash, boostScore: getBoostScore(contentId) })
   } catch (err) {
     res.status(400).json({ error: err.message })
@@ -314,6 +332,14 @@ app.post('/api/v1/h8/boost', verifyApiKey, async (req, res) => {
 })
 
 // Boost score di un contenuto
+// Batch boost scores — { id1: score1, id2: score2, ... }  ← DEVE stare prima di /:contentId
+app.get('/api/v1/h8/boost/batch', (req, res) => {
+  const ids = (req.query.ids || '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 100)
+  const scores = {}
+  ids.forEach(id => { scores[id] = getBoostScore(id) })
+  res.json(scores)
+})
+
 app.get('/api/v1/h8/boost/:contentId', (req, res) => {
   res.json({ contentId: req.params.contentId, score: getBoostScore(req.params.contentId) })
 })
@@ -499,6 +525,35 @@ app.get('/api/v1/peertube/video/:instance/:uuid', async (req, res) => {
     const video = await peertube.getVideo(req.params.instance, req.params.uuid)
     res.json(video)
   } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+// Upload video direttamente su PeerTube (usa credenziali salvate per l'h8address)
+app.post('/api/v1/peertube/upload', upload.single('video'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'video richiesto' })
+  const tempPath = req.file.path
+  try {
+    const { h8address, name, description, tags, privacy, language } = req.body
+    if (!h8address) { fs.unlinkSync(tempPath); return res.status(400).json({ error: 'h8address richiesto' }) }
+
+    const creds = universal.getProtocolCreds(h8address, 'peertube')
+    if (!creds?.token) { fs.unlinkSync(tempPath); return res.status(403).json({ error: 'PeerTube non connesso per questo profilo' }) }
+
+    const tagList = tags ? tags.split(/[\s,]+/).filter(Boolean) : []
+    const result = await peertube.uploadVideo(creds.instance, creds.token, tempPath, {
+      name:         name || req.file.originalname || 'M4TR1X Video',
+      description:  description || '',
+      tags:         tagList,
+      privacy:      parseInt(privacy || '1'),
+      language:     language || null,
+      originalname: req.file.originalname || '',
+    })
+    res.json({ ok: true, ...result })
+  } catch (err) {
+    console.error('[PEERTUBE] Upload error:', err.message)
+    res.status(500).json({ error: err.message })
+  } finally {
+    if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath)
+  }
 })
 
 app.get('/api/v1/peertube/instances', async (req, res) => {
@@ -779,6 +834,73 @@ app.post('/api/v1/admin/badge/:id/reject', localhostOnly, verifyAdminKey, (req, 
     const { notes } = req.body
     rejectRequest(req.params.id, notes || '')
     res.json({ success: true, status: 'rejected' })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ─── Routes: Universal Post ───────────────────────────────────────────────────
+const universal = require('./universal_post')
+universal.initUniversalDb()
+
+// Lista protocolli connessi al profilo H8
+app.get('/api/v1/profile/protocols', (req, res) => {
+  const { h8address } = req.query
+  if (!h8address) return res.status(400).json({ error: 'h8address richiesto' })
+  res.json(universal.getConnectedProtocols(h8address))
+})
+
+// Collega un account esterno (Mastodon, PeerTube, Funkwhale)
+app.post('/api/v1/profile/protocols/connect', (req, res) => {
+  const { h8address, protocol, instance, accessToken, username } = req.body
+  if (!h8address || !protocol) return res.status(400).json({ error: 'h8address e protocol richiesti' })
+  const VALID = new Set(['mastodon', 'peertube', 'funkwhale'])
+  if (!VALID.has(protocol)) return res.status(400).json({ error: 'protocol non valido' })
+  if (!instance) return res.status(400).json({ error: 'instance richiesta' })
+  universal.connectProtocol(h8address, protocol, instance, accessToken, username || null)
+  res.json({ ok: true })
+})
+
+// Scollega un account esterno
+app.delete('/api/v1/profile/protocols/:protocol', (req, res) => {
+  const { h8address } = req.query
+  if (!h8address) return res.status(400).json({ error: 'h8address richiesto' })
+  universal.disconnectProtocol(h8address, req.params.protocol)
+  res.json({ ok: true })
+})
+
+// Sync profilo M4TR1X → tutti i protocolli connessi
+app.post('/api/v1/profile/sync', async (req, res) => {
+  const { h8address, name, bio, picture } = req.body
+  if (!h8address) return res.status(400).json({ error: 'h8address richiesto' })
+  try {
+    const results = await universal.syncAllProfiles(h8address, { name, bio, picture })
+    res.json({ ok: true, results })
+  } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+// Sync profilo su un singolo protocollo
+app.post('/api/v1/profile/sync/:protocol', async (req, res) => {
+  const { h8address, name, bio, picture } = req.body
+  if (!h8address) return res.status(400).json({ error: 'h8address richiesto' })
+  try {
+    const result = await universal.syncProfileToProtocol(h8address, { name, bio, picture }, req.params.protocol)
+    res.json(result)
+  } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+// Post universale — pubblica su tutti i protocolli connessi
+app.post('/api/v1/profile/post', async (req, res) => {
+  const { h8address, text, title, tags } = req.body
+  if (!h8address) return res.status(400).json({ error: 'h8address richiesto' })
+  if (!text || !text.trim()) return res.status(400).json({ error: 'text richiesto' })
+  try {
+    const results = await universal.universalPost(h8address, {
+      text:  text.trim(),
+      title: title?.trim() || null,
+      tags:  Array.isArray(tags) ? tags : [],
+    })
+    res.json({ ok: true, results })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

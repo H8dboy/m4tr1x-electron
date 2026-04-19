@@ -47,3 +47,6 @@ npm-debug.log*
 
 # Temporary git files
 *.orig
+badge_docs/
+h8identity.enc
+.claude/

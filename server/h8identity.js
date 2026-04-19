@@ -17,7 +17,7 @@ const fs     = require('fs')
 // ─── ESM lazy load (noble è ESM-only) ────────────────────────────────────────
 let _lib = null
 async function getLib() {
-  if (!_lib) _lib = await import('@noble/post-quantum/ml-dsa')
+  if (!_lib) _lib = await import('@noble/post-quantum/ml-dsa.js')
   return _lib
 }
 
