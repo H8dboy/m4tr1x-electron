@@ -16,7 +16,7 @@ jobs:
         include:
           - os: ubuntu-latest
             platform: linux
-            artifact: '*.AppImage'
+            artifact: '*.deb'
           - os: windows-latest
             platform: win
             artifact: '*.exe'
