@@ -892,40 +892,77 @@
   }
 
   function loadNostrFallback(sec, container) {
-    // Show recent public kind:1063 video events as placeholder content
     const fbSeen = new Set();
+    let rendered = false;
+
+    function renderFb(items) {
+      if (rendered || !items.length) return;
+      rendered = true;
+      const ph = container.querySelector('.slide-placeholder');
+      if (ph) ph.innerHTML = '<div class="ph-text" style="font-size:0.55em;color:rgba(0,255,65,0.3)">[ PUBLIC — pubblica per vedere contenuti M4TR1X ]</div>';
+      items.forEach(({ev, vurl}) => {
+        container.appendChild(mkSlide(ev, vurl, sec));
+        loadProf(ev.pubkey).then(p => updateSlide(ev.id, ev.pubkey, p));
+      });
+    }
+
+    // Query kind:1063 filtering by video MIME directly on relay (#m tag = NIP-94)
     const fbBuf = [];
-    let fbTimer = null;
+    const VIDEO_MIMES = ['video/mp4','video/webm','video/quicktime','video/x-m4v','video/avi'];
     Object.entries(ws).forEach(([url, r]) => {
       if (!r.ok) return;
       const sid = 'fb_' + sec + '_' + rnd();
-      r.w.send(JSON.stringify(['REQ', sid, { kinds: [1063], limit: 15 }]));
+      // Use #m filter so relay returns only video events (supported by most relays)
+      r.w.send(JSON.stringify(['REQ', sid, { kinds: [1063], '#m': VIDEO_MIMES, limit: 20 }]));
       wsSub(sid, ev => {
         if (fbSeen.has(ev.id) || seen[sec].has(ev.id)) return;
         const uTag = ev.tags.find(t => t[0] === 'url'); if (!uTag) return;
         const mime = ev.tags.find(t => t[0] === 'm')?.[1] || '';
-        const isVideo = mime.startsWith('video') || !!uTag[1].match(/\.(mp4|mov|webm)(\?|$)/i);
+        const isVideo = mime.startsWith('video') || !!uTag[1].match(/\.(mp4|mov|webm|mkv)(\?|$)/i);
         if (!isVideo) return;
         fbSeen.add(ev.id); seen[sec].add(ev.id);
         fbBuf.push({ev, vurl: uTag[1]});
-        clearTimeout(fbTimer);
-        fbTimer = setTimeout(() => {
-          const ph = container.querySelector('.slide-placeholder');
-          if (ph) ph.innerHTML = '<div class="ph-text" style="font-size:0.55em;color:rgba(0,255,65,0.3)">[ PUBLIC NOSTR — pubblica per vedere contenuti M4TR1X ]</div>';
-          fbBuf.forEach(({ev, vurl}) => {
-            container.appendChild(mkSlide(ev, vurl, sec));
-            loadProf(ev.pubkey).then(p => updateSlide(ev.id, ev.pubkey, p));
-          });
-          fbBuf.length = 0;
-        }, 2000);
+      }, () => {
+        // EOSE from this relay: if we have items, render now
+        if (fbBuf.length >= 3) renderFb(fbBuf.splice(0));
       });
     });
+
+    // After 6s: render whatever we have from Nostr, or fallback to PeerTube clips
     setTimeout(() => {
-      if (!fbBuf.length) {
-        const ph = container.querySelector('.slide-placeholder');
-        if (ph) ph.innerHTML = '<div class="ph-text">[ NO SIGNAL · Pubblica il primo video ]</div>';
+      if (!rendered && fbBuf.length) { renderFb(fbBuf.splice(0)); return; }
+      if (!rendered) {
+        // Last resort: pull short videos from PeerTube as Signal placeholder
+        const pt = CONFIG.peertube[Math.floor(Math.random()*CONFIG.peertube.length)];
+        fetch(pt + '/api/v1/videos?count=10&sort=-trending&nsfw=false&durationMax=120')
+          .then(r => r.json())
+          .then(data => {
+            const vids = (data.data || []).filter(v => v.files?.length || v.streamingPlaylists?.length);
+            if (!vids.length) { noSignal(); return; }
+            rendered = true;
+            const ph = container.querySelector('.slide-placeholder');
+            if (ph) ph.innerHTML = '<div class="ph-text" style="font-size:0.55em;color:rgba(0,255,65,0.3)">[ PUBLIC — pubblica per vedere contenuti M4TR1X ]</div>';
+            vids.slice(0,6).forEach(v => {
+              const vurl = v.files?.[0]?.fileUrl || v.streamingPlaylists?.[0]?.playlistUrl || '';
+              if (!vurl) return;
+              const fakeEv = {
+                id: v.uuid || rnd(), pubkey: v.account?.host || 'peertube',
+                created_at: Math.floor(new Date(v.publishedAt||Date.now()).getTime()/1000),
+                content: v.description || v.name || '', tags: [['t','public']]
+              };
+              container.appendChild(mkSlide(fakeEv, vurl, sec));
+            });
+          })
+          .catch(() => noSignal());
       }
-    }, 12000);
+    }, 6000);
+
+    function noSignal() {
+      if (rendered) return;
+      const ph = container.querySelector('.slide-placeholder');
+      if (ph) ph.innerHTML = '<div class="ph-text">[ NO SIGNAL · Pubblica il primo video ]</div>';
+    }
+    setTimeout(noSignal, 18000);
   }
   // ========== PEERTUBE INTEGRATION ==========
   function loadPeerTube() {
