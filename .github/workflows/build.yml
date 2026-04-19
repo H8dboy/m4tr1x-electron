@@ -50,7 +50,8 @@ jobs:
         run: npm ci
 
       - name: Create models dir
-        run: node -e "require('fs').mkdirSync('models', {recursive: true})"
+        run: |
+          node -e "require('fs').mkdirSync('models', {recursive: true})"
 
       - name: Rebuild native modules for Electron
         run: npx electron-rebuild -f -w better-sqlite3
