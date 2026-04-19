@@ -38,6 +38,7 @@ jobs:
 
       - name: Setup Python (for node-gyp)
         uses: actions/setup-python@v5
+        id: setup-python
         with:
           python-version: '3.11'
 
@@ -59,6 +60,7 @@ jobs:
         run: npx electron-rebuild -f -w better-sqlite3
         env:
           npm_config_build_from_source: true
+          npm_config_python: ${{ steps.setup-python.outputs.python-path }}
 
       - name: Build (${{ matrix.platform }})
         run: npm run build:${{ matrix.platform }}
