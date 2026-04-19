@@ -8,6 +8,8 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -62,6 +64,7 @@ jobs:
         run: npm run build:${{ matrix.platform }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPIMAGE_EXTRACT_AND_RUN: 1
 
       - name: Generate checksums (Linux/Mac)
         if: matrix.os != 'windows-latest'
@@ -87,7 +90,7 @@ jobs:
           files: |
             dist/${{ matrix.artifact }}
             dist/checksums-*.txt
-          generate_release_notes: true
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
