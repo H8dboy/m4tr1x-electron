@@ -1493,13 +1493,24 @@
       if (lsCached) profCache[pk] = lsCached;
     } catch(e) {}
     if(profCache[pk])return Promise.resolve(profCache[pk]);
-    return new Promise(res=>{let done=false;
-    Object.values(ws).forEach(r=>{if(!r.ok)return;const sid='p_'+rnd();
-    r.w.send(JSON.stringify(['REQ',sid,{kinds:[0],authors:[pk],limit:1}]));
-    wsSub(sid, ev => { try{const p=JSON.parse(ev.content);profCache[pk]=p;
-    try{localStorage.setItem('m4tr1x_profile_'+pk, JSON.stringify(p))}catch(se){}
-    if(!done){done=true;res(p)}wsUnsub(sid)}catch(err){}});
-    setTimeout(()=>{if(!done)res(profCache[pk]||null)},4000);});
+    return new Promise(res=>{
+      let done=false;
+      Object.values(ws).forEach(r=>{
+        if(!r.ok)return;
+        const sid='p_'+rnd();
+        r.w.send(JSON.stringify(['REQ',sid,{kinds:[0],authors:[pk],limit:1}]));
+        wsSub(sid, ev => {
+          try{
+            const p=JSON.parse(ev.content);
+            profCache[pk]=p;
+            try{localStorage.setItem('m4tr1x_profile_'+pk, JSON.stringify(p))}catch(se){}
+            if(!done){done=true;res(p)}
+            wsUnsub(sid);
+          }catch(err){}
+        });
+        setTimeout(()=>{if(!done)res(profCache[pk]||null)},4000);
+      });
+    });
   }
   // ========== CROWDSOURCED LABELING ==========
   async function submitLabel(videoHash, label) {

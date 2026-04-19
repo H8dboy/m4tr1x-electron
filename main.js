@@ -63,7 +63,7 @@ function setupCSP() {
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: https:",
             "media-src 'self' https:",
-            "connect-src 'self' http://localhost:8080 wss: https:",
+            "connect-src 'self' http://localhost:8080 ws://localhost:4848 wss: https:",
             "frame-src https:",
             "object-src 'none'",
             "base-uri 'self'",

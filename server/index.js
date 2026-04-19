@@ -56,12 +56,19 @@ const {
 } = require('./badges')
 
 // ─── Embedded Nostr Relay ─────────────────────────────────────────────────────
-try {
-  require('./relay')
-  console.log('[M4TR1X] Embedded Nostr relay started on ws://localhost:4848')
-} catch(e) {
-  console.error('[M4TR1X] Relay start failed:', e.message)
-}
+// Avviato in processo figlio per evitare che EADDRINUSE faccia crashare il server
+const { spawn: _spawnRelay } = require('child_process')
+const _net = require('net')
+const _sock = _net.createConnection(4848, '127.0.0.1')
+_sock.once('connect', () => { _sock.destroy(); console.log('[RELAY] Already running on :4848') })
+_sock.once('error', () => {
+  const rp = _spawnRelay(process.execPath, [require('path').join(__dirname, 'relay.js')], {
+    stdio: 'inherit', env: { ...process.env }
+  })
+  rp.on('error', e => console.error('[RELAY] Error:', e.message))
+  process.on('exit', () => rp.kill())
+  console.log('[M4TR1X] Embedded Nostr relay starting on ws://localhost:4848')
+})
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const MAX_FILE_MB      = parseInt(process.env.MAX_FILE_SIZE_MB || '100')
