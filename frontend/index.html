@@ -578,9 +578,8 @@
     ],
     // Funkwhale instances to federate with
     funkwhale: [
-      'https://open.audio',
       'https://funkwhale.it',
-      'https://audio.liberta.vip'
+      'https://tanukitunes.com'
     ],
     // Nostr relays
     relays: ['wss://relay.damus.io','wss://nos.lol','wss://relay.nostr.band','wss://nostr.wine','wss://relay.snort.social'],
@@ -869,9 +868,50 @@
         scheduleRender();
       }catch(err){}});
     });
+    // Fallback: if no m4tr1x-signal content after 8s, show public Nostr video
     setTimeout(()=>{
-      if(!buf.length){const ph=c.querySelector('.slide-placeholder');if(ph)ph.innerHTML='<div class="ph-text">[ NO SIGNAL ]</div>'}
-    },5000);
+      if(!buf.length){
+        loadNostrFallback(sec, c);
+      }
+    },8000);
+  }
+
+  function loadNostrFallback(sec, container) {
+    // Show recent public kind:1063 video events as placeholder content
+    const fbSeen = new Set();
+    const fbBuf = [];
+    let fbTimer = null;
+    Object.entries(ws).forEach(([url, r]) => {
+      if (!r.ok) return;
+      const sid = 'fb_' + sec + '_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid, { kinds: [1063], limit: 15 }]));
+      r.w.addEventListener('message', e => { try {
+        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+        if (fbSeen.has(ev.id) || seen[sec].has(ev.id)) return;
+        const uTag = ev.tags.find(t => t[0] === 'url'); if (!uTag) return;
+        const mime = ev.tags.find(t => t[0] === 'm')?.[1] || '';
+        const isVideo = mime.startsWith('video') || !!uTag[1].match(/\.(mp4|mov|webm)(\?|$)/i);
+        if (!isVideo) return;
+        fbSeen.add(ev.id); seen[sec].add(ev.id);
+        fbBuf.push({ev, vurl: uTag[1]});
+        clearTimeout(fbTimer);
+        fbTimer = setTimeout(() => {
+          const ph = container.querySelector('.slide-placeholder');
+          if (ph) ph.innerHTML = '<div class="ph-text" style="font-size:0.55em;color:rgba(0,255,65,0.3)">[ PUBLIC NOSTR — pubblica per vedere contenuti M4TR1X ]</div>';
+          fbBuf.forEach(({ev, vurl}) => {
+            container.appendChild(mkSlide(ev, vurl, sec));
+            loadProf(ev.pubkey).then(p => updateSlide(ev.id, ev.pubkey, p));
+          });
+          fbBuf.length = 0;
+        }, 2000);
+      } catch(err) {} });
+    });
+    setTimeout(() => {
+      if (!fbBuf.length) {
+        const ph = container.querySelector('.slide-placeholder');
+        if (ph) ph.innerHTML = '<div class="ph-text">[ NO SIGNAL · Pubblica il primo video ]</div>';
+      }
+    }, 12000);
   }
   // ========== PEERTUBE INTEGRATION ==========
   function loadPeerTube() {
@@ -933,6 +973,9 @@
         scheduleRender();
       } catch (err) {} });
     });
+    setTimeout(() => {
+      if (!buf.length) loadNostrFallback('film', document.getElementById('feed-film'));
+    }, 8000);
   }
 
   // ========== FUNKWHALE INTEGRATION ==========
