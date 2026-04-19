@@ -32,7 +32,7 @@ try {
 }
 
 // ─── Costanti (identiche a ai_detector.py) ───────────────────────────────────
-const CONFIDENCE_THRESHOLD = 0.65
+const CONFIDENCE_THRESHOLD = 0.55   // lowered: model biased towards REAL, accept 55%+ confidence
 const MAX_FRAMES = 16
 const FRAME_SIZE = 224
 

@@ -2,7 +2,10 @@
   "name": "m4tr1x",
   "version": "2.0.0",
   "description": "M4TR1X — The Unfiltered Eye. Decentralized social network for authentic video documentation.",
-  "author": "H8dboy",
+  "author": {
+    "name": "H8dboy",
+    "email": "h8dboy@protonmail.com"
+  },
   "license": "MIT",
   "main": "main.js",
   "scripts": {
@@ -16,6 +19,7 @@
   "build": {
     "appId": "com.h8dboy.m4tr1x",
     "productName": "M4TR1X",
+    "copyright": "Copyright © 2026 H8dboy",
     "directories": {
       "output": "dist"
     },
@@ -29,17 +33,56 @@
       "node_modules/**/*",
       "!node_modules/**/*.{exe,bat,cmd}",
       "!**/node_modules/ffmpeg-static/ffmpeg.exe",
-      "!**/node_modules/ffprobe-static/bin/win32/**"
+      "!**/node_modules/ffprobe-static/bin/win32/**",
+      "!.env",
+      "!*.db",
+      "!uploads/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "models/",
+        "to": "models/",
+        "filter": ["**/*.onnx"]
+      }
     ],
     "linux": {
+      "icon": "frontend/icons",
       "target": [
-        "AppImage",
-        "deb"
+        { "target": "AppImage", "arch": ["x64", "arm64"] },
+        { "target": "deb",      "arch": ["x64"] },
+        { "target": "snap",     "arch": ["x64"] }
       ],
-      "category": "Network"
+      "category": "Network",
+      "description": "Decentralized social network for authentic video documentation"
     },
     "win": {
-      "target": "nsis"
+      "icon": "assets/icon.ico",
+      "target": [
+        { "target": "nsis",     "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "publisherName": "H8dboy"
+    },
+    "mac": {
+      "icon": "assets/icon-mac.png",
+      "target": [
+        { "target": "dmg",    "arch": ["x64", "arm64"] },
+        { "target": "zip",    "arch": ["x64", "arm64"] }
+      ],
+      "category": "public.app-category.social-networking",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "snap": {
+      "publish": [{ "provider": "snapStore", "channels": ["stable"] }]
     }
   },
   "dependencies": {
@@ -51,7 +94,6 @@
     "express-rate-limit": "^7.2.0",
     "ffmpeg-static": "^5.2.0",
     "ffprobe-static": "^3.1.0",
-    "monero-javascript": "^0.8.4",
     "multer": "^1.4.5-lts.1",
     "nostr-tools": "^2.3.1",
     "onnxruntime-node": "^1.17.3",
