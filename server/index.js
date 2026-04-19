@@ -55,6 +55,14 @@ const {
   approveRequest, rejectRequest, getUserRequest,
 } = require('./badges')
 
+// ─── Embedded Nostr Relay ─────────────────────────────────────────────────────
+try {
+  require('./relay')
+  console.log('[M4TR1X] Embedded Nostr relay started on ws://localhost:4848')
+} catch(e) {
+  console.error('[M4TR1X] Relay start failed:', e.message)
+}
+
 // ─── Config ───────────────────────────────────────────────────────────────────
 const MAX_FILE_MB      = parseInt(process.env.MAX_FILE_SIZE_MB || '100')
 const API_KEY          = process.env.M4TR1X_API_KEY || ''
