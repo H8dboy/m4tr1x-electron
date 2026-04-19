@@ -765,11 +765,32 @@
     });
   });
 
+  // ===== CENTRAL WS SUBSCRIPTION ROUTER =====
+  // Replaces per-call addEventListener — single onmessage per relay dispatches by sid
+  const _subs = {};   // sid → handler(ev)
+  const _esubs = {};  // sid → eose handler()
+
+  function wsSub(sid, handler, eoseHandler) {
+    _subs[sid] = handler;
+    if (eoseHandler) _esubs[sid] = eoseHandler;
+  }
+  function wsUnsub(sid) {
+    delete _subs[sid]; delete _esubs[sid];
+  }
+  function wsDispatch(e) {
+    try {
+      const d = JSON.parse(e.data);
+      if (d[0] === 'EVENT' && _subs[d[1]]) { _subs[d[1]](d[2]); return; }
+      if (d[0] === 'EOSE' && _esubs[d[1]]) { _esubs[d[1]](); wsUnsub(d[1]); return; }
+    } catch(err) {}
+  }
+
   function connectRelays(){
     RELAYS.forEach(url=>{try{
       const w=new WebSocket(url);ws[url]={w,ok:false};
       w.onopen=()=>{ws[url].ok=true;if(!S.loaded.signal){loadSec('signal');S.loaded.signal=true;setTimeout(initNotifications,2000)}};
       w.onclose=w.onerror=()=>{ws[url].ok=false};
+      w.onmessage = wsDispatch;  // single central handler
     }catch(e){}});
     setTimeout(()=>{if(!S.loaded.signal){document.getElementById('feed-signal').innerHTML='<div class="slide-placeholder"><div class="ph-text" style="color:var(--green-dark);text-align:center;line-height:2">[ NESSUN VIDEO ANCORA ]\n\nSei uno dei primi.\nPubblica qualcosa — premi + in basso.\nNessun algoritmo. Solo persone vere.</div></div>'}},9000);
   }
@@ -849,24 +870,18 @@
     Object.entries(ws).forEach(([url,r])=>{
       if(!r.ok)return;
       const sid='sec_'+sec+'_'+rnd();
-      // Signal feed: only m4tr1x-signal tagged events — prevents music/film bleed
       const filter={kinds:[1063],'#t':['m4tr1x-signal'],limit:25};
       r.w.send(JSON.stringify(['REQ',sid,filter]));
-      r.w.addEventListener('message',e=>{try{
-        const d=JSON.parse(e.data);if(d[0]!=='EVENT')return;const ev=d[2];
+      wsSub(sid, ev=>{
         if(seen[sec].has(ev.id))return;
-        // Guard: must be signal-tagged (relay may return extra events)
         if(!ev.tags.some(t=>t[0]==='t'&&t[1]==='m4tr1x-signal'))return;
         const uTag=ev.tags.find(t=>t[0]==='url');const mTag=ev.tags.find(t=>t[0]==='m');
         if(!uTag)return;const vurl=uTag[1];
-        // Positive check: accept only confirmed video (mime or extension)
         const mime=mTag?.[1]||'';
         const isVideo=mime.startsWith('video')||!!vurl.match(/\.(mp4|mov|webm|avi|mkv)(\?|$)/i);
         if(!isVideo)return;
-        seen[sec].add(ev.id);
-        buf.push({ev, vurl});
-        scheduleRender();
-      }catch(err){}});
+        seen[sec].add(ev.id);buf.push({ev,vurl});scheduleRender();
+      });
     });
     // Fallback: if no m4tr1x-signal content after 8s, show public Nostr video
     setTimeout(()=>{
@@ -885,8 +900,7 @@
       if (!r.ok) return;
       const sid = 'fb_' + sec + '_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid, { kinds: [1063], limit: 15 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+      wsSub(sid, ev => {
         if (fbSeen.has(ev.id) || seen[sec].has(ev.id)) return;
         const uTag = ev.tags.find(t => t[0] === 'url'); if (!uTag) return;
         const mime = ev.tags.find(t => t[0] === 'm')?.[1] || '';
@@ -904,7 +918,7 @@
           });
           fbBuf.length = 0;
         }, 2000);
-      } catch(err) {} });
+      });
     });
     setTimeout(() => {
       if (!fbBuf.length) {
@@ -963,15 +977,12 @@
       if (!r.ok) return;
       const sid = 'film_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid, { kinds: [1063], '#t': ['m4tr1x-film'], limit: 20 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+      wsSub(sid, ev => {
         if (seen.film.has(ev.id)) return;
         const uTag = ev.tags.find(t => t[0] === 'url'); if (!uTag) return;
         if (!ev.tags.some(t => t[0] === 't' && t[1] === 'm4tr1x-film')) return;
-        seen.film.add(ev.id);
-        buf.push({ev, vurl: uTag[1]});
-        scheduleRender();
-      } catch (err) {} });
+        seen.film.add(ev.id); buf.push({ev, vurl: uTag[1]}); scheduleRender();
+      });
     });
     setTimeout(() => {
       if (!buf.length) loadNostrFallback('film', document.getElementById('feed-film'));
@@ -1016,8 +1027,7 @@
       if (!r.ok) return;
       const sid = 'music_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid, { kinds: [1063], '#t': ['m4tr1x-music'], limit: 20 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+      wsSub(sid, ev => {
         if (seen.music.has(ev.id)) return;
         const uTag = ev.tags.find(t => t[0] === 'url'); if (!uTag) return;
         if (!ev.tags.some(t => t[0] === 't' && t[1] === 'm4tr1x-music')) return;
@@ -1026,7 +1036,7 @@
         const ph = document.querySelector('#fw-track-list .slide-placeholder');
         if (ph) ph.style.display = 'none';
         renderNostrMusicSlide(ev, uTag[1], mime, c);
-      } catch (err) {} });
+      });
     });
   }
 
@@ -1158,12 +1168,10 @@
       if (!r.ok) return;
       const sid = 'forum_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid, { kinds: [1], '#t': ['m4tr1x-forum'], limit: 30 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+      wsSub(sid, ev => {
         if (seen.forum.has(ev.id)) return; seen.forum.add(ev.id);
         const ph = c.querySelector('.slide-placeholder'); if (ph) ph.remove();
         const title = ev.tags.find(t => t[0] === 'subject')?.[1] || '';
-        const tags = ev.tags.filter(t => t[0] === 't' && t[1] !== 'm4tr1x-forum').map(t => '#' + t[1]).join(' ');
         const div = document.createElement('div'); div.className = 'forum-post'; div.dataset.eid = ev.id;
         div.innerHTML = '<div class="forum-post-header"><div class="forum-post-av" id="fav-' + ev.id + '">\u{1F464}</div>' +
           '<span class="forum-post-name" id="fnm-' + ev.id + '" onclick="viewProf(\'' + ev.pubkey + '\')" style="cursor:pointer">' + (profName(ev.pubkey)||shortenKey(ev.pubkey)) + '</span>' +
@@ -1171,7 +1179,6 @@
           (title ? '<div class="forum-post-title">' + esc(title) + '</div>' : '') +
           '<div class="forum-post-body">' + esc(ev.content) + '</div>' +
           '<div class="forum-post-footer"><span class="forum-act" onclick="openComments(\'' + ev.id + '\')">\u{1F4AC} Reply</span>' +
-          '<span class="forum-act" onclick="openZap(\'' + ev.id + '\',\'' + ev.pubkey + '\',null)" style="display:none"></span>' +
           '<span class="forum-act" onclick="shareEv(\'' + ev.id + '\')">\u{1F4E1} Share</span>' +
           '<span class="forum-post-source">NOSTR</span></div>';
         c.appendChild(div);
@@ -1181,7 +1188,7 @@
           if (p.name || p.display_name) nm.textContent = p.name || p.display_name;
           if (p.picture && av) av.innerHTML = '<img src="' + p.picture + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
         });
-      } catch (err) {} });
+      });
     });
     setTimeout(() => { if (!seen.forum.size) c.innerHTML = '<div class="slide-placeholder"><div class="ph-text" style="color:rgba(187,102,255,0.3);text-align:center;line-height:2">[ NESSUNA DISCUSSIONE ]\n\nIl forum è federato con Mastodon.\nPremi + in basso per iniziare una discussione.\nRaggiunge migliaia di server indipendenti.</div></div>' }, 6000);
   }
@@ -1231,14 +1238,13 @@
       r.w.send(JSON.stringify(['REQ', sid, { kinds: [4], authors: [S.pubkey], limit: 50 }]));
       const sid2 = 'dm2_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid2, { kinds: [4], '#p': [S.pubkey], limit: 50 }]));
-      const handler = e => { try {
-        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+      const dmHandler = ev => {
         if (ev.kind !== 4) return;
         const other = ev.pubkey === S.pubkey ? (ev.tags.find(t => t[0] === 'p')?.[1] || null) : ev.pubkey;
         if (!other) return;
         if (!convos[other] || ev.created_at > convos[other].ts) { convos[other] = { ts: ev.created_at, content: ev.content } }
-      } catch (err) {} };
-      r.w.addEventListener('message', handler);
+      };
+      wsSub(sid, dmHandler); wsSub(sid2, dmHandler);
     });
 
     const renderList = async () => {
@@ -1312,30 +1318,25 @@
       r.w.send(JSON.stringify(['REQ', sid, { kinds: [4], authors: [S.pubkey], '#p': [pk], limit: 30 }]));
       const sid2 = 'dmc2_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid2, { kinds: [4], authors: [pk], '#p': [S.pubkey], limit: 30 }]));
-      r.w.addEventListener('message', async e => { try {
-        const d = JSON.parse(e.data); if (d[0] !== 'EVENT') return; const ev = d[2];
+      const dmChatHandler = async ev => {
         if (ev.kind !== 4 || msgSet.has(ev.id)) return; msgSet.add(ev.id);
         const isMe = ev.pubkey === S.pubkey;
         let decrypted;
         try {
-          // Try Signal Protocol decryption first
           decrypted = await SignalEngine.decryptMessage(isMe ? pk : ev.pubkey, ev.content.split('?iv=')[0], 1);
         } catch(err) {
-          // Fallback: try NIP-04 via extension
           if (S.method === 'extension' && window.nostr?.nip04) {
             try { decrypted = await window.nostr.nip04.decrypt(pk, ev.content); } catch(e2) { decrypted = '[encrypted]'; }
           } else { decrypted = '[encrypted]'; }
         }
         const div = document.createElement('div'); div.className = 'dm-msg' + (isMe ? ' me' : '');
         div.innerHTML = '<div class="dm-msg-bubble">' + esc(decrypted) + '</div><div class="dm-msg-time">\u{1F512} ' + ago(ev.created_at) + '</div>';
-        msgs.appendChild(div);
-        msgs.scrollTop = msgs.scrollHeight;
-        // Persist new message
+        msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
         allMessages.push({ id: ev.id, isMe, text: decrypted, ts: ev.created_at });
         saveDmMessages(pk, allMessages.sort((a, b) => a.ts - b.ts));
-        // Mark seen immediately since chat is open
         markDmSeen(pk);
-      } catch (err) {} });
+      };
+      wsSub(sid, dmChatHandler); wsSub(sid2, dmChatHandler);
     });
   }
 
@@ -1377,8 +1378,7 @@
       r.w.send(JSON.stringify(['REQ',sid,{kinds:[30402],'#t':['m4tr1x-shop'],limit:30}]));
       const sid2='shop2_'+rnd();
       r.w.send(JSON.stringify(['REQ',sid2,{kinds:[1],'#t':['m4tr1x-shop'],limit:30}]));
-      const handler=e=>{try{
-        const d=JSON.parse(e.data);if(d[0]!=='EVENT')return;const ev=d[2];
+      const shopHandler = ev => {
         if(seen.shop.has(ev.id))return;seen.shop.add(ev.id);
         const ph=grid.querySelector('.slide-placeholder');if(ph)ph.remove();
         const name=ev.tags.find(t=>t[0]==='title')?.[1]||'Untitled';
@@ -1390,8 +1390,8 @@
         div.innerHTML='<div class="shop-item-img">'+(img?'<img src="'+img+'">':'\u{1F6CD}\uFE0F')+'</div><div class="shop-item-name">'+esc(name)+'</div><div class="shop-item-price">\u{1F4B0} '+esc(price)+' H8</div><div class="shop-item-seller" id="'+sellId+'" onclick="event.stopPropagation();viewProf(\''+ev.pubkey+'\')" style="cursor:pointer;color:rgba(255,136,0,0.6)">'+(profName(ev.pubkey)||shortenKey(ev.pubkey))+'</div>';
         loadProf(ev.pubkey).then(p=>{const el2=document.getElementById(sellId);if(el2&&(p?.name||p?.display_name))el2.textContent='\u2197 '+(p.name||p.display_name);});
         grid.appendChild(div);
-      }catch(err){}};
-      r.w.addEventListener('message',handler);
+      };
+      wsSub(sid, shopHandler); wsSub(sid2, shopHandler);
     });
     setTimeout(()=>{if(!seen.shop.size)grid.innerHTML='<div class="slide-placeholder" style="grid-column:span 2"><div class="ph-text" style="color:rgba(255,136,0,0.3)">[ EMPTY MARKETPLACE \u2014 LIST YOUR FIRST ITEM ]</div></div>'},6000);
   }
@@ -1496,11 +1496,9 @@
     return new Promise(res=>{let done=false;
     Object.values(ws).forEach(r=>{if(!r.ok)return;const sid='p_'+rnd();
     r.w.send(JSON.stringify(['REQ',sid,{kinds:[0],authors:[pk],limit:1}]));
-    const h=e=>{try{const d=JSON.parse(e.data);if(d[0]==='EVENT'&&d[1]===sid){const p=JSON.parse(d[2].content);profCache[pk]=p;
-    // Cache to localStorage for own profile
+    wsSub(sid, ev => { try{const p=JSON.parse(ev.content);profCache[pk]=p;
     try{localStorage.setItem('m4tr1x_profile_'+pk, JSON.stringify(p))}catch(se){}
-    if(!done){done=true;res(p)}r.w.removeEventListener('message',h)}}catch(err){}};
-    r.w.addEventListener('message',h)});
+    if(!done){done=true;res(p)}wsUnsub(sid)}catch(err){}});
     setTimeout(()=>{if(!done)res(profCache[pk]||null)},4000);});
   }
   // ========== CROWDSOURCED LABELING ==========
@@ -1672,32 +1670,26 @@
       // Posts (kind 1063)
       const sid1 = 'pp_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid1, { kinds: [1063], authors: [pk], limit: 24 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data);
-        if (d[0] !== 'EVENT' || d[2].kind !== 1063 || seenP.has(d[2].id)) return;
-        seenP.add(d[2].id);
-        evCache[d[2].id] = d[2];
-        const url = d[2].tags.find(t => t[0] === 'url')?.[1];
-        if (!url) return;
-        _gridPosts.push({ eid: d[2].id, url, ts: d[2].created_at, isRepost: false });
+      wsSub(sid1, ev => {
+        if (ev.kind !== 1063 || seenP.has(ev.id)) return;
+        seenP.add(ev.id); evCache[ev.id] = ev;
+        const url = ev.tags.find(t => t[0] === 'url')?.[1]; if (!url) return;
+        _gridPosts.push({ eid: ev.id, url, ts: ev.created_at, isRepost: false });
         if (_gridMode === 'posts') renderProfGrid(_gridPosts);
-      } catch(err) {} });
+      });
 
       // Repost (kind 6)
       const sid2 = 'rp_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid2, { kinds: [6], authors: [pk], limit: 24 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data);
-        if (d[0] !== 'EVENT' || d[2].kind !== 6 || seenP.has(d[2].id)) return;
-        seenP.add(d[2].id);
-        let orig = null;
-        try { orig = JSON.parse(d[2].content); } catch(e) {}
-        const url = orig?.tags?.find(t => t[0] === 'url')?.[1];
-        if (!url) return;
+      wsSub(sid2, ev => {
+        if (ev.kind !== 6 || seenP.has(ev.id)) return;
+        seenP.add(ev.id);
+        let orig = null; try { orig = JSON.parse(ev.content); } catch(e) {}
+        const url = orig?.tags?.find(t => t[0] === 'url')?.[1]; if (!url) return;
         if (orig) evCache[orig.id] = orig;
-        _gridReposts.push({ eid: orig?.id || d[2].id, url, ts: d[2].created_at, isRepost: true });
+        _gridReposts.push({ eid: orig?.id || ev.id, url, ts: ev.created_at, isRepost: true });
         if (_gridMode === 'reposts') renderProfGrid(_gridReposts);
-      } catch(err) {} });
+      });
     });
 
     setTimeout(() => {
@@ -1754,22 +1746,17 @@
       if (!r.ok) return;
       const sid = 'fc1_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid, { kinds: [3], '#p': [pk], limit: 500 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data);
-        if (d[0] !== 'EVENT' || d[2].kind !== 3 || seen3.has(d[2].id)) return;
-        seen3.add(d[2].id); followerCount++;
+      wsSub(sid, ev => {
+        if (ev.kind !== 3 || seen3.has(ev.id)) return;
+        seen3.add(ev.id); followerCount++;
         document.getElementById('prof-followers').textContent = followerCount;
-      } catch(err) {} });
-      // Count who pk follows (kind 3 authored by pk)
+      });
       const sid2 = 'fc2_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid2, { kinds: [3], authors: [pk], limit: 1 }]));
-      r.w.addEventListener('message', e2 => { try {
-        const d2 = JSON.parse(e2.data);
-        if (d2[0] !== 'EVENT' || d2[2].kind !== 3) return;
-        const cnt = d2[2].tags.filter(t => t[0] === 'p').length;
-        followingCount = cnt;
-        document.getElementById('prof-following').textContent = followingCount;
-      } catch(err) {} });
+      wsSub(sid2, ev => {
+        if (ev.kind !== 3) return;
+        document.getElementById('prof-following').textContent = ev.tags.filter(t => t[0] === 'p').length;
+      });
     });
   }
   // ========== FOLLOW SYSTEM (NIP-02) ==========
@@ -1821,10 +1808,7 @@
       const sid = 'ntf_' + rnd();
       // Subscribe to mentions, replies and zap receipts
       r.w.send(JSON.stringify(['REQ', sid, { kinds: [1, 9735], '#p': [S.pubkey], since: now() - 86400 * 7, limit: 50 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data);
-        if (d[0] !== 'EVENT') return;
-        const ev = d[2];
+      wsSub(sid, ev => {
         if (notifStore.seen.has(ev.id)) return;
         notifStore.seen.add(ev.id);
         let type, content;
@@ -1833,14 +1817,12 @@
           const desc = ev.tags.find(t => t[0] === 'description')?.[1] || '';
           try { const z = JSON.parse(desc); content = z.content || 'Zap received'; } catch(e) { content = 'Zap received'; }
         } else {
-          const isReply = ev.tags.some(t => t[0] === 'e');
-          type = isReply ? '💬 REPLY' : '📡 MENTION';
+          type = ev.tags.some(t => t[0] === 'e') ? '💬 REPLY' : '📡 MENTION';
           content = ev.content.slice(0, 80) + (ev.content.length > 80 ? '...' : '');
         }
         notifStore.items.unshift({ id: ev.id, type, content, ts: ev.created_at, pubkey: ev.pubkey });
-        updateNotifBadge();
-        renderNotifList();
-      } catch(err) {} });
+        updateNotifBadge(); renderNotifList();
+      });
     });
   }
   function updateNotifBadge() {
@@ -1881,7 +1863,7 @@
     const seen2=new Set();let found=false;
     Object.values(ws).forEach(r=>{if(!r.ok)return;const sid='c_'+rnd();
     r.w.send(JSON.stringify(['REQ',sid,{kinds:[1],'#e':[eid],limit:50}]));
-    r.w.addEventListener('message',e=>{try{const d=JSON.parse(e.data);if(d[0]==='EVENT'&&d[1]===sid){const ev=d[2];if(seen2.has(ev.id))return;seen2.add(ev.id);if(!found){found=true;list.innerHTML=''}const div=document.createElement('div');div.className='cmt-item';div.innerHTML='<span class="cmt-author">'+shortenKey(ev.pubkey)+'</span>'+esc(ev.content);list.appendChild(div)}}catch(err){}})});
+    wsSub(sid, ev=>{if(seen2.has(ev.id))return;seen2.add(ev.id);if(!found){found=true;list.innerHTML=''}const div=document.createElement('div');div.className='cmt-item';div.innerHTML='<span class="cmt-author">'+shortenKey(ev.pubkey)+'</span>'+esc(ev.content);list.appendChild(div)})});
     setTimeout(()=>{if(!found)list.innerHTML='<div style="padding:14px;font-size:0.68em;color:var(--green-dark)">No replies yet.</div>'},4000);
   }
   function closeComments(){document.getElementById('comments-drawer').classList.remove('open')}
@@ -2565,16 +2547,13 @@
       if (!r.ok) return;
       const sid = 'hl_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid, { kinds: [30001], authors: [pk], '#d': ['m4tr1x-highlights'], limit: 1 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data);
-        if (d[0] !== 'EVENT' || d[2].kind !== 30001) return;
-        const ev = d[2];
+      wsSub(sid, ev => {
+        if (ev.kind !== 30001) return;
         const eids = ev.tags.filter(t => t[0] === 'e').map(t => t[1]);
-        if (!eids.length && !isMe) return;
+        if (!eids.length && !isMe) { wsUnsub(sid); return; }
         eids.forEach(id => _hlSet.add(id));
-        renderHighlights(eids, isMe);
-        r.w.removeEventListener('message', e.listener);
-      } catch(err) {} });
+        renderHighlights(eids, isMe); wsUnsub(sid);
+      });
     });
 
     // Se proprio profilo, mostra comunque il cerchio +
@@ -2636,15 +2615,11 @@
       if (!r.ok) return;
       const sid = 'hle_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid, { ids: [eid], limit: 1 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data);
-        if (d[0] !== 'EVENT' || d[2].id !== eid) return;
-        const ev = d[2];
+      wsSub(sid, ev => {
         evCache[eid] = ev;
-        const url = ev.tags.find(t => t[0] === 'url')?.[1];
-        const cap = ev.content || '';
-        updateHighlightCircle(eid, url, cap);
-      } catch(err) {} });
+        updateHighlightCircle(eid, ev.tags.find(t => t[0] === 'url')?.[1], ev.content || '');
+        wsUnsub(sid);
+      });
     });
   }
 
@@ -2793,15 +2768,12 @@
       if (!r.ok) return;
       const sid = 'fwl_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid, { kinds: [3], '#p': [pk], limit: 200 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data);
-        if (d[0] !== 'EVENT' || d[2].kind !== 3) return;
-        const follower = d[2].pubkey;
-        if (pubkeys.has(follower)) return;
-        pubkeys.add(follower);
+      wsSub(sid, ev => {
+        if (ev.kind !== 3 || pubkeys.has(ev.pubkey)) return;
+        pubkeys.add(ev.pubkey);
         if (!found) { found = true; body.innerHTML = ''; }
-        appendUserListItem(body, follower);
-      } catch(err) {} });
+        appendUserListItem(body, ev.pubkey);
+      });
     });
     setTimeout(() => {
       if (!found) body.innerHTML = '<div class="userlist-empty">[ NO FOLLOWERS YET ]</div>';
@@ -2815,15 +2787,14 @@
       if (!r.ok) return;
       const sid = 'fng_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid, { kinds: [3], authors: [pk], limit: 1 }]));
-      r.w.addEventListener('message', e => { try {
-        const d = JSON.parse(e.data);
-        if (d[0] !== 'EVENT' || d[2].kind !== 3 || d[2].pubkey !== pk) return;
-        const following = d[2].tags.filter(t => t[0] === 'p').map(t => t[1]);
-        if (!following.length) { body.innerHTML = '<div class="userlist-empty">[ NOT FOLLOWING ANYONE ]</div>'; return; }
-        body.innerHTML = '';
-        found = true;
+      wsSub(sid, ev => {
+        if (ev.kind !== 3 || ev.pubkey !== pk) return;
+        const following = ev.tags.filter(t => t[0] === 'p').map(t => t[1]);
+        if (!following.length) { body.innerHTML = '<div class="userlist-empty">[ NOT FOLLOWING ANYONE ]</div>'; wsUnsub(sid); return; }
+        body.innerHTML = ''; found = true;
         following.forEach(fpk => appendUserListItem(body, fpk));
-      } catch(err) {} });
+        wsUnsub(sid);
+      });
     });
     setTimeout(() => {
       if (!found) body.innerHTML = '<div class="userlist-empty">[ NO DATA ]</div>';
