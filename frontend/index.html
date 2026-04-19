@@ -969,18 +969,6 @@
 
   function loadNostrMusic() {
     const c = document.getElementById('nostr-music-slides');
-    const buf = []; let renderTimer = null;
-    function scheduleRender() {
-      clearTimeout(renderTimer);
-      renderTimer = setTimeout(() => {
-        // Hide fw-track-list placeholder if Nostr slides will fill the section
-        if (buf.length > 0) {
-          const ph = document.querySelector('#fw-track-list .slide-placeholder');
-          if (ph) ph.style.display = 'none';
-        }
-        renderByBoost('music', c, buf);
-      }, 3000);
-    }
     Object.entries(ws).forEach(([url, r]) => {
       if (!r.ok) return;
       const sid = 'music_' + rnd();
@@ -991,8 +979,10 @@
         const uTag = ev.tags.find(t => t[0] === 'url'); if (!uTag) return;
         if (!ev.tags.some(t => t[0] === 't' && t[1] === 'm4tr1x-music')) return;
         seen.music.add(ev.id);
-        buf.push({ev, vurl: uTag[1]});
-        scheduleRender();
+        const mime = ev.tags.find(t => t[0] === 'm')?.[1] || '';
+        const ph = document.querySelector('#fw-track-list .slide-placeholder');
+        if (ph) ph.style.display = 'none';
+        renderNostrMusicSlide(ev, uTag[1], mime, c);
       } catch (err) {} });
     });
   }
@@ -1015,6 +1005,79 @@
     if (audio.paused) { audio.play(); document.getElementById('fw-play-btn').textContent = '\u23F8'; }
     else { audio.pause(); document.getElementById('fw-play-btn').textContent = '\u25B6'; }
   }
+
+  // ========== NOSTR MUSIC RENDERER ==========
+  function renderNostrMusicSlide(ev, url, mime, container) {
+    const isVideo = mime.startsWith('video') || url.match(/\.(mp4|mov|webm)(\?|$)/i);
+    if (isVideo) {
+      // Video with music tag → use standard video slide
+      const slide = mkSlide(ev, url, 'music');
+      container.appendChild(slide);
+      loadProf(ev.pubkey).then(p => updateSlide(ev.id, ev.pubkey, p));
+      return;
+    }
+    // Audio → render player card
+    const name = profName(ev.pubkey) || shortenKey(ev.pubkey);
+    const title = ev.tags.find(t => t[0] === 'music-title')?.[1] || esc(ev.content || '').slice(0, 60) || 'Track';
+    const genre = ev.tags.find(t => t[0] === 'genre')?.[1] || '';
+    const el = document.createElement('div');
+    el.className = 'fw-track-item';
+    el.id = 'ms-' + ev.id;
+    el.innerHTML =
+      '<div class="fw-cover" style="font-size:2em">\u{1F3B5}</div>' +
+      '<div class="fw-info">' +
+        '<div class="fw-title">' + esc(title) + (genre ? ' <span style="color:var(--blue);font-size:0.75em">· ' + esc(genre) + '</span>' : '') + '</div>' +
+        '<div class="fw-artist" id="fnm-ms-' + ev.id + '" style="cursor:pointer" onclick="viewProf(\'' + ev.pubkey + '\')">' + esc(name) + ' · ' + ago(ev.created_at) + '</div>' +
+        '<input type="range" min="0" max="100" value="0" style="width:100%;accent-color:var(--green);margin-top:4px" ' +
+          'oninput="seekMusicSlide(event,\'' + ev.id + '\')" id="mseek-' + ev.id + '">' +
+      '</div>' +
+      '<button id="mplay-' + ev.id + '" onclick="event.stopPropagation();toggleMusicSlide(\'' + ev.id + '\',\'' + url + '\')" ' +
+        'style="background:none;border:1px solid var(--green);color:var(--green);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1em;flex-shrink:0">\u25B6</button>' +
+      '<button style="background:none;border:1px solid rgba(255,34,119,0.4);color:#ff2277;padding:4px 10px;font-size:0.65em;cursor:pointer;margin-left:6px;font-family:inherit" ' +
+        'onclick="event.stopPropagation();openZap(\'' + ev.id + '\',\'' + ev.pubkey + '\',null)">\u2665 H8</button>';
+    el.dataset.audioUrl = url;
+    container.appendChild(el);
+    loadProf(ev.pubkey).then(p => {
+      const nm = document.getElementById('fnm-ms-' + ev.id);
+      if (nm && (p?.name || p?.display_name)) nm.textContent = (p.name || p.display_name) + ' · ' + ago(ev.created_at);
+    });
+  }
+
+  function toggleMusicSlide(eid, url) {
+    const btn = document.getElementById('mplay-' + eid);
+    // Reuse fw-audio element
+    const audio = document.getElementById('fw-audio');
+    if (audio.dataset.eid === eid && !audio.paused) {
+      audio.pause();
+      if (btn) btn.textContent = '\u25B6';
+    } else {
+      // Pause previous music slide button if any
+      if (audio.dataset.eid && audio.dataset.eid !== eid) {
+        const prev = document.getElementById('mplay-' + audio.dataset.eid);
+        if (prev) prev.textContent = '\u25B6';
+      }
+      audio.src = url;
+      audio.dataset.eid = eid;
+      audio.play().catch(() => toast('PLAYBACK ERROR'));
+      if (btn) btn.textContent = '\u23F8';
+      document.getElementById('fw-now-playing').textContent = document.querySelector('#ms-' + eid + ' .fw-title')?.textContent || 'Track';
+      document.getElementById('fw-player').classList.add('show');
+      document.getElementById('fw-play-btn').textContent = '\u23F8';
+      // Update seek bar on timeupdate
+      audio.ontimeupdate = () => {
+        if (!audio.duration) return;
+        const bar = document.getElementById('mseek-' + audio.dataset.eid);
+        if (bar) bar.value = (audio.currentTime / audio.duration) * 100;
+      };
+    }
+  }
+
+  function seekMusicSlide(e, eid) {
+    const audio = document.getElementById('fw-audio');
+    if (audio.dataset.eid !== eid || !audio.duration) return;
+    audio.currentTime = (e.target.value / 100) * audio.duration;
+  }
+
   // ========== MASTODON FORUM INTEGRATION ==========
   function loadForum() {
     const c = document.getElementById('forum-container');
