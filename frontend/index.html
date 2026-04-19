@@ -850,14 +850,20 @@
     Object.entries(ws).forEach(([url,r])=>{
       if(!r.ok)return;
       const sid='sec_'+sec+'_'+rnd();
-      const filter={kinds:[1063],limit:25};
+      // Signal feed: only m4tr1x-signal tagged events — prevents music/film bleed
+      const filter={kinds:[1063],'#t':['m4tr1x-signal'],limit:25};
       r.w.send(JSON.stringify(['REQ',sid,filter]));
       r.w.addEventListener('message',e=>{try{
         const d=JSON.parse(e.data);if(d[0]!=='EVENT')return;const ev=d[2];
         if(seen[sec].has(ev.id))return;
+        // Guard: must be signal-tagged (relay may return extra events)
+        if(!ev.tags.some(t=>t[0]==='t'&&t[1]==='m4tr1x-signal'))return;
         const uTag=ev.tags.find(t=>t[0]==='url');const mTag=ev.tags.find(t=>t[0]==='m');
         if(!uTag)return;const vurl=uTag[1];
-        if(mTag&&!mTag[1].startsWith('video')&&!vurl.match(/\.(mp4|mov|webm)(\?|$)/i))return;
+        // Positive check: accept only confirmed video (mime or extension)
+        const mime=mTag?.[1]||'';
+        const isVideo=mime.startsWith('video')||!!vurl.match(/\.(mp4|mov|webm|avi|mkv)(\?|$)/i);
+        if(!isVideo)return;
         seen[sec].add(ev.id);
         buf.push({ev, vurl});
         scheduleRender();
