@@ -1,0 +1,13 @@
+{
+  "name": "alpha",
+  "capabilities": [
+    "film",
+    "music",
+    "reels",
+    "topic"
+  ],
+  "wsPort": 4848,
+  "nodeUrl": "http://192.168.178.106:8080",
+  "onion": "fcicneomtw4mihstawh6spu6f6lpxo6m4dxu276hm3q5nqmdaod4jyqd.onion",
+  "since": 1777449232
+}
