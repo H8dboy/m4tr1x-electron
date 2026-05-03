@@ -185,6 +185,10 @@
   <link rel="stylesheet" href="m4tr1x.css">
   <link rel="stylesheet" href="comfort.css">
   <link rel="stylesheet" href="design.css">
+  <!-- P2P video stack: hls.js + p2p-media-loader -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-core@latest/build/p2p-media-loader-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p2p-media-loader-hlsjs@latest/build/p2p-media-loader-hlsjs.min.js"></script>
 </head><body>
   <div id="section-pill" class="signal-pill">SIGNAL</div>
   <div id="topbar">
@@ -766,6 +770,19 @@
   </div>
 
   <div id="toast"></div>
+
+  <!-- ─── P2P Video Player Overlay ────────────────────────────────── -->
+  <div id="p2p-player-overlay" style="display:none;position:fixed;inset:0;z-index:500;background:#000;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(0,0,0,0.7)">
+      <span id="p2p-player-title" style="color:#fff;font-size:.95em;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70vw"></span>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span id="p2p-peer-badge" style="font-size:.7em;color:var(--green);display:none">● P2P</span>
+        <button onclick="closeVideoPlayer()" style="background:none;border:none;color:#fff;font-size:1.4em;cursor:pointer;padding:4px">✕</button>
+      </div>
+    </div>
+    <video id="p2p-video" style="width:100%;flex:1;background:#000;object-fit:contain" controls playsinline></video>
+    <div style="padding:6px 14px;background:rgba(0,0,0,0.5);font-size:.7em;color:#555" id="p2p-stats-bar">Caricamento...</div>
+  </div>
 
   <!-- ─── Error Bar ─────────────────────────────────────────────── -->
   <div id="err-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1a0008;border-top:2px solid #ff003c;font-family:monospace;font-size:0.72em;max-height:180px;overflow-y:auto">
@@ -3630,5 +3647,89 @@
   <button onclick="closeLiveView()" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1em;cursor:pointer">✕</button>
   <div style="position:absolute;top:12px;left:12px;background:var(--red);color:#fff;font-size:0.65em;font-family:var(--font-mono);padding:3px 8px;border-radius:6px;letter-spacing:2px">● LIVE</div>
   </div></div></div>
+
+<script>
+// ─── P2P Video Player ────────────────────────────────────────────────────────
+let _p2pHls = null
+let _p2pStatsInterval = null
+
+async function openVideoPlayer(hlsUrl, title) {
+  closeVideoPlayer()
+
+  document.getElementById('p2p-player-overlay').style.display = 'flex'
+  document.getElementById('p2p-player-title').textContent = title || ''
+  document.getElementById('p2p-stats-bar').textContent = 'Connessione...'
+
+  const video = document.getElementById('p2p-video')
+
+  // Fetch P2P config from node
+  let trackerAnnounce = ['wss://tracker.btorrent.xyz', 'wss://tracker.openwebtorrent.com']
+  try {
+    const base = window.M4TR1X_BASE || ''
+    const cfg  = await fetch(base + '/api/v1/p2p/config').then(r => r.json()).catch(() => ({}))
+    if (cfg.loader && cfg.loader.trackerAnnounce) trackerAnnounce = cfg.loader.trackerAnnounce
+  } catch {}
+
+  if (typeof p2pml === 'undefined' || !p2pml.hlsjs || !Hls || !Hls.isSupported()) {
+    // Fallback: native HLS (Safari) or direct
+    video.src = hlsUrl
+    video.play().catch(() => {})
+    document.getElementById('p2p-stats-bar').textContent = 'Streaming HTTP (P2P non disponibile su questo browser)'
+    return
+  }
+
+  const engine = new p2pml.hlsjs.Engine({
+    loader: {
+      trackerAnnounce,
+      simultaneousP2PDownloads: 3,
+      cachedSegmentExpiration:  5 * 60 * 1000,
+      cachedSegmentsCount:      20,
+    }
+  })
+
+  _p2pHls = new Hls({ ...p2pml.hlsjs.Engine.getHlsConfig(engine), autoStartLoad: true })
+  engine.on(p2pml.core.Events.PeerConnect,    () => updateP2PBadge(engine))
+  engine.on(p2pml.core.Events.PeerClose,      () => updateP2PBadge(engine))
+  engine.on(p2pml.core.Events.SegmentLoaded,  () => updateP2PStats(engine))
+
+  _p2pHls.loadSource(hlsUrl)
+  _p2pHls.attachMedia(video)
+  _p2pHls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}))
+
+  _p2pStatsInterval = setInterval(() => updateP2PStats(engine), 3000)
+}
+
+function updateP2PBadge(engine) {
+  const peers = engine.loader ? (engine.loader.getP2PDownloaders ? engine.loader.getP2PDownloaders().length : 0) : 0
+  const badge = document.getElementById('p2p-peer-badge')
+  badge.style.display = peers > 0 ? 'inline' : 'none'
+  if (peers > 0) badge.textContent = `● P2P · ${peers} peer${peers !== 1 ? 's' : ''}`
+}
+
+function updateP2PStats(engine) {
+  try {
+    const st = engine.loader && engine.loader.getStats ? engine.loader.getStats() : null
+    if (!st) return
+    const p2pMB = ((st.p2pDownloadSpeed || 0) / 1024 / 1024 * 8).toFixed(2)
+    const httpMB = ((st.httpDownloadSpeed || 0) / 1024 / 1024 * 8).toFixed(2)
+    const peers = st.peersCount || 0
+    document.getElementById('p2p-stats-bar').textContent =
+      `P2P: ${p2pMB} Mbit/s · HTTP: ${httpMB} Mbit/s · ${peers} peer${peers !== 1 ? 's' : ''} connessi`
+    updateP2PBadge(engine)
+  } catch {}
+}
+
+function closeVideoPlayer() {
+  if (_p2pHls) { try { _p2pHls.destroy() } catch {} _p2pHls = null }
+  if (_p2pStatsInterval) { clearInterval(_p2pStatsInterval); _p2pStatsInterval = null }
+  const v = document.getElementById('p2p-video')
+  v.pause(); v.src = ''
+  document.getElementById('p2p-player-overlay').style.display = 'none'
+  document.getElementById('p2p-peer-badge').style.display = 'none'
+}
+
+// Close on Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVideoPlayer() })
+</script>
 </body>
 </html>
