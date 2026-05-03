@@ -122,7 +122,7 @@
 
       toast('🔴 LIVE: '+title);
       closeGoLive();
-      switchSec('live');
+      switchSec('film');
       loadLiveStreams();
     }catch(e){toast('CAMERA ERROR: '+e.message);}
   }
@@ -209,7 +209,6 @@
     <button class="sec-tab forum-tab" onclick="switchSec('forum')">🏛️</button>
     <button class="sec-tab shop-tab desktop-only" onclick="switchSec('shop')">🛍️</button>
     <button class="sec-tab dm-tab" onclick="switchSec('dm')">💬</button>
-    <button class="sec-tab live-tab" onclick="switchSec('live')">🔴</button>
   </div>
   <div class="section-banner" id="banner-film">
     <span class="banner-icon">🎬</span>
@@ -231,11 +230,19 @@
     <span class="banner-icon">💬</span>
     <div class="banner-text"><strong>PRIVATE MESSAGES</strong>ChaCha20-Poly1305 · E2E Encrypted · No phone number <span class="integration-status live">E2E ENCRYPTED</span></div>
   </div>
-  <div class="section-banner" id="banner-live"><span class="banner-icon">🔴</span><div class="banner-text"><strong>LIVE STREAMS</strong> WebRTC P2P · Decentralized <span class="integration-status live">P2P LIVE</span></div></div>
   <button id="mute-btn" onclick="toggleMute()">🔇</button>
   <div id="feed-wrap">
     <div class="section-feed active" id="feed-signal"><div class="slide-placeholder"><div class="ph-text">[ CONNECTING TO RELAYS... ]</div></div></div>
-    <div class="section-feed" id="feed-film"><div class="slide-placeholder"><div class="ph-text">[ CONNECTING TO PEERTUBE INSTANCES... ]</div></div></div>
+    <div class="section-feed" id="feed-film">
+      <div id="film-live-panel" style="padding:12px 12px 0">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <button class="go-live-btn" onclick="openGoLive()" style="flex:1">🔴 GO LIVE</button>
+          <button class="go-live-btn" onclick="stopGoLive()" style="flex:1;background:rgba(255,255,255,0.06)">⏹ STOP</button>
+        </div>
+        <div id="live-streams-list"><div class="slide-placeholder"><div class="ph-text" style="color:rgba(255,0,68,0.3)">[ NO LIVE STREAMS ]\n\nBe the first to go live.</div></div></div>
+      </div>
+      <div id="film-slides-wrap"><div class="slide-placeholder"><div class="ph-text">[ CONNECTING TO PEERTUBE INSTANCES... ]</div></div></div>
+    </div>
     <div class="section-feed" id="feed-music">
       <div class="funkwhale-track" id="fw-track-list"><div class="slide-placeholder"><div class="ph-text">[ CONNECTING TO FUNKWHALE INSTANCES... ]</div></div></div>
       <div id="nostr-music-slides"></div>
@@ -252,15 +259,6 @@
         </div>
         <div class="shop-grid" id="shop-grid"><div class="slide-placeholder" style="grid-column:span 2"><div class="ph-text">[ LOADING MARKETPLACE... ]</div></div></div>
         <div class="shop-powered">DECENTRALIZED MARKETPLACE · M4TR1X TOKEN ECONOMY</div>
-      </div>
-    </div>
-    <div class="section-feed" id="feed-live">
-      <div style="padding:16px">
-        <div style="display:flex;gap:10px;margin-bottom:16px">
-          <button class="go-live-btn" onclick="openGoLive()" style="flex:1">🔴 GO LIVE</button>
-          <button class="go-live-btn" onclick="stopGoLive()" style="flex:1;background:rgba(255,255,255,0.06)">⏹ STOP</button>
-        </div>
-        <div id="live-streams-list"><div class="slide-placeholder"><div class="ph-text" style="color:rgba(255,0,68,0.3)">[ NO LIVE STREAMS ]\n\nBe the first to go live.</div></div></div>
       </div>
     </div>
     <div class="section-feed" id="feed-dm">
@@ -280,15 +278,58 @@
   <div id="bottom-nav">
     <button class="bnav active" id="bnav-signal" onclick="switchSec('signal')"><span class="bicon">📡</span><span class="bnav-label">SIGNAL</span></button>
     <button class="bnav film-nav" id="bnav-film" onclick="switchSec('film')"><span class="bicon">🎬</span><span class="bnav-label">FILM</span></button>
-    <button class="bnav forum-nav" id="bnav-forum" onclick="switchSec('forum')"><span class="bicon">🏛️</span><span class="bnav-label">FORUM</span></button>
-    <button class="bnav post-nav" onclick="openUpload()"><span class="bicon">＋</span><span class="bnav-label">POST</span></button>
     <button class="bnav music-nav" id="bnav-music" onclick="switchSec('music')"><span class="bicon">🎵</span><span class="bnav-label">MUSIC</span></button>
+    <button class="bnav post-nav" onclick="openUpload()"><span class="bicon">＋</span><span class="bnav-label">POST</span></button>
+    <button class="bnav forum-nav" id="bnav-forum" onclick="switchSec('forum')"><span class="bicon">🏛️</span><span class="bnav-label">FORUM</span></button>
     <button class="bnav shop-nav" id="bnav-shop" onclick="switchSec('shop')"><span class="bicon">🛍️</span><span class="bnav-label">SHOP</span></button>
-    <button class="bnav live-nav" id="bnav-live" onclick="switchSec('live')" style="position:relative"><span class="bicon">🔴</span><span class="bnav-label">LIVE</span><span id="live-count-badge" style="display:none;position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:0.5em;font-family:var(--font-mono);border-radius:8px;padding:1px 5px;min-width:16px;text-align:center;letter-spacing:0"></span></button>
     <button class="bnav dm-nav" id="bnav-dm" onclick="switchSec('dm')" style="position:relative"><span class="bicon">💬</span><span class="bnav-label">DM</span><span id="dm-unread-badge" style="display:none;position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:0.5em;font-family:var(--font-mono);border-radius:8px;padding:1px 5px;min-width:16px;text-align:center;letter-spacing:0"></span></button>
   </div>
   <button class="forum-new-btn" id="forum-fab" onclick="openForumModal()">＋</button>
   <button class="shop-sell-btn" id="shop-fab" onclick="openSellModal()">＋</button>
+  <button class="signal-post-fab show" id="signal-fab" onclick="openSignalPostModal()">＋</button>
+
+  <!-- Signal post modal: Photo or Story -->
+  <div id="signal-post-modal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.82);align-items:flex-end;justify-content:center">
+    <div style="width:100%;max-width:520px;background:#0a0a0a;border-top:1px solid rgba(0,255,136,0.18);border-radius:18px 18px 0 0;padding:22px 20px 32px;margin:0 auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <span style="font-family:var(--font-display);font-size:0.78em;letter-spacing:3px;color:var(--green)">PUBBLICA</span>
+        <button onclick="closeSignalPostModal()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:1.3em;cursor:pointer;line-height:1">✕</button>
+      </div>
+      <!-- Mode picker -->
+      <div style="display:flex;gap:10px;margin-bottom:18px">
+        <button id="spm-tab-photo" onclick="spmSetMode('photo')" style="flex:1;padding:11px;border:1px solid var(--green);background:rgba(0,255,136,0.12);color:var(--green);font-family:var(--font-mono);font-size:0.7em;letter-spacing:2px;cursor:pointer;border-radius:8px">📷 FOTO</button>
+        <button id="spm-tab-story" onclick="spmSetMode('story')" style="flex:1;padding:11px;border:1px solid rgba(0,255,136,0.25);background:none;color:rgba(0,255,136,0.5);font-family:var(--font-mono);font-size:0.7em;letter-spacing:2px;cursor:pointer;border-radius:8px">⭕ STORIA</button>
+      </div>
+      <div id="spm-story-note" style="display:none;font-size:0.62em;color:rgba(255,200,80,0.7);letter-spacing:1px;margin-bottom:12px;text-align:center">Scade in 24h · visibile solo a chi ti segue</div>
+      <!-- Image picker -->
+      <div id="spm-drop" onclick="document.getElementById('spm-file').click()" style="border:1px dashed rgba(0,255,136,0.3);border-radius:10px;padding:24px;text-align:center;cursor:pointer;margin-bottom:14px;min-height:90px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px">
+        <div style="font-size:2em">📷</div>
+        <div style="font-size:0.68em;font-family:var(--font-mono);color:rgba(0,255,136,0.5);letter-spacing:1px">TOCCA PER SCEGLIERE FOTO</div>
+      </div>
+      <input type="file" id="spm-file" accept="image/*" style="display:none" onchange="spmPreviewFile(this)">
+      <img id="spm-preview" style="display:none;width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:14px">
+      <!-- Caption -->
+      <div style="margin-bottom:10px">
+        <textarea id="spm-caption" rows="2" placeholder="Scrivi una didascalia..." style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(0,255,136,0.2);color:#fff;font-family:var(--font-mono);font-size:0.8em;padding:10px;outline:none;resize:none;border-radius:6px;box-sizing:border-box"></textarea>
+      </div>
+      <!-- Alt text -->
+      <div style="margin-bottom:10px">
+        <input id="spm-alt" type="text" placeholder="Testo alternativo (accessibilità)..." style="width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(0,255,136,0.12);color:rgba(255,255,255,0.7);font-family:var(--font-mono);font-size:0.72em;padding:8px;outline:none;border-radius:6px;box-sizing:border-box">
+      </div>
+      <!-- Tags -->
+      <div style="margin-bottom:14px">
+        <input id="spm-tags" type="text" placeholder="#tag1 #tag2 #tag3" style="width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(0,255,136,0.12);color:rgba(0,255,136,0.6);font-family:var(--font-mono);font-size:0.72em;padding:8px;outline:none;border-radius:6px;box-sizing:border-box">
+      </div>
+      <!-- Progress -->
+      <div id="spm-progress" style="display:none;margin-bottom:12px">
+        <div style="height:3px;background:rgba(0,255,136,0.1);border-radius:2px;overflow:hidden">
+          <div id="spm-prog-fill" style="height:100%;background:var(--green);width:0%;transition:width 0.3s"></div>
+        </div>
+        <div id="spm-prog-txt" style="font-size:0.6em;color:var(--green);text-align:center;margin-top:6px;letter-spacing:1px;font-family:var(--font-mono)">Caricamento...</div>
+      </div>
+      <button id="spm-publish-btn" onclick="doSignalPost()" disabled style="width:100%;padding:14px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:rgba(0,255,136,0.4);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;cursor:not-allowed;border-radius:8px;transition:0.2s">PUBBLICA</button>
+    </div>
+  </div>
   <!-- Funkwhale Audio Player -->
   <div id="fw-player">
     <button class="fw-player-btn" id="fw-play-btn" onclick="toggleFwPlay()">▶</button>
@@ -725,6 +766,65 @@
   </div>
 
   <div id="toast"></div>
+
+  <!-- ─── Error Bar ─────────────────────────────────────────────── -->
+  <div id="err-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1a0008;border-top:2px solid #ff003c;font-family:monospace;font-size:0.72em;max-height:180px;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-bottom:1px solid rgba(255,0,60,0.3);position:sticky;top:0;background:#1a0008">
+      <span style="color:#ff003c;letter-spacing:2px;font-size:0.9em">⚠ ERRORS</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="copyAllErrors()" style="background:rgba(255,0,60,0.15);border:1px solid rgba(255,0,60,0.4);color:#ff003c;font-family:monospace;font-size:0.85em;padding:2px 8px;cursor:pointer">COPY ALL</button>
+        <button onclick="clearErrors()" style="background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);font-family:monospace;font-size:0.85em;padding:2px 8px;cursor:pointer">✕ CLEAR</button>
+      </div>
+    </div>
+    <div id="err-list" style="padding:4px 0"></div>
+  </div>
+  <script>
+  (function(){
+    const _errs = [];
+    function showErr(msg) {
+      _errs.push(msg);
+      const bar = document.getElementById('err-bar');
+      const list = document.getElementById('err-list');
+      if(!bar||!list) return;
+      bar.style.display = 'block';
+      // adjust bottom-nav padding so bar doesn't overlap
+      const entry = document.createElement('div');
+      entry.style.cssText = 'padding:3px 10px;border-bottom:1px solid rgba(255,0,60,0.12);color:#ff6680;word-break:break-all;cursor:pointer;line-height:1.4';
+      entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+      entry.onclick = () => { navigator.clipboard?.writeText(msg).catch(()=>{}); entry.style.background='rgba(255,0,60,0.18)'; setTimeout(()=>entry.style.background='',600); };
+      list.appendChild(entry);
+      list.scrollTop = list.scrollHeight;
+    }
+    window._showErr = showErr;
+    window.copyAllErrors = function(){
+      navigator.clipboard?.writeText(_errs.join('\n')).catch(()=>{});
+      const btn = document.querySelector('#err-bar button');
+      if(btn){const t=btn.textContent;btn.textContent='✓ COPIATO';setTimeout(()=>btn.textContent=t,1400);}
+    };
+    window.clearErrors = function(){
+      _errs.length=0;
+      const list=document.getElementById('err-list');
+      if(list)list.innerHTML='';
+      const bar=document.getElementById('err-bar');
+      if(bar)bar.style.display='none';
+    };
+    // intercept console.error
+    const _ce = console.error.bind(console);
+    console.error = function(...args){
+      _ce(...args);
+      showErr(args.map(a=>typeof a==='object'?JSON.stringify(a):String(a)).join(' '));
+    };
+    // unhandled JS errors
+    window.onerror = function(msg, src, line, col, err){
+      showErr((err?.stack||msg) + (src?' @ '+src.split('/').pop()+':'+line:''));
+      return false;
+    };
+    // unhandled promise rejections
+    window.addEventListener('unhandledrejection', function(e){
+      showErr('UnhandledPromise: ' + (e.reason?.stack || e.reason?.message || String(e.reason)));
+    });
+  })();
+  </script>
   <script>
   // AUTH GATE
   (function(){
@@ -886,7 +986,7 @@
     }
   };
   // ========== STATE ==========
-  const S={pubkey:window._pk,method:window._method,privkey:window._priv,muted:true,section:'signal',loaded:{signal:false,film:false,music:false,forum:false,shop:false,dm:false,live:true},cmtEventId:null,zapEventId:null,zapPubkey:null,zapCreatorH8Id:null,file:null,uploadCat:'signal',tokenBalance:0,tokenAmount:0,dmTarget:null,fwPlaying:null,h8address:null};
+  const S={pubkey:window._pk,method:window._method,privkey:window._priv,muted:true,section:'signal',loaded:{signal:false,film:false,music:false,forum:false,shop:false,dm:false},cmtEventId:null,zapEventId:null,zapPubkey:null,zapCreatorH8Id:null,file:null,uploadCat:'signal',tokenBalance:0,tokenAmount:0,dmTarget:null,fwPlaying:null,h8address:null};
   const RELAYS=CONFIG.relays;
   const BLOSSOM=CONFIG.blossom;
   const CAT_TAG={signal:'m4tr1x-signal',film:'m4tr1x-film',music:'m4tr1x-music'};
@@ -1025,7 +1125,7 @@
 
   // ========== SECTION SWITCH ==========
   // Section label map
-  const SEC_LABELS = {signal:'📡 SIGNAL',film:'🎬 FILM',music:'🎵 MUSIC',forum:'🏛️ FORUM',shop:'🛍️ SHOP',dm:'💬 MESSAGES',live:'🔴 LIVE'};
+  const SEC_LABELS = {signal:'📡 SIGNAL',film:'🎬 FILM',music:'🎵 MUSIC',forum:'🏛️ FORUM',shop:'🛍️ SHOP',dm:'💬 MESSAGES'};
 
   function switchSec(name){
     S.section=name;
@@ -1035,11 +1135,12 @@
     document.querySelectorAll('.section-banner').forEach(b=>b.classList.remove('show'));
     if(name!=='signal'){const bn=document.getElementById('banner-'+name);if(bn)bn.classList.add('show');}
     document.querySelectorAll('.bnav').forEach(b=>b.classList.remove('active'));
-    const bmap={signal:'bnav-signal',film:'bnav-film',music:'bnav-music',forum:'bnav-forum',shop:'bnav-shop',dm:'bnav-dm',live:'bnav-live'};
+    const bmap={signal:'bnav-signal',film:'bnav-film',music:'bnav-music',forum:'bnav-forum',shop:'bnav-shop',dm:'bnav-dm'};
     if(bmap[name]){const bn=document.getElementById(bmap[name]);if(bn)bn.classList.add('active');}
-    if(name==='live')loadLiveStreams();
+    if(name==='film')loadLiveStreams();
     document.getElementById('forum-fab').classList.toggle('show',name==='forum');
     document.getElementById('shop-fab').classList.toggle('show',name==='shop');
+    document.getElementById('signal-fab').classList.toggle('show',name==='signal');
     document.getElementById('mute-btn').style.display=(name==='signal'||name==='film'||name==='music')?'flex':'none';
     document.getElementById('fw-player').classList.toggle('show',name==='music'&&S.fwPlaying);
     // Update section pill
@@ -1196,7 +1297,7 @@
   }
   // ========== PEERTUBE INTEGRATION ==========
   function loadPeerTube() {
-    const c = document.getElementById('feed-film');
+    const c = document.getElementById('film-slides-wrap') || document.getElementById('feed-film');
     CONFIG.peertube.forEach(instance => {
       fetch(instance + '/api/v1/videos?count=10&sort=-publishedAt&nsfw=false')
         .then(r => r.json())
@@ -1234,7 +1335,7 @@
   }
 
   function loadNostrFilm() {
-    const c = document.getElementById('feed-film');
+    const c = document.getElementById('film-slides-wrap') || document.getElementById('feed-film');
     const buf = []; let renderTimer = null;
     function scheduleRender() {
       clearTimeout(renderTimer);
@@ -1252,7 +1353,7 @@
       });
     });
     setTimeout(() => {
-      if (!buf.length) loadNostrFallback('film', document.getElementById('feed-film'));
+      if (!buf.length) loadNostrFallback('film', document.getElementById('film-slides-wrap') || document.getElementById('feed-film'));
     }, 8000);
   }
 
@@ -2405,6 +2506,104 @@
     else el.textContent='H8';
   }
   // UPLOAD
+  // ─── Signal FAB: photo / story post ────────────────────────────────────────
+  let _spmMode = 'photo';
+  let _spmFile = null;
+
+  function openSignalPostModal() {
+    if(!S.pubkey){toast('LOGIN FIRST');return}
+    _spmFile = null;
+    _spmMode = 'photo';
+    document.getElementById('signal-post-modal').style.display = 'flex';
+    document.getElementById('spm-preview').style.display = 'none';
+    document.getElementById('spm-caption').value = '';
+    document.getElementById('spm-alt').value = '';
+    document.getElementById('spm-tags').value = '';
+    document.getElementById('spm-progress').style.display = 'none';
+    document.getElementById('spm-prog-fill').style.width = '0%';
+    document.getElementById('spm-publish-btn').disabled = true;
+    document.getElementById('spm-publish-btn').style.color = 'rgba(0,255,136,0.4)';
+    document.getElementById('spm-publish-btn').style.cursor = 'not-allowed';
+    document.getElementById('spm-drop').innerHTML = '<div style="font-size:2em">📷</div><div style="font-size:0.68em;font-family:var(--font-mono);color:rgba(0,255,136,0.5);letter-spacing:1px">TOCCA PER SCEGLIERE FOTO</div>';
+    spmSetMode('photo');
+  }
+  function closeSignalPostModal() {
+    document.getElementById('signal-post-modal').style.display = 'none';
+    _spmFile = null;
+  }
+  function spmSetMode(mode) {
+    _spmMode = mode;
+    const tabPhoto = document.getElementById('spm-tab-photo');
+    const tabStory = document.getElementById('spm-tab-story');
+    const note = document.getElementById('spm-story-note');
+    if(mode === 'photo'){
+      tabPhoto.style.border = '1px solid var(--green)';
+      tabPhoto.style.background = 'rgba(0,255,136,0.12)';
+      tabPhoto.style.color = 'var(--green)';
+      tabStory.style.border = '1px solid rgba(0,255,136,0.25)';
+      tabStory.style.background = 'none';
+      tabStory.style.color = 'rgba(0,255,136,0.5)';
+      note.style.display = 'none';
+    } else {
+      tabStory.style.border = '1px solid var(--green)';
+      tabStory.style.background = 'rgba(0,255,136,0.12)';
+      tabStory.style.color = 'var(--green)';
+      tabPhoto.style.border = '1px solid rgba(0,255,136,0.25)';
+      tabPhoto.style.background = 'none';
+      tabPhoto.style.color = 'rgba(0,255,136,0.5)';
+      note.style.display = 'block';
+    }
+  }
+  function spmPreviewFile(input) {
+    const file = input.files[0];
+    if(!file || !file.type.startsWith('image/')){toast('SOLO IMMAGINI');return}
+    _spmFile = file;
+    const url = URL.createObjectURL(file);
+    const img = document.getElementById('spm-preview');
+    img.src = url; img.style.display = 'block';
+    document.getElementById('spm-drop').innerHTML = '<div style="font-size:1.5em">✅</div><div style="font-size:0.65em;font-family:var(--font-mono);color:rgba(0,255,136,0.6);letter-spacing:1px">'+file.name+'</div>';
+    const btn = document.getElementById('spm-publish-btn');
+    btn.disabled = false;
+    btn.style.color = 'var(--green)';
+    btn.style.cursor = 'pointer';
+    btn.style.background = 'rgba(0,255,136,0.15)';
+    btn.style.border = '1px solid var(--green)';
+  }
+  async function doSignalPost() {
+    if(!_spmFile){toast('SELEZIONA UN\'IMMAGINE');return}
+    const btn = document.getElementById('spm-publish-btn');
+    btn.disabled = true; btn.textContent = 'CARICAMENTO...';
+    const prog = document.getElementById('spm-progress');
+    const fill = document.getElementById('spm-prog-fill');
+    const txt  = document.getElementById('spm-prog-txt');
+    prog.style.display = 'block'; fill.style.width = '30%'; txt.textContent = 'Upload...';
+    try {
+      const fd = new FormData();
+      fd.append('photo', _spmFile);
+      fd.append('caption', document.getElementById('spm-caption').value);
+      fd.append('alt', document.getElementById('spm-alt').value);
+      const rawTags = document.getElementById('spm-tags').value;
+      fd.append('tags', rawTags.replace(/#/g,'').trim());
+      const endpoint = _spmMode === 'story' ? '/api/v1/story/publish' : '/api/v1/photo/publish';
+      fill.style.width = '60%'; txt.textContent = 'Pubblicazione Nostr...';
+      const res = await fetch((S.privateNodeUrl||'') + endpoint, {method:'POST', body:fd}).then(r=>r.json());
+      fill.style.width = '100%';
+      if(res.ok){
+        txt.textContent = _spmMode === 'story' ? 'Storia pubblicata!' : 'Foto pubblicata!';
+        toast(_spmMode === 'story' ? '⭕ STORIA PUBBLICATA' : '📷 FOTO PUBBLICATA');
+        setTimeout(()=>closeSignalPostModal(), 1200);
+      } else {
+        txt.textContent = 'Errore: ' + (res.error||'sconosciuto');
+        btn.disabled = false; btn.textContent = 'PUBBLICA';
+      }
+    } catch(e) {
+      txt.textContent = 'Errore di rete';
+      btn.disabled = false; btn.textContent = 'PUBBLICA';
+    }
+  }
+  // close signal modal on backdrop click
+  document.getElementById('signal-post-modal').addEventListener('click', function(e){if(e.target===this)closeSignalPostModal();});
+
   function openUpload(){
     if(!S.pubkey){toast('LOGIN FIRST');return}
     if(IS_MOBILE){toast('UPLOAD DISPONIBILE SU DESKTOP');return}

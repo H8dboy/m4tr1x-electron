@@ -171,13 +171,15 @@ function locateContent(id) {
 
 function startContentDiscovery() {
   const since = Math.floor(Date.now() / 1000) - 1800  // last 30 min
-  subscribeToFilter([{ kinds: [1], '#t': ['m4tr1x-content'], since }], ev => {
-    try {
-      const data = JSON.parse(ev.content)
-      if (!data.id || !data.node) return
-      contentRegistry.set(data.id, { nodeUrl: data.node, nodeName: data.nodeName, ts: Date.now() })
-    } catch {}
-  }).catch(() => {})
+  try {
+    subscribeToFilter({ kinds: [1], '#t': ['m4tr1x-content'], since }, ev => {
+      try {
+        const data = JSON.parse(ev.content)
+        if (!data.id || !data.node) return
+        contentRegistry.set(data.id, { nodeUrl: data.node, nodeName: data.nodeName, ts: Date.now() })
+      } catch {}
+    })
+  } catch {}
 }
 
 // Returns the private node URL for shop/crypto calls

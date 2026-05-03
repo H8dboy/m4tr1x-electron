@@ -477,6 +477,9 @@ body::before {
 .shop-sell-btn { position:fixed; bottom:calc(var(--bottom) + 18px); right:16px; z-index:197; background:var(--orange); color:#000; border:none; width:52px; height:52px; border-radius:50%; font-size:1.5em; cursor:pointer; box-shadow:0 0 26px rgba(255,154,60,0.42); transition:0.2s; display:none }
 .shop-sell-btn.show { display:flex; align-items:center; justify-content:center }
 .shop-sell-btn:hover { box-shadow:0 0 36px rgba(255,154,60,0.6); transform:scale(1.06) }
+.signal-post-fab { position:fixed; bottom:calc(var(--bottom) + 18px); right:16px; z-index:197; background:var(--green); color:#000; border:none; width:56px; height:56px; border-radius:50%; font-size:1.7em; font-weight:700; cursor:pointer; box-shadow:0 0 28px rgba(0,255,136,0.45); transition:0.2s; display:none; align-items:center; justify-content:center }
+.signal-post-fab.show { display:flex }
+.signal-post-fab:hover { box-shadow:0 0 40px rgba(0,255,136,0.7); transform:scale(1.08) }
 .shop-powered { text-align:center; padding:14px; font-size:0.47em; color:var(--text-muted); letter-spacing:2px }
 
 /* Sell modal */
