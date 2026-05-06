@@ -6,33 +6,69 @@
 [![License](https://img.shields.io/github/license/H8dboy/m4tr1x-electron)](LICENSE)
 [![Build](https://github.com/H8dboy/m4tr1x-electron/actions/workflows/build.yml/badge.svg)](https://github.com/H8dboy/m4tr1x-electron/actions)
 
+**A decentralized social network. No central server. No company. No identity verification.**
+
 </div>
-
-M4TR1X is a decentralized social network. It runs on a network of community nodes — regular computers that anyone can set up — with no central server, no company behind it, and no algorithm deciding what you see.
-
-You create one account. With that account you can post text, upload videos, share music, write in forums, send encrypted messages, and sell things — all in the same place. Your identity is tied to a cryptographic key that only you control, not to an email address or a phone number registered with a platform.
-
-Content lives on nodes, not on a datacenter. When you upload a video it goes to a node on the M4TR1X network and stays there. Node operators earn 30% of every tip that passes through their node automatically.
-
-The tipping currency is the H8 token — a closed utility token that only exists inside M4TR1X. Tipping costs something, so signal beats spam without needing a moderation team.
-
-The network runs over Tor by default. If you are on a censored network, M4TR1X detects it and routes through Tor automatically.
 
 ---
 
-## What you need to know before running it
+## Why M4TR1X exists
 
-**This is a Developer Preview (v2.3.0).** It is stable enough to self-host and contribute to. It is not yet recommended for high-risk use cases.
+The EU is moving toward mandatory identity verification for social media access — through the DSA framework, age verification proposals, and digital identity schemes. The premise is that platforms must know who their users are. M4TR1X is built on the opposite premise: that a social network can function without ever knowing who you are, because there is no central system to ask.
 
-Every account uses ML-DSA65 post-quantum signatures (NIST FIPS-204). Your private key is encrypted on disk with AES-256-GCM. There is no account recovery if you lose your password — keep it safe.
+In 2024–2025, EU regulators began requiring mechanisms that would force users to prove their age or identity before accessing social platforms. The stated goals are legitimate — protecting minors, reducing abuse. The structural consequence is a centralized registry of who uses which platform, controllable by whoever controls the platform.
+
+M4TR1X has no central server. It has no user database. Your identity is a cryptographic key pair that lives on your device. There is no company to send a compliance notice to, no database to subpoena, no algorithm deciding what you see. This is not a political statement — it is an architectural choice with political consequences.
+
+---
+
+## What M4TR1X is
+
+M4TR1X is a decentralized social network that runs on a network of community nodes — regular computers that anyone can set up. One account gives you access to:
+
+- Post text and images
+- Upload and watch videos
+- Share music
+- Write in forums
+- Send end-to-end encrypted messages
+- Sell things
+
+Your identity is tied to a cryptographic key that only you control — not to an email address, a phone number, or any account registered with a platform.
+
+Content lives on nodes, not in a datacenter. When you upload a video it goes to a node on the M4TR1X network and stays there. Node operators earn 30% of every tip that passes through their node, automatically.
+
+The tipping currency is the **H8 token** — a closed utility token that exists only inside M4TR1X. You cannot trade it on exchanges. Tipping costs something, so signal beats spam without needing a moderation team.
+
+The network routes over **Tor by default**. If you are on a censored network, M4TR1X detects it and routes through Tor automatically.
+
+---
+
+## Status
+
+**Developer Preview — v2.3.0**
+
+Stable enough to self-host and contribute to. Not yet recommended for high-risk use cases. The first public node is live.
+
+---
+
+## Security model
+
+- Every account uses **ML-DSA-65 post-quantum signatures** (NIST FIPS-204)
+- Private keys are encrypted on disk with **AES-256-GCM**
+- No account recovery — if you lose your password, your account is gone. Keep it safe.
+- No phone number, no email, no identity linked to your account
 
 ---
 
 ## Install
 
-Download the binary for your OS from [Releases](https://github.com/H8dboy/m4tr1x-electron/releases/latest) and run it. Verify the SHA-256 against `checksums-*.txt` before running.
+Download the binary for your OS from [Releases](https://github.com/H8dboy/m4tr1x-electron/releases/latest).
 
-Supported: Windows, macOS (Intel + Apple Silicon), Linux (Debian/Ubuntu).
+Before running, verify the SHA-256 checksum against `checksums-*.txt` in the same release.
+
+**Supported:** Windows, macOS (Intel + Apple Silicon), Linux (Debian/Ubuntu)
+
+---
 
 ## Build from source
 
@@ -47,11 +83,16 @@ npm start
 
 The app runs at `http://localhost:8080/app`.
 
+---
+
 ## Run a node
 
 Anyone can run a node. A node stores content (videos, music, posts) locally and makes it available to the network. Node operators earn 30% of tips automatically.
 
-See [docs/NODE_OPERATOR.md](docs/NODE_OPERATOR.md) for setup instructions.
+See [`docs/NODE_OPERATOR.md`](docs/NODE_OPERATOR.md) for setup instructions.
+For the standalone backend: [m4tr1x-node](https://github.com/H8dboy/m4tr1x-node).
+
+---
 
 ## Architecture
 
@@ -83,32 +124,39 @@ See [docs/NODE_OPERATOR.md](docs/NODE_OPERATOR.md) for setup instructions.
 
 Full details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+---
+
 ## Tokenomics
 
-H8 is a utility token that only works inside M4TR1X, similar to how Twitch Bits work inside Twitch. You cannot trade it on exchanges. Minting is controlled by the founder key. The full model is documented in [docs/TOKENOMICS.md](docs/TOKENOMICS.md).
+H8 is a utility token that only works inside M4TR1X, similar to how Twitch Bits work inside Twitch. You cannot trade it on exchanges. Minting is controlled by the founder key. Full model in [docs/TOKENOMICS.md](docs/TOKENOMICS.md).
+
+---
 
 ## Roadmap
 
-**v2.3.0** — Developer Preview. First public node live.
+| Version | Status | Notes |
+|---------|--------|-------|
+| v2.3.0 | Released | Developer Preview. First public node live. |
+| v2.3.1 | Planned | Upload access restricted to verified M4TR1X accounts |
+| v2.4 | Planned | Public Beta — onboarding wizard, DSA compliance reporting, Android/iOS builds |
+| v3.0 | Planned | Independent security audit, multi-language UI, full-disk encryption integration |
 
-**v2.3.1** — Upload access restricted to verified M4TR1X accounts.
-
-**v2.4** — Public Beta. Onboarding wizard, DSA compliance reporting, mobile builds (Android/iOS).
-
-**v3.0** — Independent security audit, multi-language UI, full-disk encryption integration.
+---
 
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md). Security issues go to [SECURITY.md](SECURITY.md).
 
+---
+
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
 
 ---
 
 <div align="center">
 
-Built by [@H8dboy](https://github.com/H8dboy) — Brescia, Italy 🇮🇹
+Built by [@H8dboy](https://github.com/H8dboy) — Brescia, Italy
 
 </div>
