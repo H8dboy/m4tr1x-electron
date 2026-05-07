@@ -7,15 +7,24 @@
 [![Build](https://github.com/H8db0y/m4tr1x-electron/actions/workflows/build.yml/badge.svg)](https://github.com/H8db0y/m4tr1x-electron/actions)
 
 **A decentralized social network. No central server. No company. No identity verification.**
-<img width="520" height="1023" alt="083c183b-60d1-4f6b-a7ed-396293e58f9e" src="https://github.com/user-attachments/assets/0e49d621-25b1-424e-90a8-016db1ee8229" />
-<img width="1600" height="767" alt="WhatsApp Image 2026-03-31 at 08 29 55" src="https://github.com/user-attachments/assets/eb5e9db6-634b-4cd1-9bf5-4c3ae0b4d951" />
-<img width="525" height="987" alt="WhatsApp Image 2026-03-31 at 08 34 03" src="https://github.com/user-attachments/assets/d4f53911-09f4-4591-bce8-758a3dedf515" />
-<img width="521" height="984" alt="WhatsApp Image 2026-03-31 at 08 32 34" src="https://github.com/user-attachments/assets/ee34044a-a41d-482d-bafb-7811da8b5b65" />
-<img width="517" height="977" alt="WhatsApp Image 2026-03-31 at 08 32 11" src="https://github.com/user-attachments/assets/b8d12d9b-d0e8-4b32-812d-315ab1a9ec23" />
-<img width="518" height="986" alt="WhatsApp Image 2026-03-31 at 08 34 52" src="https://github.com/user-attachments/assets/bf7ef293-41ea-4dac-a658-0dfb739d0273" />
 
 </div>
+# ⚡ M4TR1X UI Preview
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/eb5e9db6-634b-4cd1-9bf5-4c3ae0b4d951" width="100%" alt="Connecting to Relays" />
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/0e49d621-25b1-424e-90a8-016db1ee8229" width="31%" />
+  <img src="https://github.com/user-attachments/assets/d4f53911-09f4-4591-bce8-758a3dedf515" width="31%" />
+  <img src="https://github.com/user-attachments/assets/ee34044a-a41d-482d-bafb-7811da8b5b65" width="31%" />
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/b8d12d9b-d0e8-4b32-812d-315ab1a9ec23" width="31%" />
+  <img src="https://github.com/user-attachments/assets/bf7ef293-41ea-4dac-a658-0dfb739d0273" width="31%" />
+</p>
 ---
 
 ## Why M4TR1X exists
