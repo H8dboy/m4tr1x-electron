@@ -1,7 +1,7 @@
 {
   "name": "m4tr1x",
   "version": "2.3.0",
-  "description": "M4TR1X \u2014 The Unfiltered Eye. Decentralized social network for authentic video documentation.",
+  "description": "M4TR1X — The Unfiltered Eye. Decentralized social network for authentic video documentation.",
   "author": {
     "name": "H8db0y",
     "email": "h8db0y@protonmail.com"
@@ -21,7 +21,7 @@
   "build": {
     "appId": "com.h8db0y.m4tr1x",
     "productName": "M4TR1X",
-    "copyright": "Copyright \u00a9 2026 H8db0y",
+    "copyright": "Copyright © 2026 H8db0y",
     "directories": {
       "output": "dist"
     },
@@ -136,6 +136,7 @@
   },
   "dependencies": {
     "@noble/post-quantum": "^0.6.0",
+    "@swanchain/tor": "^0.0.3",
     "better-sqlite3": "^12.8.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",
