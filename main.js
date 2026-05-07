@@ -8,18 +8,16 @@
  *  - webSecurity: true       → same-origin policy enforced
  *  - CSP via onHeadersReceived → blocks XSS and injection
  *  - setWindowOpenHandler    → external links open in system browser, never in-app
- *  - Tor auto-detect         → if Tor is running, ALL traffic is routed through it
+ *  - Tor auto-detect + embedded → if Tor not running, starts bundled Tor automatically
  */
 
 const { app, BrowserWindow, ipcMain, shell, Menu, session } = require('electron')
 const path   = require('path')
 const fs     = require('fs')
 const crypto = require('crypto')
-const { setupTorIfAvailable } = require('./server/tor')
+const { setupTorIfAvailable, stopTorDaemon } = require('./server/tor')
 
 // ─── Generazione automatica segreti al primo avvio ───────────────────────────
-// In produzione .env non è nel bundle; le chiavi vengono generate e salvate
-// in userData (cartella privata dell'app, fuori dal .asar).
 function ensureSecrets() {
   const userDataPath = app.getPath('userData')
   const envPath      = path.join(userDataPath, '.env.runtime')
@@ -29,7 +27,6 @@ function ensureSecrets() {
     fs.writeFileSync(envPath, `APP_SECRET=${secret}\nADMIN_KEY=${adminKey}\n`, { mode: 0o600 })
     console.log('[M4TR1X] Secrets generated at first launch →', envPath)
   }
-  // Carica nel processo
   const raw = fs.readFileSync(envPath, 'utf8')
   raw.split('\n').forEach(line => {
     const [k, ...v] = line.split('=')
@@ -37,7 +34,6 @@ function ensureSecrets() {
   })
 }
 
-// Carica .env locale se presente (dev), altrimenti genera in userData (prod)
 const localEnv = path.join(__dirname, '.env')
 if (fs.existsSync(localEnv)) {
   require('dotenv').config({ path: localEnv })
@@ -49,7 +45,6 @@ let mainWindow
 let torStatus = { torEnabled: false, port: null, source: null }
 const SERVER_PORT = 8080
 
-// Wait until the local server is actually responding before loading the app
 function waitForServer(port, maxMs = 15000) {
   const http = require('http')
   const start = Date.now()
@@ -67,7 +62,6 @@ function waitForServer(port, maxMs = 15000) {
   })
 }
 
-// ─── Content Security Policy ──────────────────────────────────────────────────
 function setupCSP() {
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     callback({
@@ -92,11 +86,9 @@ function setupCSP() {
   })
 }
 
-// ─── Finestra principale ──────────────────────────────────────────────────────
 async function createWindow() {
   // Detect Tor BEFORE opening any network connections
-  // If Tor Browser or tor daemon is running, all traffic is routed through it
-  // — invisible to ISPs and governments
+  // Cascata automatica: Tor Browser → daemon → embedded → bridges
   torStatus = await setupTorIfAvailable(session.defaultSession)
   if (torStatus.torEnabled) {
     console.log(`[M4TR1X] 🧅 Tor active (${torStatus.source}) — maximum privacy`)
@@ -125,12 +117,10 @@ async function createWindow() {
     icon: path.join(__dirname, 'assets/icon.png'),
   })
 
-  // Show loading screen immediately (file:// — no server needed)
   const loadingPath = path.join(__dirname, 'frontend', 'loading.html')
   await mainWindow.loadFile(loadingPath)
   mainWindow.show()
 
-  // Start local API server
   try {
     const { startServer } = require('./server/index')
     await startServer(SERVER_PORT)
@@ -139,25 +129,21 @@ async function createWindow() {
     console.error('[M4TR1X] Failed to start server:', err)
   }
 
-  // Wait until server is ready then switch to the app
   try {
     await waitForServer(SERVER_PORT)
     mainWindow.loadURL(`http://localhost:${SERVER_PORT}/app`)
   } catch (err) {
     console.error('[M4TR1X] Server did not respond in time:', err)
-    // Show error in loading screen
     mainWindow.webContents.executeJavaScript(
       `document.body.innerHTML='<div style="color:#ff4455;font-family:monospace;padding:40px;text-align:center">[ SERVER ERROR ]<br><br>${err.message}<br><br>Riavvia l\'app.</div>'`
     )
   }
 
-  // SECURITY: external links → system browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
     return { action: 'deny' }
   })
 
-  // SECURITY: block navigation to external URLs
   mainWindow.webContents.on('will-navigate', (event, url) => {
     if (!url.startsWith(`http://localhost:${SERVER_PORT}`)) {
       event.preventDefault()
@@ -172,13 +158,11 @@ async function createWindow() {
   }
 }
 
-// ─── IPC handlers ─────────────────────────────────────────────────────────────
 ipcMain.handle('get-app-version',    () => app.getVersion())
 ipcMain.handle('get-platform',       () => process.platform)
 ipcMain.handle('get-user-data-path', () => app.getPath('userData'))
-ipcMain.handle('get-tor-status',     () => torStatus)   // frontend can show the 🧅 icon
+ipcMain.handle('get-tor-status',     () => torStatus)
 
-// ─── Lifecycle ────────────────────────────────────────────────────────────────
 app.whenReady().then(createWindow)
 
 app.on('window-all-closed', () => {
@@ -189,6 +173,7 @@ app.on('activate', () => {
   if (mainWindow === null) createWindow()
 })
 
-app.on('before-quit', () => {
+app.on('before-quit', async () => {
   try { require('./server/index').stopServer() } catch (_) {}
+  try { await stopTorDaemon() } catch (_) {}
 })
