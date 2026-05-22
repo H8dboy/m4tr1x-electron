@@ -98,7 +98,6 @@ app.use(cors({
 }))
 
 app.use(express.json())
-app.use(globalLimit)
 
 // âââ Multer (upload file) âââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const upload = multer({
@@ -143,6 +142,7 @@ const globalLimit = rateLimit({
   legacyHeaders: false,
   message: { error: 'Troppe richieste. Riprova tra un minuto.' },
 })
+app.use(globalLimit)
 
 // Rate limit upload (20 upload/ora per IP)
 const uploadLimit = rateLimit({
