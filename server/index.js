@@ -699,7 +699,7 @@ app.post('/api/v1/train/model/update', verifyApiKey, async (req, res) => {
 
 // Middleware: solo localhost per endpoint admin
 function localhostOnly(req, res, next) {
-  const ip = req.ip || req.connection.remoteAddress || ''
+  const ip = req.socket.remoteAddress || ''
   if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') return next()
   return res.status(403).json({ error: 'Admin access restricted to localhost' })
 }
@@ -1094,12 +1094,16 @@ const frontendPath = process.env.M4TR1X_FRONTEND_PATH || path.join(__dirname, '.
 // Serve an HTML file with a per-request CSP nonce injected into every <script>
 // and <style> tag. The nonce is exposed via X-CSP-Nonce so Electron's
 // onHeadersReceived can include it in the CSP header without unsafe-inline.
+const _htmlCache = new Map()
 function serveHtmlWithNonce(htmlFile) {
   return (req, res) => {
     const filePath = path.join(frontendPath, htmlFile)
-    if (!fs.existsSync(filePath)) return res.status(404).end()
+    if (!_htmlCache.has(filePath)) {
+      if (!fs.existsSync(filePath)) return res.status(404).end()
+      _htmlCache.set(filePath, fs.readFileSync(filePath, 'utf8'))
+    }
     const nonce = crypto.randomBytes(16).toString('base64url')
-    let html = fs.readFileSync(filePath, 'utf8')
+    let html = _htmlCache.get(filePath)
     html = html.replace(/<script(?![^>]*\bnonce\b)([^>]*)>/gi, `<script nonce=\"${nonce}\"$1>`)
     html = html.replace(/<style(?![^>]*\bnonce\b)([^>]*)>/gi, `<style nonce=\"${nonce}\"$1>`)
     res.set('X-CSP-Nonce', nonce)

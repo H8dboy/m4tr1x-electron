@@ -286,13 +286,19 @@ function getBoostScore(contentId) {
   return r.s
 }
 
+const SQLITE_VAR_LIMIT = 999
+
 function getBoostScoresBatch(ids) {
   if (!ids || !ids.length) return {}
-  const placeholders = ids.map(() => '?').join(',')
-  const rows = getDb().prepare(`SELECT content_id, COALESCE(SUM(amount),0) as s FROM ledger WHERE tx_type = 'boost' AND content_id IN (${placeholders}) GROUP BY content_id`).all(...ids)
   const result = {}
   ids.forEach(id => { result[id] = 0 })
-  rows.forEach(r => { result[r.content_id] = r.s })
+  const db = getDb()
+  for (let i = 0; i < ids.length; i += SQLITE_VAR_LIMIT) {
+    const chunk = ids.slice(i, i + SQLITE_VAR_LIMIT)
+    const placeholders = chunk.map(() => '?').join(',')
+    const rows = db.prepare(`SELECT content_id, COALESCE(SUM(amount),0) as s FROM ledger WHERE tx_type = 'boost' AND content_id IN (${placeholders}) GROUP BY content_id`).all(...chunk)
+    rows.forEach(r => { result[r.content_id] = r.s })
+  }
   return result
 }
 
