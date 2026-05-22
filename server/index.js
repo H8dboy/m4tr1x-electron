@@ -194,7 +194,7 @@ app.post('/api/v1/analyze', analyzeLimit, verifyApiKey, upload.single('video'), 
     cleanMetadata(tempPath)
 
     // Analisi AI
-    const report = await analyzeVideo(tempPath)
+    const report = await analyzeVideo(tempPath, UPLOAD_DIR)
 
     // Attestazione Nostr (se pubkey fornita)
     let nostrAttestation = null

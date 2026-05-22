@@ -33,8 +33,41 @@ try {
 
 // ─── Costanti (identiche a ai_detector.py) ───────────────────────────────────
 const CONFIDENCE_THRESHOLD = 0.55   // lowered: model biased towards REAL, accept 55%+ confidence
-const MAX_FRAMES = 16
-const FRAME_SIZE = 224
+const MAX_FRAMES    = 16
+const FRAME_SIZE    = 224
+const MAX_VIDEO_BYTES = 500 * 1024 * 1024  // 500 MB — hard limit regardless of multer config
+
+// ─── Validazione percorso video (path traversal + resource exhaustion) ────────
+// videoPath: percorso passato dal chiamante
+// allowedDir: directory uploads consentita (obbligatoria in produzione)
+// Restituisce il percorso risolto e sicuro, oppure lancia Error.
+function validateVideoPath(videoPath, allowedDir) {
+  if (!videoPath || typeof videoPath !== 'string') {
+    throw new Error('Invalid video path: must be a non-empty string')
+  }
+
+  const resolved = path.resolve(videoPath)
+
+  // Verifica che il percorso sia dentro la directory consentita
+  if (allowedDir) {
+    const resolvedDir = path.resolve(allowedDir)
+    const rel = path.relative(resolvedDir, resolved)
+    if (rel.startsWith('..') || path.isAbsolute(rel)) {
+      throw new Error('Path traversal rejected: video path is outside the allowed uploads directory')
+    }
+  }
+
+  if (!fs.existsSync(resolved)) {
+    throw new Error(`Video file not found: ${resolved}`)
+  }
+
+  const { size } = fs.statSync(resolved)
+  if (size > MAX_VIDEO_BYTES) {
+    throw new Error(`File too large: ${size} bytes exceeds the 500 MB limit`)
+  }
+
+  return resolved
+}
 
 // ImageNet normalization — stessi valori di torchvision.transforms.Normalize
 const MEAN = [0.485, 0.456, 0.406]
@@ -184,13 +217,16 @@ function computeVideoHash(videoPath) {
 }
 
 // ─── Pipeline completa (uguale a analyze_video in Python) ─────────────────────
-async function analyzeVideo(videoPath) {
-  const videoHash = await computeVideoHash(videoPath)
+// allowedDir: se fornita, il percorso viene verificato contro quella directory
+// (difesa da path traversal — in produzione passare sempre UPLOAD_DIR)
+async function analyzeVideo(videoPath, allowedDir) {
+  const safePath = validateVideoPath(videoPath, allowedDir)
+  const videoHash = await computeVideoHash(safePath)
   let frameResults = []
   let tempDir      = null
 
   try {
-    const { framePaths, tempDir: td } = extractFrames(videoPath)
+    const { framePaths, tempDir: td } = extractFrames(safePath)
     tempDir = td
 
     for (let i = 0; i < framePaths.length; i++) {
@@ -271,4 +307,4 @@ async function analyzeVideo(videoPath) {
 // Carica il modello all'avvio
 loadModel().catch(console.error)
 
-module.exports = { analyzeVideo, loadModel }
+module.exports = { analyzeVideo, validateVideoPath, loadModel }
