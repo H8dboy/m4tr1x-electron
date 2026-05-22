@@ -30,7 +30,7 @@ function videoToWire(v) {
       url:    `/profile/${v.uploader_address}`,
       avatar: null,
     },
-    tags:     JSON.parse(v.tags || '[]'),
+    tags:     (() => { try { return JSON.parse(v.tags || '[]') } catch { return [] } })(),
     language: null,
     category: v.category,
     nsfw:     false,

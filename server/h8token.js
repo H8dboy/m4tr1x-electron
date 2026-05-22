@@ -11,6 +11,13 @@ const h8id      = require('./h8identity')
 const { sha3_256 } = require('@noble/hashes/sha3')
 const { bytesToHex } = require('@noble/hashes/utils')
 
+// Lazy import per evitare cicli: ledger_sync richiede nostr che richiede fs ecc.
+let _sync = null
+function getSync() {
+  if (!_sync) _sync = require('./ledger_sync')
+  return _sync
+}
+
 const MINT_ADDRESS     = process.env.H8_MINT_ADDRESS     || 'H8' + '0'.repeat(38)
 const PLATFORM_ADDRESS = process.env.H8_PLATFORM_ADDRESS || 'H8' + '1'.repeat(38)
 const SERVER_ADDRESS   = process.env.H8_SERVER_ADDRESS   || 'H8' + '2'.repeat(38)
@@ -119,20 +126,49 @@ async function appendBlock({ from, to, amount, tx_type, content_id = null, note 
   db.prepare(`INSERT INTO ledger (ts, from_addr, to_addr, amount, tx_type, content_id, note, prev_hash, hash, signature, from_pubkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     .run(ts, from, to, amount, tx_type, content_id, note, prevHash, hash, signature, fromPubkey)
 
-  return { block_index: idx, ts, from_addr: from, to_addr: to, amount, tx_type, hash }
+  const block = { block_index: idx, ts, from_addr: from, to_addr: to, amount, tx_type, content_id, hash, signature, signer_pubkey: fromPubkey }
+
+  // Annuncia il blocco alla rete in background (non bloccante)
+  if (signature && fromPubkey) {
+    setImmediate(() => getSync().announceBlock(block).catch(() => {}))
+  }
+
+  return block
 }
 
 function getBalance(address) {
   if (!validAddress(address)) return 0
   const db = getDb()
-  const incoming = db.prepare('SELECT COALESCE(SUM(amount),0) as s FROM ledger WHERE to_addr = ?').get(address).s
-  const outgoing = db.prepare('SELECT COALESCE(SUM(amount),0) as s FROM ledger WHERE from_addr = ?').get(address).s
-  return incoming - outgoing
+  const localIn  = db.prepare('SELECT COALESCE(SUM(amount),0) as s FROM ledger WHERE to_addr = ?').get(address).s
+  const localOut = db.prepare('SELECT COALESCE(SUM(amount),0) as s FROM ledger WHERE from_addr = ?').get(address).s
+  const localBal = localIn - localOut
+
+  // Includi transazioni verificate da altri nodi
+  let remoteBal = 0
+  try { remoteBal = getSync().getRemoteBalance(address) } catch {}
+
+  return localBal + remoteBal
 }
 
 function getHistory(address, limit = 50) {
   if (!validAddress(address)) return []
-  return getDb().prepare(`SELECT block_index, ts, from_addr, to_addr, amount, tx_type, content_id, note, hash FROM ledger WHERE from_addr = ? OR to_addr = ? ORDER BY ts DESC LIMIT ?`).all(address, address, limit)
+  const local = getDb().prepare(`
+    SELECT block_index, ts, from_addr, to_addr, amount, tx_type, content_id, note, hash,
+           'local' AS source
+    FROM ledger WHERE from_addr = ? OR to_addr = ? ORDER BY ts DESC LIMIT ?
+  `).all(address, address, limit)
+
+  let remote = []
+  try { remote = getSync().getRemoteHistory(address, limit) } catch {}
+
+  // Merge e dedup per hash, ordina per ts
+  const seen = new Set(local.map(b => b.hash))
+  const merged = [
+    ...local,
+    ...remote.filter(b => !seen.has(b.hash)),
+  ].sort((a, b) => b.ts - a.ts).slice(0, limit)
+
+  return merged
 }
 
 async function transfer(to, amount, note = '') {
@@ -221,9 +257,13 @@ async function verifyChain() {
   return result
 }
 
-function mintTokens(to, amount) {
+function mintTokens(to, amount, adminKey) {
+  const expectedKey = process.env.H8_ADMIN_MINT_KEY
+  if (!expectedKey) throw new Error('H8_ADMIN_MINT_KEY non configurata — mint disabilitato')
+  if (!adminKey || adminKey !== expectedKey) throw new Error('Chiave admin non valida')
   if (!validAddress(to)) throw new Error('Invalid recipient address')
   if (!Number.isInteger(amount) || amount <= 0) throw new Error('amount positive integer required')
+  console.log(`[H8] Mint autorizzato: ${amount} → ${to}`)
   return appendBlock({ from: '0x0', to, amount, tx_type: 'mint', note: 'admin_mint' })
 }
 

@@ -30,8 +30,28 @@ function saveNodeConfig(cfg) {
   fs.writeFileSync(NODE_FILE, JSON.stringify(cfg, null, 2), 'utf8')
 }
 
-// In-memory node registry (pubkey → node info)
-const nodeRegistry = new Map()
+// Node registry persistito su disco
+const REGISTRY_FILE = path.join(DATA_DIR, 'node_registry.json')
+const nodeRegistry  = new Map()
+
+function loadRegistry() {
+  try {
+    const arr  = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8'))
+    const stale = Date.now() - 60 * 60 * 1000  // scarta nodi visti >1h fa
+    for (const n of arr) {
+      if (n.ts > stale) nodeRegistry.set(n.pubkey, n)
+    }
+    if (nodeRegistry.size) console.log(`[NODE] Loaded ${nodeRegistry.size} node(s) from registry.`)
+  } catch {}
+}
+
+function saveRegistry() {
+  try {
+    fs.writeFileSync(REGISTRY_FILE, JSON.stringify([...nodeRegistry.values()], null, 2))
+  } catch {}
+}
+
+loadRegistry()
 
 // ─── Declare this device as a node ───────────────────────────────────────────
 async function declareNode(capabilities, wsPort = 4848) {
@@ -62,6 +82,7 @@ async function declareNode(capabilities, wsPort = 4848) {
   }
 
   nodeRegistry.set(pubkey, { pubkey, name: NODE_NAME, capabilities: validCaps, wsPort, nodeUrl, onion, ts: Date.now() })
+  saveRegistry()
   console.log(`[NODE] "${NODE_NAME}" declared: ${validCaps.join(', ')}${onion ? ` | .onion: ${onion}` : ''}`)
   return cfg
 }
@@ -95,10 +116,14 @@ function startNodeDiscovery() {
       if (!caps.length) return
       nodeRegistry.set(ev.pubkey, {
         pubkey:       ev.pubkey,
+        name:         data.name || ev.pubkey.slice(0, 8),
         capabilities: caps,
         wsPort:       data.port || 4848,
+        nodeUrl:      data.nodeUrl || null,
+        onion:        data.onion  || null,
         ts:           Date.now(),
       })
+      saveRegistry()
     } catch {}
   })
 }
@@ -187,12 +212,31 @@ function getPrivateNodeUrl() {
   return PRIVATE_NODE_URL
 }
 
+// ─── Heartbeat: ri-annuncia questo nodo ogni 5 minuti ────────────────────────
+let _heartbeatTimer = null
+
+function startHeartbeat() {
+  const cfg = loadNodeConfig()
+  if (!cfg) return
+  _heartbeatTimer = setInterval(async () => {
+    try { await declareNode(cfg.capabilities, cfg.wsPort) }
+    catch {}
+  }, 5 * 60 * 1000)
+  console.log('[NODE] Heartbeat started (5 min interval).')
+}
+
+function stopHeartbeat() {
+  if (_heartbeatTimer) { clearInterval(_heartbeatTimer); _heartbeatTimer = null }
+}
+
 module.exports = {
   declareNode,
   resignNode,
   discoverNodes,
   startNodeDiscovery,
   startContentDiscovery,
+  startHeartbeat,
+  stopHeartbeat,
   announceContent,
   locateContent,
   getLocalUrl,

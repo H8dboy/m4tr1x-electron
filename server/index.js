@@ -46,8 +46,9 @@ const {
   approveRequest, rejectRequest, getUserRequest,
 } = require('./badges')
 
-const { declareNode, resignNode, discoverNodes, startNodeDiscovery, startContentDiscovery, announceContent, locateContent, getLocalUrl, getOnionAddress, getNodeConfig, pickNode, getPrivateNodeUrl, VALID_CAPS } = require('./node_manager')
-const { startStream, stopStream, sendSignal, listStreams, registerRemoteStream, removeRemoteStream } = require('./livestream')
+const { declareNode, resignNode, discoverNodes, startNodeDiscovery, startContentDiscovery, startHeartbeat, stopHeartbeat, announceContent, locateContent, getLocalUrl, getOnionAddress, getNodeConfig, pickNode, getPrivateNodeUrl, VALID_CAPS } = require('./node_manager')
+const { startStream, stopStream, sendSignal, joinStream, leaveStream, listStreams, registerRemoteStream, removeRemoteStream, startLiveDiscovery } = require('./livestream')
+const { startBlockSync, getRemoteStats } = require('./ledger_sync')
 
 // âââ Embedded Nostr Relay âââââââââââââââââââââââââââââââââââââââââââââââââââââ
 // Avviato in processo figlio per evitare che EADDRINUSE faccia crashare il server
@@ -344,11 +345,25 @@ app.get('/api/v1/h8/chain/verify', verifyApiKey, async (req, res) => {
   catch (e) { res.status(500).json({ error: e.message }) }
 })
 
+app.get('/api/v1/h8/network/stats', verifyApiKey, (req, res) => {
+  try {
+    const local  = h8token.verifyChain()
+    const remote = getRemoteStats()
+    const nodes  = discoverNodes()
+    res.json({
+      local_chain:    local,
+      remote_blocks:  remote,
+      active_nodes:   nodes.length,
+      nodes,
+    })
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
 app.post('/api/v1/admin/h8/mint', localhostOnly, verifyAdminKey, async (req, res) => {
   try {
     const { toAddress, amount } = req.body
     if (!toAddress || !amount) return res.status(400).json({ error: 'toAddress e amount richiesti' })
-    res.json(await h8token.mintTokens(toAddress, parseInt(amount)))
+    res.json(await h8token.mintTokens(toAddress, parseInt(amount), process.env.H8_ADMIN_MINT_KEY || ADMIN_KEY))
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 // âââ Routes: Nostr ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
@@ -927,6 +942,20 @@ app.post('/api/v1/live/stop', async (req, res) => {
   }
 })
 
+app.post('/api/v1/live/join', (req, res) => {
+  const { streamId } = req.body
+  const keys = loadSavedKeys()
+  if (!keys) return res.status(401).json({ ok: false, error: 'Not logged in' })
+  res.json({ ok: joinStream(streamId, keys.pubkey) })
+})
+
+app.post('/api/v1/live/leave', (req, res) => {
+  const { streamId } = req.body
+  const keys = loadSavedKeys()
+  if (!keys) return res.status(401).json({ ok: false })
+  res.json({ ok: leaveStream(streamId, keys.pubkey) })
+})
+
 app.get('/libs/nostr.bundle.js', (req, res) => {
   const candidates = [
     path.join(__dirname, 'node_modules', 'nostr-tools', 'lib', 'nostr.bundle.js'),
@@ -1033,6 +1062,7 @@ app.get('/api/v1/music/stream/:id', (req, res) => {
   if (!t) return res.status(404).json({ error: 'not found' })
   const file = path.join(UPLOADS_DIR, t.filename)
   if (!fs.existsSync(file)) return res.status(404).json({ error: 'file not found' })
+  db.incrementPlays(req.params.id)
   const stat = fs.statSync(file)
   res.writeHead(200, { 'Content-Length': stat.size, 'Content-Type': 'audio/mpeg' })
   fs.createReadStream(file).pipe(res)
@@ -1091,6 +1121,9 @@ function startServer(port = 8080) {
   setTimeout(() => checkAndUpdateModel().catch(() => {}), 5000)
   setTimeout(() => startNodeDiscovery(), 2000)
   setTimeout(() => startContentDiscovery(), 3000)
+  setTimeout(() => startHeartbeat(), 4000)
+  setTimeout(() => startLiveDiscovery(), 4500)
+  setTimeout(() => startBlockSync(), 5500)
   return new Promise((resolve, reject) => {
     server = app.listen(port, '0.0.0.0', () => {
       const { networkInterfaces } = require('os')

@@ -46,14 +46,12 @@ async function getPublicTimeline(instance, limit = 40) {
   return new Promise(resolve => {
     const posts = []
     const timeout = setTimeout(() => resolve(posts), 1500)
+    let unsub
     try {
-      subscribeToFilter(
-        { kinds: [1], limit },
-        ev => {
-          posts.push(nostrEventToPost(ev))
-          if (posts.length >= limit) { clearTimeout(timeout); resolve(posts) }
-        }
-      )
+      unsub = subscribeToFilter({ kinds: [1], limit }, ev => {
+        posts.push(nostrEventToPost(ev))
+        if (posts.length >= limit) { clearTimeout(timeout); unsub?.(); resolve(posts) }
+      })
     } catch { clearTimeout(timeout); resolve([]) }
   })
 }
@@ -62,14 +60,12 @@ async function searchHashtag(hashtag, instances, limit = 20) {
   return new Promise(resolve => {
     const posts = []
     const timeout = setTimeout(() => resolve(posts), 1500)
+    let unsub
     try {
-      subscribeToFilter(
-        { kinds: [1], '#t': [hashtag], limit },
-        ev => {
-          posts.push(nostrEventToPost(ev))
-          if (posts.length >= limit) { clearTimeout(timeout); resolve(posts) }
-        }
-      )
+      unsub = subscribeToFilter({ kinds: [1], '#t': [hashtag], limit }, ev => {
+        posts.push(nostrEventToPost(ev))
+        if (posts.length >= limit) { clearTimeout(timeout); unsub?.(); resolve(posts) }
+      })
     } catch { clearTimeout(timeout); resolve([]) }
   })
 }

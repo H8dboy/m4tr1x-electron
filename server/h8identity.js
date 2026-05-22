@@ -24,7 +24,11 @@ async function getLib() {
 }
 
 // ─── Session state ────────────────────────────────────────────────────────────
-let _unlocked = null   // { address, publicKey, secretKey } — null quando wallet bloccato
+let _unlocked       = null   // { address, publicKey, secretKey } — null quando wallet bloccato
+let _failedAttempts = 0
+let _lockedUntil    = 0
+const MAX_ATTEMPTS  = 5
+const LOCKOUT_MS    = 30_000  // 30s dopo 5 tentativi sbagliati
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -96,6 +100,12 @@ async function generateIdentity(password) {
  * @returns {{ address, publicKey }}
  */
 async function unlockIdentity(password) {
+  const now = Date.now()
+  if (now < _lockedUntil) {
+    const wait = Math.ceil((_lockedUntil - now) / 1000)
+    throw new Error(`Troppi tentativi falliti. Riprova tra ${wait} secondi.`)
+  }
+
   const p = getIdentityPath()
   if (!fs.existsSync(p)) throw new Error('H8 identity non trovata. Crea prima un wallet.')
 
@@ -103,7 +113,13 @@ async function unlockIdentity(password) {
   let secretKey
   try {
     secretKey = decryptSecret(stored, password)
+    _failedAttempts = 0  // reset su successo
   } catch {
+    _failedAttempts++
+    if (_failedAttempts >= MAX_ATTEMPTS) {
+      _lockedUntil    = Date.now() + LOCKOUT_MS
+      _failedAttempts = 0
+    }
     throw new Error('Password errata o file identità corrotto.')
   }
 

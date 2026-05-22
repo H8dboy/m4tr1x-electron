@@ -21,16 +21,26 @@ function generateKey() {
 }
 
 /**
- * Loads the key from file. Generates a new one if it doesn't exist.
- * @param {string} keyPath - Path to the key file
+ * Loads the AES key from env var NEXUS_KEY (priority) or falls back to key file.
+ * @param {string} keyPath - Path to the key file (fallback / first-run)
  */
 function loadOrCreateKey(keyPath = 'nexus.key') {
-  if (fs.existsSync(keyPath)) {
-    return fs.readFileSync(keyPath)
+  // Priority 1: env var (production-safe, never touches disk)
+  if (process.env.NEXUS_KEY) {
+    const buf = Buffer.from(process.env.NEXUS_KEY, 'hex')
+    if (buf.length !== 32) throw new Error('[UPLOADER] NEXUS_KEY deve essere 32 byte hex (64 caratteri)')
+    return buf
   }
+  // Priority 2: key file exists — load and suggest migration
+  if (fs.existsSync(keyPath)) {
+    const key = fs.readFileSync(keyPath)
+    console.warn(`[UPLOADER] ⚠️  nexus.key caricata da disco. Per sicurezza imposta: NEXUS_KEY=${key.toString('hex')} e cancella il file.`)
+    return key
+  }
+  // Priority 3: first run — generate, save with restricted permissions, print hex
   const key = generateKey()
-  fs.writeFileSync(keyPath, key)
-  console.log(`[UPLOADER] New key generated: ${keyPath}`)
+  fs.writeFileSync(keyPath, key, { mode: 0o600 })
+  console.warn(`[UPLOADER] Nuova chiave generata. Salvala come variabile d'ambiente: NEXUS_KEY=${key.toString('hex')}`)
   return key
 }
 

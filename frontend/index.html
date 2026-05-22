@@ -109,16 +109,19 @@
       const signedOffer=await signEv(offerEvent);
       broadcast(signedOffer);
 
-      // Listen for answers from viewers
-      wsSub('live-answers-'+_liveStream.streamId,ev=>{
-        try{
-          const sig=JSON.parse(ev.content);
-          if(sig.type!=='answer')return;
-          if(ev.tags.find(t=>t[0]==='stream-id'&&t[1]===_liveStream.streamId)){
-            _livePC.setRemoteDescription(new RTCSessionDescription(sig.sdp)).catch(()=>{});
-          }
-        }catch{}
-      });
+      // Listen for answers from viewers (send actual REQ to relay)
+      wsReq('live-answers-'+_liveStream.streamId,
+        {kinds:[1],'#t':['m4tr1x-webrtc-answer'],since:Math.floor(Date.now()/1000)-3600,limit:10},
+        ev=>{
+          try{
+            const sig=JSON.parse(ev.content);
+            if(sig.type!=='answer')return;
+            if(ev.tags.find(t=>t[0]==='stream-id'&&t[1]===_liveStream.streamId)){
+              _livePC.setRemoteDescription(new RTCSessionDescription(sig.sdp)).catch(()=>{});
+            }
+          }catch{}
+        }
+      );
 
       toast('🔴 LIVE: '+title);
       closeGoLive();
@@ -153,27 +156,37 @@
       if(vid && e.streams[0]) vid.srcObject=e.streams[0];
     };
 
-    // Subscribe to streamer's offer
+    // Fetch streamer's offer from relay (REQ + subscribe)
     const subId='live-offer-'+s.streamId;
-    wsSub(subId,async ev=>{
-      try{
-        const sig=JSON.parse(ev.content);
-        if(sig.type!=='offer')return;
-        if(!ev.tags.find(t=>t[0]==='stream-id'&&t[1]===s.streamId))return;
-        wsUnsub(subId);
+    wsReq(subId,
+      {kinds:[1],'#t':['m4tr1x-webrtc-offer'],since:Math.floor(Date.now()/1000)-3600,limit:5},
+      async ev=>{
+        try{
+          const sig=JSON.parse(ev.content);
+          if(sig.type!=='offer')return;
+          if(!ev.tags.find(t=>t[0]==='stream-id'&&t[1]===s.streamId))return;
+          wsUnsub(subId);
 
-        await pc.setRemoteDescription(new RTCSessionDescription(sig.sdp));
-        const answer=await pc.createAnswer();
-        await pc.setLocalDescription(answer);
+          await pc.setRemoteDescription(new RTCSessionDescription(sig.sdp));
+          const answer=await pc.createAnswer();
+          await pc.setLocalDescription(answer);
 
-        // Send answer back via Nostr
-        const answerEvent={kind:1,pubkey:S.pubkey,created_at:Math.floor(Date.now()/1000),
-          tags:[['t','m4tr1x-webrtc-answer'],['stream-id',s.streamId],['p',s.pubkey]],
-          content:JSON.stringify({type:'answer',sdp:pc.localDescription})};
-        const signed=await signEv(answerEvent);
-        broadcast(signed);
-      }catch{}
-    });
+          // Wait for ICE gathering to complete before sending answer
+          await new Promise(res=>{
+            if(pc.iceGatheringState==='complete'){res();return;}
+            pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete')res();};
+            setTimeout(res,3000);
+          });
+
+          // Send complete answer (with all ICE candidates) back via Nostr
+          const answerEvent={kind:1,pubkey:S.pubkey,created_at:Math.floor(Date.now()/1000),
+            tags:[['t','m4tr1x-webrtc-answer'],['stream-id',s.streamId],['p',s.pubkey]],
+            content:JSON.stringify({type:'answer',sdp:pc.localDescription})};
+          const signed=await signEv(answerEvent);
+          broadcast(signed);
+        }catch{}
+      }
+    );
   }
 
   function closeLiveView(){
@@ -363,15 +376,15 @@
         <button class="up-cat music" onclick="selCat(this,'music')">🎵</button>
       </div>
       <div class="up-body">
-        <div class="up-disc film" id="disc-film">🎬 <strong>INDIE FILM CHANNEL</strong><br>Upload only your own content. Also streams from PeerTube federation. Powered by PeerTube API.</div>
-        <div class="up-disc music" id="disc-music">🎵 <strong>UNDERGROUND MUSIC</strong><br>Original music only. Also streams from Funkwhale federation. Powered by Funkwhale API.</div>
+        <div class="up-disc film" id="disc-film">🎬 <strong>INDIE FILM CHANNEL</strong><br>Your films are published to your M4TR1X profile. Upload only your own original content.</div>
+        <div class="up-disc music" id="disc-music">🎵 <strong>UNDERGROUND MUSIC</strong><br>Your tracks are published to your M4TR1X profile. MP3, FLAC, WAV, OGG — original music only.</div>
         <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
           <div class="dz-icon">📹</div>
           <strong style="font-size:0.82em">DROP VIDEO HERE</strong>
           <p>or click to select · MP4, MOV · max 500MB</p>
         </div>
-        <input type="file" id="file-input" accept="video/*">
-        <div class="prev-wrap" id="prev-wrap"><video id="prev-video" controls muted></video></div>
+        <input type="file" id="file-input" accept="video/*,audio/*">
+        <div class="prev-wrap" id="prev-wrap"><video id="prev-video" controls muted></video><audio id="prev-audio" controls style="width:100%;margin-top:8px;display:none"></audio></div>
         <div class="field"><label>Title / Caption</label><input type="text" id="up-caption" placeholder="What's happening?"></div>
         <div class="film-fields" id="film-fields">
           <div class="field"><label>Film Title</label><input type="text" id="up-film-title" placeholder="e.g. 'Dead Night' — short film 2024"></div>
@@ -1764,10 +1777,6 @@
   // ========== SHOP / MARKETPLACE ==========
   function loadShop(){
     const grid=document.getElementById('shop-grid');
-    if(!S.privateNodeUrl){
-      grid.innerHTML='<div class="slide-placeholder" style="grid-column:span 2"><div class="ph-text" style="color:rgba(255,154,60,0.4);line-height:2">[ MARKETPLACE ]\n\nConnected to M4TR1X network.\nShop and payments are managed\nby the official M4TR1X node.\n\n<span style="font-size:0.8em;opacity:0.5">node.m4tr1x.app</span></div></div>';
-      return;
-    }
     grid.innerHTML='<div class="slide-placeholder" style="grid-column:span 2"><div class="ph-text">[ LOADING MARKETPLACE... ]</div></div>';
     Object.entries(ws).forEach(([url,r])=>{
       if(!r.ok)return;
@@ -1823,9 +1832,8 @@
     closeTokenModal();
   }
   async function refreshH8Balance(){
-    if(!S.privateNodeUrl){updateTopbarH8('—');return;}
     try{
-      const r=await fetch(S.privateNodeUrl+'/api/v1/h8/balance');
+      const r=await fetch((S.privateNodeUrl||'')+'/api/v1/h8/balance');
       if(r.ok){
         const d=await r.json();
         S.tokenBalance=d.balance||0;
@@ -2076,14 +2084,25 @@
 
     Object.values(ws).forEach(r => {
       if (!r.ok) return;
-      // Posts (kind 1063)
+      // Media posts (kind 1063 — video/audio files)
       const sid1 = 'pp_' + rnd();
       r.w.send(JSON.stringify(['REQ', sid1, { kinds: [1063], authors: [pk], limit: 24 }]));
       wsSub(sid1, ev => {
         if (ev.kind !== 1063 || seenP.has(ev.id)) return;
         seenP.add(ev.id); evCache[ev.id] = ev;
         const url = ev.tags.find(t => t[0] === 'url')?.[1]; if (!url) return;
-        _gridPosts.push({ eid: ev.id, url, ts: ev.created_at, isRepost: false });
+        const mime = ev.tags.find(t => t[0] === 'm')?.[1] || '';
+        const isAudio = mime.startsWith('audio/') || url.match(/\.(mp3|flac|ogg|wav|m4a|aac)(\?|$)/i);
+        _gridPosts.push({ eid: ev.id, url, ts: ev.created_at, isRepost: false, isAudio: !!isAudio, text: ev.content });
+        if (_gridMode === 'posts') renderProfGrid(_gridPosts);
+      });
+      // Text posts (kind 1)
+      const sid3 = 'pk1_' + rnd();
+      r.w.send(JSON.stringify(['REQ', sid3, { kinds: [1], authors: [pk], limit: 24 }]));
+      wsSub(sid3, ev => {
+        if (ev.kind !== 1 || seenP.has(ev.id)) return;
+        seenP.add(ev.id); evCache[ev.id] = ev;
+        _gridPosts.push({ eid: ev.id, url: null, ts: ev.created_at, isRepost: false, isAudio: false, isText: true, text: ev.content });
         if (_gridMode === 'posts') renderProfGrid(_gridPosts);
       });
 
@@ -2502,10 +2521,10 @@
       const info = await fetch((S.privateNodeUrl||'')+'/api/v1/h8/wallet/status').then(r=>r.json());
       const myAddr = info.address||'';
       el.innerHTML = txs.map(tx=>{
-        const isIn = tx.to_id === myAddr;
+        const isIn = tx.to_addr === myAddr;
         const sign = isIn ? '+' : '-';
         const color = isIn ? 'var(--green)' : 'var(--red)';
-        const other = isIn ? (tx.from_id||'MINT') : tx.to_id;
+        const other = isIn ? (tx.from_addr||'MINT') : tx.to_addr;
         const typeLbl = {tip_creator:'TIP ricevuto',tip_platform:'TIP platform',tip_server:'TIP server',mint:'MINT',transfer:'TRANSFER',boost:'BOOST',shop_seller:'VENDITA',shop_platform:'SHOP platform',shop_server:'SHOP server'}[tx.tx_type]||tx.tx_type;
         return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,255,136,0.06)">'
           + '<div><div style="font-size:0.82em;color:rgba(255,255,255,0.6);margin-bottom:2px">'+typeLbl+'</div>'
@@ -2628,23 +2647,47 @@
     selCat(document.querySelector('.up-cat.signal'),'signal');
   }
   function closeUpload(){document.getElementById('upload-modal').classList.remove('open');document.getElementById('up-progress').style.display='none';document.getElementById('prog-fill').style.width='0%';S.file=null;document.getElementById('prev-wrap').style.display='none';document.getElementById('btn-pub').disabled=true;document.getElementById('drop-zone').innerHTML='<div class="dz-icon">\u{1F4F9}</div><strong style="font-size:0.82em">DROP VIDEO HERE</strong><p>or click to select \u00B7 MP4, MOV \u00B7 max 500MB</p>'}
-  function selCat(btn,cat){document.querySelectorAll('.up-cat').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');S.uploadCat=cat;document.getElementById('up-title').textContent=cat==='film'?'\u{1F3AC} UPLOAD':cat==='music'?'\u{1F3B5} UPLOAD':'\u2B06 UPLOAD';document.querySelectorAll('.up-disc').forEach(d=>d.style.display='none');if(cat!=='signal')document.getElementById('disc-'+cat).style.display='block';document.getElementById('film-fields').style.display=cat==='film'?'block':'none';document.getElementById('music-fields').style.display=cat==='music'?'block':'none'}
-  function handleFile(file){if(!file||!file.type.startsWith('video/')){toast('VIDEO ONLY');return}S.file=file;document.getElementById('prev-video').src=URL.createObjectURL(file);document.getElementById('prev-wrap').style.display='block';document.getElementById('drop-zone').innerHTML='<div class="dz-icon">\u2705</div><strong>'+file.name+'</strong><p>'+(file.size/1024/1024).toFixed(1)+' MB</p>';document.getElementById('btn-pub').disabled=false}
+  function selCat(btn,cat){
+    document.querySelectorAll(".up-cat").forEach(b=>b.classList.remove("sel"));btn.classList.add("sel");S.uploadCat=cat;
+    document.getElementById("up-title").textContent=cat==='film'?'\u{1F3AC} UPLOAD':cat==='music'?'\u{1F3B5} UPLOAD':'\u2B06 UPLOAD';document.querySelectorAll('.up-disc').forEach(d=>d.style.display='none');if(cat!=='signal')document.getElementById('disc-'+cat).style.display='block';document.getElementById('film-fields').style.display=cat==='film'?'block':'none';document.getElementById('music-fields').style.display=cat==='music'?'block':'none';
+    document.querySelectorAll(".up-disc").forEach(d=>d.style.display="none");
+    if(cat!=="signal")document.getElementById("disc-"+cat).style.display="block";
+    document.getElementById("film-fields").style.display=cat==="film"?"block":"none";
+    document.getElementById("music-fields").style.display=cat==="music"?"block":"none";
+    const fi=document.getElementById("file-input");const dz=document.getElementById("drop-zone");
+    if(cat==="music"){fi.accept="audio/*,video/*";dz.innerHTML="<div class=\"dz-icon\">🎵</div><strong style=\"font-size:0.82em\">DROP AUDIO HERE</strong><p>or click to select · MP3, FLAC, WAV, OGG · max 200MB</p>";}
+    else{fi.accept="video/*";dz.innerHTML="<div class=\"dz-icon\">📹</div><strong style=\"font-size:0.82em\">DROP VIDEO HERE</strong><p>or click to select · MP4, MOV · max 500MB</p>";}
+    S.file=null;document.getElementById("btn-pub").disabled=true;
+    document.getElementById("prev-wrap").style.display="none";
+    document.getElementById("prev-video").src="";document.getElementById("prev-video").style.display="";
+    document.getElementById("prev-audio").src="";document.getElementById("prev-audio").style.display="none";
+  }
+  function handleFile(file){
+    if(!file)return;
+    const isAudio=file.type.startsWith("audio/");
+    const isVideo=file.type.startsWith("video/");
+    if(S.uploadCat==="music"&&!isAudio&&!isVideo){toast("AUDIO OR VIDEO ONLY");return;}
+    if(S.uploadCat!=="music"&&!isVideo){toast("VIDEO ONLY");return;}
+    S.file=file;
+    if(isAudio){document.getElementById("prev-video").style.display="none";document.getElementById("prev-audio").src=URL.createObjectURL(file);document.getElementById("prev-audio").style.display="block";}
+    else{document.getElementById("prev-audio").style.display="none";document.getElementById("prev-video").style.display="";document.getElementById("prev-video").src=URL.createObjectURL(file);}
+    document.getElementById("prev-wrap").style.display="block";
+    document.getElementById("drop-zone").innerHTML="<div class=\"dz-icon\">"+(isAudio?"🎵":"✅")+"</div><strong>"+file.name+"</strong><p>"+(file.size/1024/1024).toFixed(1)+" MB</p>";
+    document.getElementById("btn-pub").disabled=false;
+  }
 
   async function doUpload(){
     if(!S.file)return;
-    const btn=document.getElementById('btn-pub');btn.disabled=true;btn.textContent='ANALYZING...';
+    const isAudioUpload=S.file.type.startsWith('audio/');
+    const btn=document.getElementById('btn-pub');btn.disabled=true;btn.textContent=isAudioUpload?'UPLOADING...':'ANALYZING...';
     const prog=document.getElementById('up-progress');prog.style.display='block';
     const fill=document.getElementById('prog-fill');const ptxt=document.getElementById('prog-txt');
 
     try{
-      // ── STEP 1: AI VERIFICATION (cuore di M4TR1X) ─────────────────────────
-      // Prima di pubblicare qualsiasi video, il modello AI locale analizza
-      // 16 frame equidistanti e determina se il video è autentico o generato da AI.
-      // Il verdetto viene firmato crittograficamente e incluso nel Nostr event.
-      ptxt.textContent='M4TR1X AI analyzing...';fill.style.width='10%';
+      // ── STEP 1: AI VERIFICATION (video only, skip for audio) ─────────────
       let aiVerdict=null;let aiTags=[];
-      try{
+      if(!isAudioUpload) try{
+        ptxt.textContent='M4TR1X AI analyzing...';fill.style.width='10%';
         const aiForm=new FormData();aiForm.append('video',S.file);
         if(S.pubkey)aiForm.append('nostr_pubkey',S.pubkey);
         const aiRes=await fetch('/api/v1/analyze',{method:'POST',body:aiForm,headers:S.pubkey?{'X-Nostr-Pubkey':S.pubkey}:{}});
@@ -2677,18 +2720,31 @@
         console.warn('M4TR1X AI non disponibile:',aiErr.message);
         ptxt.textContent='AI offline — publishing anyway...';
         fill.style.width='40%';
-      }
+      } // end if(!isAudioUpload)
 
       // ── STEP 2: UPLOAD SU BLOSSOM ─────────────────────────────────────────
-      ptxt.textContent='Uploading to Blossom...';
+      ptxt.textContent=isAudioUpload?'Uploading audio...':'Uploading to Blossom...';
       const server=document.getElementById('up-server').value;
+      const uploadUrl='https://'+server+'/upload';
       const fd=new FormData();fd.append('file',S.file);
       const xhr=new XMLHttpRequest();
       xhr.upload.onprogress=e=>{if(e.lengthComputable)fill.style.width=(40+Math.round(e.loaded/e.total*40))+'%'};
+      // Build NIP-98 auth event (required by Blossom servers)
+      let nip98Auth=null;
+      try{
+        const nip98Ev={kind:27235,pubkey:S.pubkey,created_at:now(),
+          tags:[['u',uploadUrl],['method','POST']],content:''};
+        const signedNip98=await signEv(nip98Ev);
+        nip98Auth='Nostr '+btoa(JSON.stringify(signedNip98));
+      }catch(e2){}
       const result=await new Promise((res,rej)=>{
-        xhr.onload=()=>{try{res(JSON.parse(xhr.responseText))}catch(e){rej(new Error('Invalid server response'))}};
+        xhr.onload=()=>{
+          if(xhr.status>=400){rej(new Error('Server error '+xhr.status+(xhr.responseText?': '+xhr.responseText.slice(0,120):'')));return}
+          try{res(JSON.parse(xhr.responseText))}catch(e){rej(new Error('Invalid server response'))}
+        };
         xhr.onerror=()=>rej(new Error('Network error'));
-        xhr.open('POST','https://'+server+'/upload');
+        xhr.open('POST',uploadUrl);
+        if(nip98Auth)xhr.setRequestHeader('Authorization',nip98Auth);
         if(S.pubkey)xhr.setRequestHeader('X-Nostr-Pubkey',S.pubkey);
         xhr.send(fd);
       });

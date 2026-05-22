@@ -16,11 +16,19 @@ const crypto   = require('crypto')
 const fs       = require('fs')
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-const APP_SECRET = process.env.APP_SECRET || 'h8m4tr1x_proto_secret_change_in_env'
-if (!process.env.APP_SECRET) {
-  console.warn('[SECURITY] ⚠️  APP_SECRET non impostata! I token OAuth sono cifrati con chiave di default.')
-  console.warn('[SECURITY]     Imposta APP_SECRET=<stringa_casuale_lunga> nelle variabili d\'ambiente.')
+function loadOrCreateAppSecret() {
+  if (process.env.APP_SECRET) return process.env.APP_SECRET
+  const secretPath = path.join(process.env.M4TR1X_DATA_DIR || process.cwd(), '.app_secret')
+  if (fs.existsSync(secretPath)) {
+    return fs.readFileSync(secretPath, 'utf8').trim()
+  }
+  const secret = crypto.randomBytes(32).toString('hex')
+  fs.writeFileSync(secretPath, secret, { mode: 0o600 })
+  console.warn(`[SECURITY] APP_SECRET generata e salvata in ${secretPath}`)
+  console.warn(`[SECURITY]     Per maggiore sicurezza imposta: APP_SECRET=${secret}`)
+  return secret
 }
+const APP_SECRET = loadOrCreateAppSecret()
 
 // ─── Lazy imports (evita dipendenze circolari) ────────────────────────────────
 function getNostr()    { return require('./nostr') }

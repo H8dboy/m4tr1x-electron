@@ -23,6 +23,8 @@ function getDbPath() {
 function initDb() {
   const dbPath = getDbPath()
   db = new Database(dbPath)
+  db.pragma('journal_mode = WAL')
+  db.pragma('synchronous = NORMAL')
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS analysis_results (
@@ -79,14 +81,17 @@ function saveResult(id, data) {
 
 function loadResult(id) {
   const row = db.prepare('SELECT data FROM analysis_results WHERE id = ?').get(id)
-  return row ? JSON.parse(row.data) : null
+  if (!row) return null
+  try { return JSON.parse(row.data) } catch { return null }
 }
 
 function listResults(limit = 50) {
   const rows = db.prepare(
     'SELECT id, created_at, data FROM analysis_results ORDER BY created_at DESC LIMIT ?'
   ).all(limit)
-  return rows.map(r => ({ id: r.id, created_at: r.created_at, ...JSON.parse(r.data) }))
+  return rows.flatMap(r => {
+    try { return [{ id: r.id, created_at: r.created_at, ...JSON.parse(r.data) }] } catch { return [] }
+  })
 }
 
 // ─── Local Videos ────────────────────────────────────────────────────────────
@@ -154,11 +159,15 @@ function getTrackById(id) {
   return db.prepare('SELECT * FROM local_tracks WHERE id = ?').get(id)
 }
 
+function incrementPlays(id) {
+  db.prepare('UPDATE local_tracks SET plays = plays + 1 WHERE id = ?').run(id)
+}
+
 function getDb() { return db }
 
 module.exports = {
   initDb, saveResult, loadResult, listResults,
   insertVideo, getVideos, searchVideos, getVideoById, incrementViews, likeVideo,
-  insertTrack, getTracks, searchTracks, getTrackById,
+  insertTrack, getTracks, searchTracks, getTrackById, incrementPlays,
   getDb,
 }

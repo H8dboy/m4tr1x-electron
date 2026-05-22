@@ -25,6 +25,15 @@ const http   = require('http')
 const { getLatestModelVersion, registerModelVersion, markModelDownloaded } = require('./crowdtrain')
 const { loadModel } = require('./ai_detector')
 
+function semverGt(a, b) {
+  const parse = v => (v || '0.0.0').split('.').map(n => parseInt(n) || 0)
+  const [a1, a2, a3] = parse(a)
+  const [b1, b2, b3] = parse(b)
+  if (a1 !== b1) return a1 > b1
+  if (a2 !== b2) return a2 > b2
+  return a3 > b3
+}
+
 // ─── Percorso modello locale ──────────────────────────────────────────────────
 
 function getModelPath() {
@@ -134,8 +143,8 @@ async function checkAndUpdateModel() {
     return { updated: false, reason: 'no_published_model', current: current.version }
   }
 
-  // Confronta versioni (formato semver semplice)
-  if (latest.version <= current.version && latest.downloaded) {
+  // Confronta versioni (semver corretto: 1.10.0 > 1.9.0)
+  if (!semverGt(latest.version, current.version) && latest.downloaded) {
     console.log(`[MODEL] Model already up to date: v${current.version}`)
     return { updated: false, reason: 'already_current', current: current.version }
   }

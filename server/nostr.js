@@ -214,7 +214,9 @@ function getConnectedRelays () {
 
 // ── Publish helpers ───────────────────────────────────────────────────────────
 async function publishEvent (template, privkeyHex) {
-  const sk    = Buffer.from(privkeyHex, 'hex')
+  const hexKey = privkeyHex || getUnlockedNostrPrivkey()
+  if (!hexKey) throw new Error('[nostr] Nessuna chiave disponibile per firmare l\'evento')
+  const sk    = Buffer.from(hexKey, 'hex')
   const event = finalizeEvent(template, sk)
   const pool  = getPool()
   try {
@@ -232,7 +234,7 @@ async function publishNote (content, privkeyHex, tags = []) {
     created_at: Math.floor(Date.now() / 1000),
     tags,
     content
-  }, privkeyHex)
+  }, privkeyHex || null)
 }
 
 async function publishVideoAttestation (videoHash, meta, privkeyHex) {
@@ -275,9 +277,10 @@ async function fetchFeed (opts = {}) {
   try {
     const events = await Promise.race([
       new Promise(resolve => {
+        const seen = new Set()
         const collected = []
         const sub = pool.subscribeMany(DEFAULT_RELAYS, [filter], {
-          onevent (e) { collected.push(e) },
+          onevent (e) { if (!seen.has(e.id)) { seen.add(e.id); collected.push(e) } },
           oneose  ()  { sub.close(); resolve(collected) }
         })
       }),
@@ -366,8 +369,9 @@ function cleanup () {
 
 // ── Subscribe to feed (server-side, persistent) ───────────────────────────────
 function subscribeToFilter (filter, onEvent) {
-  const pool = getPool()
-  const sub = pool.subscribeMany(DEFAULT_RELAYS, [filter], {
+  const pool    = getPool()
+  const filters = Array.isArray(filter) ? filter : [filter]
+  const sub = pool.subscribeMany(DEFAULT_RELAYS, filters, {
     onevent (e) { try { onEvent(e) } catch {} }
   })
   return () => { try { sub.close() } catch {} }

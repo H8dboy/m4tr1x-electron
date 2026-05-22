@@ -39,7 +39,26 @@ async function searchTracks(query, instances, limit = 20) {
 }
 
 async function getRecentAlbums(instance, limit = 20) {
-  return []
+  const tracks = db.getTracks({ limit: 500 })
+  const albumMap = new Map()
+  for (const t of tracks) {
+    if (!t.album) continue
+    if (!albumMap.has(t.album)) {
+      albumMap.set(t.album, {
+        id:         t.album,
+        instance:   'local',
+        title:      t.album,
+        artist:     { id: null, name: t.artist || 'Unknown', instance: 'local' },
+        cover:      t.cover ? `/api/v1/media/${t.cover}` : null,
+        created_at: t.uploaded_at,
+        trackCount: 0,
+      })
+    }
+    albumMap.get(t.album).trackCount++
+  }
+  return [...albumMap.values()]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, limit)
 }
 
 async function getArtist(instance, artistId) {

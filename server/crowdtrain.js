@@ -101,12 +101,13 @@ function initCrowdtrainDb() {
 }
 
 // ─── Parametri consenso ───────────────────────────────────────────────────────
-const MIN_VOTES        = 10    // voti minimi per confermare un'etichetta
-const MIN_AGREEMENT    = 0.70  // % accordo minimo (ponderato per reputazione)
-const MAX_REPUTATION   = 5.0
-const MIN_REPUTATION   = 0.1
-const REPUTATION_BOOST = 0.1   // guadagno per voto corretto
-const REPUTATION_LOSS  = 0.05  // perdita per voto sbagliato
+const MIN_VOTES          = 10    // voti minimi per confermare un'etichetta
+const MIN_AGREEMENT      = 0.70  // % accordo minimo (ponderato per reputazione)
+const MAX_REPUTATION     = 5.0
+const MIN_REPUTATION     = 0.1
+const MIN_REP_TO_VOTE    = 0.3   // reputazione minima per votare (blocca sybil iniziali)
+const REPUTATION_BOOST   = 0.1   // guadagno per voto corretto
+const REPUTATION_LOSS    = 0.05  // perdita per voto sbagliato
 
 // ─── Voti ─────────────────────────────────────────────────────────────────────
 
@@ -125,13 +126,24 @@ function submitVote(videoHash, voterPubkey, label, confidence = 1.0, nostrEventI
   if (!['REAL', 'AI_GENERATED'].includes(label)) {
     throw new Error('Invalid label. Use REAL or AI_GENERATED.')
   }
+  if (!videoHash || !/^[0-9a-f]{64}$/.test(videoHash)) {
+    throw new Error('videoHash deve essere SHA-256 hex (64 caratteri)')
+  }
+  confidence = Math.max(0, Math.min(1, parseFloat(confidence) || 1.0))
 
   // Reputazione corrente del votante
   const repRow = db.prepare('SELECT score FROM reputation WHERE pubkey = ?').get(voterPubkey)
   const reputation = repRow ? repRow.score : 1.0
 
+  // Blocca votanti con reputazione troppo bassa (anti-sybil)
+  if (repRow && reputation < MIN_REP_TO_VOTE) {
+    throw new Error(`Reputazione insufficiente per votare (${reputation.toFixed(2)} < ${MIN_REP_TO_VOTE})`)
+  }
+
   // Upsert voto (uno per utente per video)
   const voteId = `${videoHash}:${voterPubkey}`
+  const isNew  = !db.prepare('SELECT id FROM votes WHERE id = ?').get(voteId)
+
   db.prepare(`
     INSERT OR REPLACE INTO votes (id, video_hash, voter_pubkey, label, confidence, reputation, nostr_event_id, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -143,9 +155,12 @@ function submitVote(videoHash, voterPubkey, label, confidence = 1.0, nostrEventI
     VALUES (?, 1.0, 0, 0, ?)
   `).run(voterPubkey, new Date().toISOString())
 
-  db.prepare(`
-    UPDATE reputation SET total_votes = total_votes + 1, updated_at = ? WHERE pubkey = ?
-  `).run(new Date().toISOString(), voterPubkey)
+  // Incrementa total_votes solo per voti nuovi, non per aggiornamenti
+  if (isNew) {
+    db.prepare(`
+      UPDATE reputation SET total_votes = total_votes + 1, updated_at = ? WHERE pubkey = ?
+    `).run(new Date().toISOString(), voterPubkey)
+  }
 
   console.log(`[CROWDTRAIN] Voto: ${voterPubkey.substring(0, 12)}... → ${label} (video: ${videoHash.substring(0, 12)}...)`)
 
