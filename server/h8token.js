@@ -68,7 +68,7 @@ function initLedger() {
       note        TEXT,
       prev_hash   TEXT NOT NULL,
       hash        TEXT NOT NULL,
-      signature   TEXT,
+      signature   TEXT NOT NULL,
       from_pubkey TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_from    ON ledger(from_addr);
@@ -85,13 +85,65 @@ function initLedger() {
     console.log('[H8] Migration: ledger.from_pubkey column added for ML-DSA signature verification')
   }
 
+  // Migration (audit #4): enforce signature NOT NULL — align with node repo schema
+  const sigCol = db.pragma('table_info(ledger)').find(c => c.name === 'signature')
+  if (sigCol && sigCol.notnull === 0) {
+    // Fix genesis blocks that have NULL signature → deterministic 'genesis:...' value
+    const nullGenesis = db.prepare(
+      `SELECT block_index, hash FROM ledger WHERE signature IS NULL AND tx_type = 'mint' AND from_addr = '0x0'`
+    ).all()
+    for (const b of nullGenesis) {
+      const sig = 'genesis:' + bytesToHex(sha3_256(new TextEncoder().encode(b.hash)))
+      db.prepare('UPDATE ledger SET signature = ? WHERE block_index = ?').run(sig, b.block_index)
+    }
+
+    // Abort if any non-genesis block still has NULL signature — cannot auto-fix
+    const remaining = db.prepare(
+      `SELECT block_index, tx_type, from_addr FROM ledger WHERE signature IS NULL`
+    ).all()
+    if (remaining.length > 0) {
+      console.error('[H8] CRITICAL: non-genesis blocks with NULL signature:', remaining)
+      throw new Error(
+        `Ledger has ${remaining.length} non-genesis block(s) with NULL signature — manual intervention required`
+      )
+    }
+
+    // Recreate table with NOT NULL constraint (SQLite does not support ALTER COLUMN)
+    db.transaction(() => {
+      db.exec(`CREATE TABLE ledger_new (
+        block_index INTEGER PRIMARY KEY AUTOINCREMENT,
+        ts          INTEGER NOT NULL,
+        from_addr   TEXT NOT NULL,
+        to_addr     TEXT NOT NULL,
+        amount      INTEGER NOT NULL,
+        tx_type     TEXT NOT NULL,
+        content_id  TEXT,
+        note        TEXT,
+        prev_hash   TEXT NOT NULL,
+        hash        TEXT NOT NULL,
+        signature   TEXT NOT NULL,
+        from_pubkey TEXT
+      )`)
+      db.exec('INSERT INTO ledger_new SELECT * FROM ledger')
+      db.exec('DROP TABLE ledger')
+      db.exec('ALTER TABLE ledger_new RENAME TO ledger')
+      db.exec('CREATE INDEX IF NOT EXISTS idx_from    ON ledger(from_addr)')
+      db.exec('CREATE INDEX IF NOT EXISTS idx_to      ON ledger(to_addr)')
+      db.exec('CREATE INDEX IF NOT EXISTS idx_content ON ledger(content_id)')
+      db.exec('CREATE INDEX IF NOT EXISTS idx_ts      ON ledger(ts DESC)')
+      db.exec('CREATE INDEX IF NOT EXISTS idx_type    ON ledger(tx_type)')
+    })()
+    console.log('[H8] Migration: signature column is now NOT NULL (audit #4)')
+  }
+
   const count = db.prepare('SELECT COUNT(*) as c FROM ledger').get().c
   if (count === 0) {
     const ts = Math.floor(Date.now()/1000)
     const prevHash = '0'.repeat(64)
     const hash = hashBlock(1, ts, '0x0', MINT_ADDRESS, 0, 'mint', null, prevHash)
+    const genesisSig = 'genesis:' + bytesToHex(sha3_256(new TextEncoder().encode(hash)))
     db.prepare(`INSERT INTO ledger (ts, from_addr, to_addr, amount, tx_type, content_id, note, prev_hash, hash, signature, from_pubkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-      .run(ts, '0x0', MINT_ADDRESS, 0, 'mint', null, 'genesis', prevHash, hash, null, null)
+      .run(ts, '0x0', MINT_ADDRESS, 0, 'mint', null, 'genesis', prevHash, hash, genesisSig, null)
     console.log('[H8] Ledger genesis block created.')
   }
 }
@@ -112,15 +164,14 @@ async function appendBlock({ from, to, amount, tx_type, content_id = null, note 
   const prevHash = last ? last.hash : '0'.repeat(64)
   const hash = hashBlock(idx, ts, from, to, amount, tx_type, content_id, prevHash)
 
-  let signature = null
+  let signature
   let fromPubkey = null
-  if (tx_type !== 'mint') {
-    try {
-      signature = await h8id.signWithUnlocked(hash)
-      const unlocked = h8id.getUnlockedIdentity()
-      fromPubkey = unlocked ? unlocked.publicKey : null
-    }
-    catch (e) { throw new Error('H8 wallet locked: cannot sign transaction') }
+  try {
+    signature = await h8id.signWithUnlocked(hash)
+    const unlocked = h8id.getUnlockedIdentity()
+    fromPubkey = unlocked ? unlocked.publicKey : null
+  } catch (e) {
+    throw new Error('H8 wallet locked: cannot sign transaction')
   }
 
   db.prepare(`INSERT INTO ledger (ts, from_addr, to_addr, amount, tx_type, content_id, note, prev_hash, hash, signature, from_pubkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
