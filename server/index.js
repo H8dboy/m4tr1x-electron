@@ -339,8 +339,9 @@ app.get('/api/v1/h8/boost/:contentId', verifyApiKey, (req, res) => {
   res.json({ contentId: req.params.contentId, score: h8token.getBoostScore(req.params.contentId) })
 })
 
-app.get('/api/v1/h8/chain/verify', verifyApiKey, (req, res) => {
-  res.json(h8token.verifyChain())
+app.get('/api/v1/h8/chain/verify', verifyApiKey, async (req, res) => {
+  try { res.json(await h8token.verifyChain()) }
+  catch (e) { res.status(500).json({ error: e.message }) }
 })
 
 app.post('/api/v1/admin/h8/mint', localhostOnly, verifyAdminKey, async (req, res) => {

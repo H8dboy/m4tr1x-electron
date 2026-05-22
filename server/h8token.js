@@ -61,7 +61,8 @@ function initLedger() {
       note        TEXT,
       prev_hash   TEXT NOT NULL,
       hash        TEXT NOT NULL,
-      signature   TEXT
+      signature   TEXT,
+      from_pubkey TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_from    ON ledger(from_addr);
     CREATE INDEX IF NOT EXISTS idx_to      ON ledger(to_addr);
@@ -70,13 +71,20 @@ function initLedger() {
     CREATE INDEX IF NOT EXISTS idx_type    ON ledger(tx_type);
   `)
 
+  // Migration (audit #3): add from_pubkey column to existing databases
+  const cols = db.pragma('table_info(ledger)')
+  if (!cols.some(c => c.name === 'from_pubkey')) {
+    db.exec('ALTER TABLE ledger ADD COLUMN from_pubkey TEXT')
+    console.log('[H8] Migration: ledger.from_pubkey column added for ML-DSA signature verification')
+  }
+
   const count = db.prepare('SELECT COUNT(*) as c FROM ledger').get().c
   if (count === 0) {
     const ts = Math.floor(Date.now()/1000)
     const prevHash = '0'.repeat(64)
     const hash = hashBlock(1, ts, '0x0', MINT_ADDRESS, 0, 'mint', null, prevHash)
-    db.prepare(`INSERT INTO ledger (ts, from_addr, to_addr, amount, tx_type, content_id, note, prev_hash, hash, signature) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-      .run(ts, '0x0', MINT_ADDRESS, 0, 'mint', null, 'genesis', prevHash, hash, null)
+    db.prepare(`INSERT INTO ledger (ts, from_addr, to_addr, amount, tx_type, content_id, note, prev_hash, hash, signature, from_pubkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(ts, '0x0', MINT_ADDRESS, 0, 'mint', null, 'genesis', prevHash, hash, null, null)
     console.log('[H8] Ledger genesis block created.')
   }
 }
@@ -98,13 +106,18 @@ async function appendBlock({ from, to, amount, tx_type, content_id = null, note 
   const hash = hashBlock(idx, ts, from, to, amount, tx_type, content_id, prevHash)
 
   let signature = null
+  let fromPubkey = null
   if (tx_type !== 'mint') {
-    try { signature = await h8id.signWithUnlocked(hash) }
+    try {
+      signature = await h8id.signWithUnlocked(hash)
+      const unlocked = h8id.getUnlockedIdentity()
+      fromPubkey = unlocked ? unlocked.publicKey : null
+    }
     catch (e) { throw new Error('H8 wallet locked: cannot sign transaction') }
   }
 
-  db.prepare(`INSERT INTO ledger (ts, from_addr, to_addr, amount, tx_type, content_id, note, prev_hash, hash, signature) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-    .run(ts, from, to, amount, tx_type, content_id, note, prevHash, hash, signature)
+  db.prepare(`INSERT INTO ledger (ts, from_addr, to_addr, amount, tx_type, content_id, note, prev_hash, hash, signature, from_pubkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(ts, from, to, amount, tx_type, content_id, note, prevHash, hash, signature, fromPubkey)
 
   return { block_index: idx, ts, from_addr: from, to_addr: to, amount, tx_type, hash }
 }
@@ -169,16 +182,43 @@ function getBoostScoresBatch(ids) {
   return result
 }
 
-function verifyChain() {
+async function verifyChain() {
   const rows = getDb().prepare('SELECT * FROM ledger ORDER BY block_index ASC').all()
   let expectedPrev = '0'.repeat(64)
+  const warnings = []
+
   for (const b of rows) {
-    if (b.prev_hash !== expectedPrev) return { valid: false, firstInvalidBlock: b.block_index, reason: 'prev_hash mismatch' }
+    if (b.prev_hash !== expectedPrev)
+      return { valid: false, firstInvalidBlock: b.block_index, reason: 'prev_hash mismatch' }
+
     const recomputed = hashBlock(b.block_index, b.ts, b.from_addr, b.to_addr, b.amount, b.tx_type, b.content_id, b.prev_hash)
-    if (recomputed !== b.hash) return { valid: false, firstInvalidBlock: b.block_index, reason: 'hash mismatch' }
+    if (recomputed !== b.hash)
+      return { valid: false, firstInvalidBlock: b.block_index, reason: 'hash mismatch' }
+
+    // Genesis block: mint from 0x0 with no signature — skip ML-DSA verification
+    if (b.tx_type === 'mint' && b.from_addr === '0x0') {
+      expectedPrev = b.hash
+      continue
+    }
+
+    if (!b.signature)
+      return { valid: false, firstInvalidBlock: b.block_index, reason: 'missing signature on non-genesis block' }
+
+    if (!b.from_pubkey) {
+      // Block predates audit fix #3 migration — hash is intact but signature unverifiable
+      warnings.push({ block: b.block_index, reason: 'from_pubkey missing — ML-DSA signature not verifiable' })
+    } else {
+      const sigOk = await h8id.verifySignature(b.from_pubkey, b.hash, b.signature)
+      if (!sigOk)
+        return { valid: false, firstInvalidBlock: b.block_index, reason: 'invalid ML-DSA signature' }
+    }
+
     expectedPrev = b.hash
   }
-  return { valid: true, blocks: rows.length }
+
+  const result = { valid: true, blocks: rows.length }
+  if (warnings.length) result.warnings = warnings
+  return result
 }
 
 function mintTokens(to, amount) {
