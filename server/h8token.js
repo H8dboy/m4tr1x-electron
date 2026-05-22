@@ -152,6 +152,27 @@ function getLastBlock() {
   return getDb().prepare('SELECT * FROM ledger ORDER BY block_index DESC LIMIT 1').get()
 }
 
+// Per-sender serialization queue — prevents concurrent transfers from the same
+// address racing through the balance check before either one commits (audit #8).
+// Node.js is single-threaded but async signing yields control to the event loop,
+// creating the race window. SQLite transactions can't span async operations, so
+// we serialize at the application level instead.
+const _senderLocks = new Map()
+
+function withSenderLock(address, fn) {
+  const prev = _senderLocks.get(address) || Promise.resolve()
+  let unlock
+  const done = new Promise(r => { unlock = r })
+  // Register synchronously (before any await) so the next caller chains on us
+  _senderLocks.set(address, done)
+  return prev
+    .then(() => fn())
+    .finally(() => {
+      unlock()
+      if (_senderLocks.get(address) === done) _senderLocks.delete(address)
+    })
+}
+
 async function appendBlock({ from, to, amount, tx_type, content_id = null, note = null }) {
   if (!validAddress(from) || !validAddress(to)) throw new Error('Invalid address format')
   if (!VALID_TX_TYPES.has(tx_type)) throw new Error('Invalid tx_type')
@@ -226,32 +247,38 @@ async function transfer(to, amount, note = '') {
   const unlocked = h8id.getUnlockedIdentity()
   if (!unlocked) throw new Error('H8 wallet locked')
   const from = unlocked.address
-  if (getBalance(from) < amount) throw new Error('Saldo insufficiente')
-  return appendBlock({ from, to, amount, tx_type: 'transfer', note })
+  return withSenderLock(from, async () => {
+    if (getBalance(from) < amount) throw new Error('Saldo insufficiente')
+    return appendBlock({ from, to, amount, tx_type: 'transfer', note })
+  })
 }
 
 async function tip(creatorAddr, amount, contentId) {
   const unlocked = h8id.getUnlockedIdentity()
   if (!unlocked) throw new Error('H8 wallet locked')
   const from = unlocked.address
-  if (getBalance(from) < amount) throw new Error('Saldo insufficiente per tip')
+  return withSenderLock(from, async () => {
+    if (getBalance(from) < amount) throw new Error('Saldo insufficiente per tip')
 
-  const creatorShare  = Math.floor(amount * 0.50)
-  const platformShare = Math.floor(amount * 0.20)
-  const serverShare   = amount - creatorShare - platformShare
+    const creatorShare  = Math.floor(amount * 0.50)
+    const platformShare = Math.floor(amount * 0.20)
+    const serverShare   = amount - creatorShare - platformShare
 
-  const b1 = await appendBlock({ from, to: creatorAddr,      amount: creatorShare,  tx_type: 'tip_creator',  content_id: contentId })
-  const b2 = await appendBlock({ from, to: PLATFORM_ADDRESS, amount: platformShare, tx_type: 'tip_platform', content_id: contentId })
-  const b3 = await appendBlock({ from, to: SERVER_ADDRESS,   amount: serverShare,   tx_type: 'tip_server',   content_id: contentId })
-  return { creator: b1, platform: b2, server: b3, total: amount }
+    const b1 = await appendBlock({ from, to: creatorAddr,      amount: creatorShare,  tx_type: 'tip_creator',  content_id: contentId })
+    const b2 = await appendBlock({ from, to: PLATFORM_ADDRESS, amount: platformShare, tx_type: 'tip_platform', content_id: contentId })
+    const b3 = await appendBlock({ from, to: SERVER_ADDRESS,   amount: serverShare,   tx_type: 'tip_server',   content_id: contentId })
+    return { creator: b1, platform: b2, server: b3, total: amount }
+  })
 }
 
 async function boost(contentId, amount) {
   const unlocked = h8id.getUnlockedIdentity()
   if (!unlocked) throw new Error('H8 wallet locked')
   const from = unlocked.address
-  if (getBalance(from) < amount) throw new Error('Saldo insufficiente per boost')
-  return appendBlock({ from, to: PLATFORM_ADDRESS, amount, tx_type: 'boost', content_id: contentId })
+  return withSenderLock(from, async () => {
+    if (getBalance(from) < amount) throw new Error('Saldo insufficiente per boost')
+    return appendBlock({ from, to: PLATFORM_ADDRESS, amount, tx_type: 'boost', content_id: contentId })
+  })
 }
 
 function getBoostScore(contentId) {
