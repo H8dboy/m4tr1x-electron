@@ -1091,22 +1091,37 @@ app.post('/api/v1/music/upload', upload.single('audio'), async (req, res) => {
 // In production, Tauri passes the bundled frontend path via env var.
 // In dev, fall back to the local ../frontend directory.
 const frontendPath = process.env.M4TR1X_FRONTEND_PATH || path.join(__dirname, '..', 'frontend')
+// Serve an HTML file with a per-request CSP nonce injected into every <script>
+// and <style> tag. The nonce is exposed via X-CSP-Nonce so Electron's
+// onHeadersReceived can include it in the CSP header without unsafe-inline.
+function serveHtmlWithNonce(htmlFile) {
+  return (req, res) => {
+    const filePath = path.join(frontendPath, htmlFile)
+    if (!fs.existsSync(filePath)) return res.status(404).end()
+    const nonce = crypto.randomBytes(16).toString('base64url')
+    let html = fs.readFileSync(filePath, 'utf8')
+    html = html.replace(/<script(?![^>]*\bnonce\b)([^>]*)>/gi, `<script nonce=\"${nonce}\"$1>`)
+    html = html.replace(/<style(?![^>]*\bnonce\b)([^>]*)>/gi, `<style nonce=\"${nonce}\"$1>`)
+    res.set('X-CSP-Nonce', nonce)
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    res.send(html)
+  }
+}
+
 if (fs.existsSync(frontendPath)) {
-  app.use('/app', express.static(frontendPath))
+  // HTML routes use nonce injection; static assets (JS, CSS, images) served as-is
+  app.get('/app',  serveHtmlWithNonce('index.html'))
+  app.get('/app/', serveHtmlWithNonce('index.html'))
+  app.use('/app',  express.static(frontendPath))
 
-  // Route esplicita per la pagina sicurezza (6 lingue per utenti a rischio)
-  app.get('/app/safety', (req, res) => {
-    res.sendFile(path.join(frontendPath, 'safety.html'))
-  })
+  app.get('/app/safety', serveHtmlWithNonce('safety.html'))
 
-  // Admin panel â solo localhost
-  app.get('/admin', localhostOnly, (req, res) => {
-    res.sendFile(path.join(frontendPath, 'admin.html'))
-  })
+  app.get('/admin', localhostOnly, serveHtmlWithNonce('admin.html'))
 
-  // Fallback SPA â rimanda a index.html per qualsiasi route non trovata
+  // SPA fallback: non-asset routes serve index.html with nonce
   app.get('/app/*', (req, res) => {
-    res.sendFile(path.join(frontendPath, 'index.html'))
+    if (path.extname(req.path)) return res.status(404).end()
+    serveHtmlWithNonce('index.html')(req, res)
   })
 }
 

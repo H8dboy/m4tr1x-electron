@@ -68,15 +68,25 @@ function waitForServer(port, maxMs = 15000) {
 }
 
 // ─── Content Security Policy ──────────────────────────────────────────────────
+// The Express server injects a per-request nonce into <script>/<style> tags and
+// exposes it via X-CSP-Nonce. We read it here, build a nonce-based CSP (no
+// unsafe-inline), and strip the internal header before the renderer sees it.
 function setupCSP() {
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const nonce = (details.responseHeaders['x-csp-nonce'] || details.responseHeaders['X-CSP-Nonce'] || [])[0] || ''
+    const scriptSrc = nonce ? `'self' 'nonce-${nonce}'` : "'self'"
+
+    const headers = { ...details.responseHeaders }
+    delete headers['x-csp-nonce']
+    delete headers['X-CSP-Nonce']
+
     callback({
       responseHeaders: {
-        ...details.responseHeaders,
+        ...headers,
         'Content-Security-Policy': [
           [
             "default-src 'self' http://localhost:8080",
-            "script-src 'self' 'unsafe-inline'",
+            `script-src ${scriptSrc}`,
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: https:",
@@ -145,10 +155,7 @@ async function createWindow() {
     mainWindow.loadURL(`http://localhost:${SERVER_PORT}/app`)
   } catch (err) {
     console.error('[M4TR1X] Server did not respond in time:', err)
-    // Show error in loading screen
-    mainWindow.webContents.executeJavaScript(
-      `document.body.innerHTML='<div style="color:#ff4455;font-family:monospace;padding:40px;text-align:center">[ SERVER ERROR ]<br><br>${err.message}<br><br>Riavvia l\'app.</div>'`
-    )
+    mainWindow.webContents.send('server-error', err.message)
   }
 
   // SECURITY: external links → system browser
