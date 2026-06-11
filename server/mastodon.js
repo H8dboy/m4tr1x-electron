@@ -71,7 +71,14 @@ async function searchHashtag(hashtag, instances, limit = 20) {
 }
 
 async function search(query) {
-  return { accounts: [], statuses: [] }
+  if (!query || !query.trim()) return { accounts: [], statuses: [] }
+  try {
+    const { searchEvents } = require('./relay')
+    const events = searchEvents(query.trim(), 40)
+    return { accounts: [], statuses: events.map(nostrEventToPost) }
+  } catch(e) {
+    return { accounts: [], statuses: [] }
+  }
 }
 
 async function publishPost(instance, accessToken, content, options = {}) {

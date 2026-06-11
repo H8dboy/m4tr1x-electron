@@ -210,4 +210,17 @@ httpServer.listen(RELAY_PORT, '0.0.0.0', () => {
   console.log(`[RELAY] M4TR1X Node ready → ws://localhost:${RELAY_PORT}`)
 })
 
-module.exports = { saveEvent, queryEvents, RELAY_PORT }
+function searchEvents(query, limit = 30) {
+  const like = `%${query}%`
+  try {
+    return db.prepare(
+      `SELECT * FROM events WHERE (content LIKE ? OR tags LIKE ?) AND kind = 1
+       ORDER BY created_at DESC LIMIT ?`
+    ).all(like, like, limit).map(row => ({ ...row, tags: JSON.parse(row.tags) }))
+  } catch(e) {
+    console.error('[RELAY] Search error:', e.message)
+    return []
+  }
+}
+
+module.exports = { saveEvent, queryEvents, searchEvents, RELAY_PORT }

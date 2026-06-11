@@ -476,6 +476,20 @@ app.get('/api/v1/mastodon/search', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
+// ── Unified search across posts, videos, tracks ───────────────────────────────
+app.get('/api/v1/search', verifyApiKey, async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim()
+    if (!q) return res.json({ posts: [], videos: [], tracks: [] })
+    const [postResults, videos, tracks] = await Promise.all([
+      mastodon.search(q),
+      Promise.resolve(db.searchVideos(q, 20)),
+      Promise.resolve(db.searchTracks(q, 20)),
+    ])
+    res.json({ posts: postResults.statuses || [], videos, tracks })
+  } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
 app.post('/api/v1/mastodon/post', async (req, res) => {
   try {
     const { instance, accessToken, content, options } = req.body
