@@ -172,6 +172,6 @@ MIT — see [LICENSE](LICENSE).
 
 <div align="center">
 
-Built by [@H8db0y](https://github.com/H8db0y) — Brescia, Italy
+Built by [@H8db0y](https://github.com/H8db0y)
 
 </div>

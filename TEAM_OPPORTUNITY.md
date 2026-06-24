@@ -242,7 +242,7 @@ async function verifyChain() {
 
 ### 5.1 Current Structure
 
-- **Founder/Lead**: H8db0y (Brescia, Italy) — architecture, security, crypto, core systems
+- **Founder/Lead**: H8db0y — architecture, security, crypto, core systems
 - **Repos**: 6 public repositories + private head node
   - `m4tr1x-electron` — desktop app + API server (1,325 commits)
   - `m4tr1x-node` — self-hosted backend (5,325 commits)

@@ -21,7 +21,7 @@ H8 address format: `H8` + first 38 hex chars of `SHA3-256(publicKey)` — 40 cha
 
 ## Mint authority
 
-The mint key is held by the founder (H8db0y / H8db0y). Only the admin endpoint (`POST /api/v1/admin/h8/mint`) with a valid `ADMIN_KEY` can issue new H8 into circulation. This endpoint is restricted to localhost only. This is the same architecture as:
+The mint key is held by the founder (H8db0y). Only the admin endpoint (`POST /api/v1/admin/h8/mint`) with a valid `ADMIN_KEY` can issue new H8 into circulation. This endpoint is restricted to localhost only. This is the same architecture as:
 
 - **Signal** — open protocol, founder controls the registration server
 - **Bitcoin** — open protocol, Satoshi pre-mined approximately 1M BTC
