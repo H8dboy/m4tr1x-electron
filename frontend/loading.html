@@ -107,26 +107,6 @@
 
     // Start polling after a short initial delay
     setTimeout(poll, 300);
-
-    // Receive fatal server errors from the main process via IPC (no innerHTML — XSS-safe)
-    if (window.m4tr1x_native?.onServerError) {
-      window.m4tr1x_native.onServerError(function(msg) {
-        const errBox = document.createElement('div');
-        errBox.style.cssText = 'color:#ff4455;font-family:monospace;padding:40px;text-align:center;position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;z-index:9999';
-        const title = document.createElement('div');
-        title.textContent = '[ SERVER ERROR ]';
-        title.style.marginBottom = '24px';
-        const detail = document.createElement('div');
-        detail.textContent = msg;
-        detail.style.marginBottom = '24px';
-        const hint = document.createElement('div');
-        hint.textContent = "Riavvia l'app.";
-        errBox.appendChild(title);
-        errBox.appendChild(detail);
-        errBox.appendChild(hint);
-        document.body.appendChild(errBox);
-      });
-    }
   </script>
 </body>
 </html>
