@@ -8,6 +8,9 @@
 
 **A decentralized social network. No central server. No company. No identity verification.**
 
+🌐 **Official site & downloads — [nderja.com](https://nderja.com)**
+_M4TR1X is distributed only from nderja.com._
+
 </div>
 # ⚡ M4TR1X UI Preview
 
