@@ -136,7 +136,6 @@
   },
   "dependencies": {
     "@noble/post-quantum": "^0.6.0",
-    "@swanchain/tor": "^0.0.3",
     "better-sqlite3": "^12.8.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",

@@ -65,6 +65,17 @@
   canonico Postgres non lo chiude del tutto. Nuovi test: `scripts/doublespend-test.js`,
   `scripts/mitigations-test.js`, `scripts/session-guard-test.js` (tutti verdi).
 
+### Fix — post-verifica sul build Electron reale
+- **B2 (regressione della migrazione):** la migrazione statica scriveva il placeholder
+  letterale `$1`/`$2` invece del nome funzione (bug del replacer-funzione), quindi i 133
+  handler statici erano di fatto morti sotto CSP. Rigenerato `index.html` dalla sorgente
+  pre-B2 con migrazione corretta; `switchSec` non legge più `getAttribute('onclick')`
+  (rimosso dalla migrazione) ma `data-args`. Nuovo `tests/test-frontend-handlers.js` che
+  valida che ogni `data-action`/`data-close`/`data-on*` risolva. Verificato nell'Electron
+  reale: handler scattano, overlay/tab si aprono, 0 violazioni CSP, 0 errori renderer.
+- **Dipendenza morta rimossa:** `@swanchain/tor` (mai importata) era sparita da npm e
+  faceva fallire `npm install` con 404 per l'intero progetto. Rimossa da `package.json`.
+
 ## v2.3.0 — Developer Preview
 
 ### H8 Token Economy (live)
