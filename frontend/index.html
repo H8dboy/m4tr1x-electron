@@ -327,7 +327,7 @@
         const name=esc(a.displayName||a.username||a.id.slice(0,12));
         const handle=esc('@'+(a.username||a.id.slice(0,12)));
         const av=a.avatar ? '<img src="'+esc(a.avatar)+'" alt="">' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>';
-        html+='<div class="mx-sr-row" onclick="closeSearch();viewProf(\''+a.id+'\')"><span class="mx-sr-av">'+av+'</span><span class="mx-sr-meta"><b>'+name+'</b><small>'+handle+'</small></span><svg class="mx-sr-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>';
+        html+='<div class="mx-sr-row" data-action="closeThenViewProf" data-args="'+escAttr(a.id)+'"><span class="mx-sr-av">'+av+'</span><span class="mx-sr-meta"><b>'+name+'</b><small>'+handle+'</small></span><svg class="mx-sr-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>';
       });
     }
     if(posts.length){
@@ -335,8 +335,8 @@
       posts.slice(0,20).forEach(p=>{
         const a=p.account||{}; const who=esc('@'+(a.username||'anon'));
         const txt=esc((p.content||'').replace(/<[^>]+>/g,'').slice(0,140));
-        const act=a.id ? 'closeSearch();viewProf(\''+a.id+'\')' : 'closeSearch()';
-        html+='<div class="mx-sr-row mx-sr-post" onclick="'+act+'"><span class="mx-sr-meta"><small class="mx-sr-who">'+who+'</small><span class="mx-sr-txt">'+txt+'</span></span></div>';
+        const act=a.id ? 'data-action="closeThenViewProf" data-args="'+escAttr(a.id)+'"' : 'data-action="closeSearch"';
+        html+='<div class="mx-sr-row mx-sr-post" '+act+'><span class="mx-sr-meta"><small class="mx-sr-who">'+who+'</small><span class="mx-sr-txt">'+txt+'</span></span></div>';
       });
     }
     if(videos.length){
@@ -404,7 +404,7 @@
       +'<span class="story-label">La tua storia</span></div>';
     _storyGroups.forEach((g,gi)=>{
       const s=g.items[0]; const thumb=s.thumb||s.url||'';
-      html+='<div class="story-item" onclick="openStoryGroup('+gi+')">'
+      html+='<div class="story-item" data-action="openStoryGroup" data-args="'+gi+'">'
         +'<div class="story-ring"><div class="story-av">'+(thumb?'<img src="'+esc(thumb)+'" alt="">':'')+'</div></div>'
         +'<span class="story-label">'+esc(_storyName(g.uploader))+'</span></div>';
     });
@@ -469,7 +469,7 @@
     let html='<div class="shl-title">STORIE IN EVIDENZA</div><div class="shl-circles">';
     list.forEach((s,i)=>{
       const thumb=s.thumb||s.url||''; const lab=esc((s.caption||'Storia').slice(0,12));
-      html+='<div class="shl-item" onclick="openStoryHl('+i+')"><div class="shl-ring"><div class="shl-av">'+(thumb?'<img src="'+esc(thumb)+'" alt="">':'')+'</div></div><span class="shl-label">'+lab+'</span></div>';
+      html+='<div class="shl-item" data-action="openStoryHl" data-args="'+i+'"><div class="shl-ring"><div class="shl-av">'+(thumb?'<img src="'+esc(thumb)+'" alt="">':'')+'</div></div><span class="shl-label">'+lab+'</span></div>';
     });
     html+='</div>'; row.innerHTML=html; row.style.display='block';
   }
@@ -1525,7 +1525,7 @@
       '<div class="fw-info"><div class="fw-title">' + esc(track.title||'Untitled') + '</div>' +
       '<div class="fw-artist">' + esc(track.artist||'Unknown') + nodeLabel + '</div></div>' +
       '<span class="fw-duration">' + duration + '</span>' +
-      '<button class="h8-tip-btn" style="background:none;border:1px solid rgba(255,34,119,0.4);color:#ff2277;padding:4px 10px;font-size:0.65em;cursor:pointer;margin-left:8px;font-family:inherit" onclick="event.stopPropagation();openZap(\'' + fwTrackId + '\',\'' + esc(track.artist||'unknown') + '\',null)">\u2665 H8</button>';
+      '<button class="h8-tip-btn" style="background:none;border:1px solid rgba(255,34,119,0.4);color:#ff2277;padding:4px 10px;font-size:0.65em;cursor:pointer;margin-left:8px;font-family:inherit" data-action="zapStop" data-args="'+escAttr(JSON.stringify([fwTrackId,esc(track.artist||'unknown'),null]))+'">\u2665 H8</button>';
     el.onclick = () => playFunkwhale(track.title||'Untitled', track.artist||'Unknown', streamUrl, el);
     list.appendChild(el);
   }
@@ -1606,14 +1606,14 @@
       '<div class="fw-cover" style="font-size:2em">\u{1F3B5}</div>' +
       '<div class="fw-info">' +
         '<div class="fw-title">' + esc(title) + (genre ? ' <span style="color:var(--blue);font-size:0.75em">· ' + esc(genre) + '</span>' : '') + '</div>' +
-        '<div class="fw-artist" id="fnm-ms-' + ev.id + '" style="cursor:pointer" onclick="viewProf(\'' + ev.pubkey + '\')">' + esc(name) + ' · ' + ago(ev.created_at) + '</div>' +
+        '<div class="fw-artist" id="fnm-ms-' + ev.id + '" style="cursor:pointer" data-action="viewProf" data-args="'+escAttr(ev.pubkey)+'">' + esc(name) + ' · ' + ago(ev.created_at) + '</div>' +
         '<input type="range" min="0" max="100" value="0" style="width:100%;accent-color:var(--green);margin-top:4px" ' +
-          'oninput="seekMusicSlide(event,\'' + ev.id + '\')" id="mseek-' + ev.id + '">' +
+          'data-oninput="seekMusicSlide" data-args="'+escAttr(ev.id)+'" id="mseek-' + ev.id + '">' +
       '</div>' +
-      '<button id="mplay-' + ev.id + '" onclick="event.stopPropagation();toggleMusicSlide(\'' + ev.id + '\',\'' + url + '\')" ' +
+      '<button id="mplay-' + ev.id + '" data-action="toggleMusicStop" data-args="'+escAttr(JSON.stringify([ev.id,url]))+'" ' +
         'style="background:none;border:1px solid var(--green);color:var(--green);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1em;flex-shrink:0">\u25B6</button>' +
       '<button style="background:none;border:1px solid rgba(255,34,119,0.4);color:#ff2277;padding:4px 10px;font-size:0.65em;cursor:pointer;margin-left:6px;font-family:inherit" ' +
-        'onclick="event.stopPropagation();openZap(\'' + ev.id + '\',\'' + ev.pubkey + '\',null)">\u2665 H8</button>';
+        'data-action="zapStop" data-args="'+escAttr(JSON.stringify([ev.id,ev.pubkey,null]))+'">\u2665 H8</button>';
     el.dataset.audioUrl = url;
     container.appendChild(el);
     loadProf(ev.pubkey).then(p => {
@@ -1708,12 +1708,12 @@
         const title = ev.tags.find(t => t[0] === 'subject')?.[1] || '';
         const div = document.createElement('div'); div.className = 'forum-post'; div.dataset.eid = ev.id;
         div.innerHTML = '<div class="forum-post-header"><div class="forum-post-av" id="fav-' + ev.id + '">\u{1F464}</div>' +
-          '<span class="forum-post-name" id="fnm-' + ev.id + '" onclick="viewProf(\'' + ev.pubkey + '\')" style="cursor:pointer">' + (profName(ev.pubkey)||shortenKey(ev.pubkey)) + '</span>' +
+          '<span class="forum-post-name" id="fnm-' + ev.id + '" data-action="viewProf" data-args="'+escAttr(ev.pubkey)+'" style="cursor:pointer">' + (profName(ev.pubkey)||shortenKey(ev.pubkey)) + '</span>' +
           '<span class="forum-post-time">' + ago(ev.created_at) + '</span></div>' +
           (title ? '<div class="forum-post-title">' + esc(title) + '</div>' : '') +
           '<div class="forum-post-body">' + esc(ev.content) + '</div>' +
-          '<div class="forum-post-footer"><span class="forum-act" onclick="openComments(\'' + ev.id + '\')">\u{1F4AC} Reply</span>' +
-          '<span class="forum-act" onclick="shareEv(\'' + ev.id + '\')">\u{1F4E1} Share</span>' +
+          '<div class="forum-post-footer"><span class="forum-act" data-action="openComments" data-args="'+escAttr(ev.id)+'">\u{1F4AC} Reply</span>' +
+          '<span class="forum-act" data-action="shareEv" data-args="'+escAttr(ev.id)+'">\u{1F4E1} Share</span>' +
           '<span class="forum-post-source">M4TR1X</span></div>';
         c.appendChild(div);
         loadProf(ev.pubkey).then(p => {
@@ -1925,7 +1925,7 @@
         const div=document.createElement('div');div.className='shop-item';
         div.onclick=()=>openShopItem(ev);
         const sellId='sv-'+ev.id;
-        div.innerHTML='<div class="shop-item-img">'+(img?'<img src="'+img+'">':'\u{1F6CD}\uFE0F')+'</div><div class="shop-item-name">'+esc(name)+'</div><div class="shop-item-price">\u{1F4B0} '+esc(price)+' H8</div><div class="shop-item-seller" id="'+sellId+'" onclick="event.stopPropagation();viewProf(\''+ev.pubkey+'\')" style="cursor:pointer;color:rgba(255,136,0,0.6)">'+(profName(ev.pubkey)||shortenKey(ev.pubkey))+'</div>';
+        div.innerHTML='<div class="shop-item-img">'+(img?'<img src="'+img+'">':'\u{1F6CD}\uFE0F')+'</div><div class="shop-item-name">'+esc(name)+'</div><div class="shop-item-price">\u{1F4B0} '+esc(price)+' H8</div><div class="shop-item-seller" id="'+sellId+'" data-action="viewProfStop" data-args="'+escAttr(ev.pubkey)+'" style="cursor:pointer;color:rgba(255,136,0,0.6)">'+(profName(ev.pubkey)||shortenKey(ev.pubkey))+'</div>';
         loadProf(ev.pubkey).then(p=>{const el2=document.getElementById(sellId);if(el2&&(p?.name||p?.display_name))el2.textContent='\u2197 '+(p.name||p.display_name);});
         grid.appendChild(div);
       };
@@ -1990,7 +1990,7 @@
     const bkmActive=isBookmarked(ev.id)?'bkm-active':'';
     evCache[ev.id] = ev;
     const initName=esc(profName(ev.pubkey)||shortenKey(ev.pubkey));
-    el.innerHTML='<video class="slide-video" preload="none" loop muted playsinline><source src="'+vurl+'" type="video/mp4"></video><div class="ai-badge scanning" id="aib-'+ev.id+'">[ SCAN ]</div><div class="grad-top"></div><div class="grad-bot"></div><div class="play-flash" id="pf-'+ev.id+'"></div><div class="slide-info"><div class="slide-info-card"><div class="slide-author" onclick="viewProf(\''+ev.pubkey+'\')"><div class="slide-av" id="av-'+ev.id+'">\u{1F464}</div><span class="slide-name" id="nm-'+ev.id+'">'+initName+'</span><span class="slide-time">'+ago(ev.created_at)+'</span></div>'+(mainTitle?'<div class="slide-meta">'+esc(mainTitle)+(g?'<span class="slide-genre">'+esc(g)+'</span>':'')+'</div>':'')+(cap?'<div class="slide-caption">'+cap+'</div>':'')+(tags?'<div class="slide-tags">'+tags+'</div>':'')+'</div></div></div><div class="slide-actions"><div class="sact" onclick="viewProf(\''+ev.pubkey+'\')"><div class="sact-icon" id="sav-'+ev.id+'">\u{1F464}</div><span class="sact-label">PROFILO</span></div><div class="sact h8-tip-act" onclick="openZap(\''+ev.id+'\',\''+ev.pubkey+'\',null)"><div class="sact-icon" style="color:#ff2277">\u2665</div><span class="sact-label">TIP</span></div><div class="sact boost-act" id="bst-'+ev.id+'" onclick="openBoostModal(\''+ev.id+'\')"><div class="sact-icon" style="color:var(--yellow)">\u26A1</div><span class="sact-label" id="bstlbl-'+ev.id+'">BOOST</span></div><div class="sact" onclick="openComments(\''+ev.id+'\')"><div class="sact-icon">\u{1F4AC}</div><span class="sact-label">REPLY</span></div><div class="sact" onclick="shareEv(\''+ev.id+'\')"><div class="sact-icon">\u{1F4E1}</div><span class="sact-label">RELAY</span></div><div class="sact" id="rp-'+ev.id+'" onclick="doRepost(\''+ev.id+'\')"><div class="sact-icon">\u{1F501}</div><span class="sact-label">REPOST</span></div><div class="sact '+bkmActive+'" id="bkm-'+ev.id+'" onclick="toggleBookmark(\''+ev.id+'\',\''+vurl+'\',\''+esc(mainTitle||cap.slice(0,40))+'\')"><div class="sact-icon">\u2605</div><span class="sact-label">SALVA</span></div></div><div class="slide-labels"><div class="slbl real-lbl" id="lbr-'+ev.id+'" onclick="submitLabel(\''+ev.id+'\',\'REAL\')"><div class="slbl-icon">\u2713</div><span class="slbl-text">REALE</span></div><div class="label-stats-panel" id="lbs-'+ev.id+'"></div><div class="slbl ai-lbl" id="lba-'+ev.id+'" onclick="submitLabel(\''+ev.id+'\',\'AI_GENERATED\')"><div class="slbl-icon">\u26A0</div><span class="slbl-text">AI</span></div></div><div class="vid-prog"><div class="vid-prog-fill" id="vp-'+ev.id+'"></div></div>';
+    el.innerHTML='<video class="slide-video" preload="none" loop muted playsinline><source src="'+vurl+'" type="video/mp4"></video><div class="ai-badge scanning" id="aib-'+ev.id+'">[ SCAN ]</div><div class="grad-top"></div><div class="grad-bot"></div><div class="play-flash" id="pf-'+ev.id+'"></div><div class="slide-info"><div class="slide-info-card"><div class="slide-author" data-action="viewProf" data-args="'+escAttr(ev.pubkey)+'"><div class="slide-av" id="av-'+ev.id+'">\u{1F464}</div><span class="slide-name" id="nm-'+ev.id+'">'+initName+'</span><span class="slide-time">'+ago(ev.created_at)+'</span></div>'+(mainTitle?'<div class="slide-meta">'+esc(mainTitle)+(g?'<span class="slide-genre">'+esc(g)+'</span>':'')+'</div>':'')+(cap?'<div class="slide-caption">'+cap+'</div>':'')+(tags?'<div class="slide-tags">'+tags+'</div>':'')+'</div></div></div><div class="slide-actions"><div class="sact" data-action="viewProf" data-args="'+escAttr(ev.pubkey)+'"><div class="sact-icon" id="sav-'+ev.id+'">\u{1F464}</div><span class="sact-label">PROFILO</span></div><div class="sact h8-tip-act" data-action="openZap" data-args="'+escAttr(JSON.stringify([ev.id,ev.pubkey,null]))+'"><div class="sact-icon" style="color:#ff2277">\u2665</div><span class="sact-label">TIP</span></div><div class="sact boost-act" id="bst-'+ev.id+'" data-action="openBoostModal" data-args="'+escAttr(ev.id)+'"><div class="sact-icon" style="color:var(--yellow)">\u26A1</div><span class="sact-label" id="bstlbl-'+ev.id+'">BOOST</span></div><div class="sact" data-action="openComments" data-args="'+escAttr(ev.id)+'"><div class="sact-icon">\u{1F4AC}</div><span class="sact-label">REPLY</span></div><div class="sact" data-action="shareEv" data-args="'+escAttr(ev.id)+'"><div class="sact-icon">\u{1F4E1}</div><span class="sact-label">RELAY</span></div><div class="sact" id="rp-'+ev.id+'" data-action="doRepost" data-args="'+escAttr(ev.id)+'"><div class="sact-icon">\u{1F501}</div><span class="sact-label">REPOST</span></div><div class="sact '+bkmActive+'" id="bkm-'+ev.id+'" data-action="toggleBookmark" data-args="'+escAttr(JSON.stringify([ev.id,vurl,esc(mainTitle||cap.slice(0,40))]))+'"><div class="sact-icon">\u2605</div><span class="sact-label">SALVA</span></div></div><div class="slide-labels"><div class="slbl real-lbl" id="lbr-'+ev.id+'" data-action="submitLabel" data-args="'+escAttr(JSON.stringify([ev.id,'REAL']))+'"><div class="slbl-icon">\u2713</div><span class="slbl-text">REALE</span></div><div class="label-stats-panel" id="lbs-'+ev.id+'"></div><div class="slbl ai-lbl" id="lba-'+ev.id+'" data-action="submitLabel" data-args="'+escAttr(JSON.stringify([ev.id,'AI_GENERATED']))+'"><div class="slbl-icon">\u26A0</div><span class="slbl-text">AI</span></div></div><div class="vid-prog"><div class="vid-prog-fill" id="vp-'+ev.id+'"></div></div>';
     const vid=el.querySelector('video');
     vid.addEventListener('loadedmetadata',()=>{if(vid.videoWidth>vid.videoHeight)vid.classList.add('landscape')});
     vid.addEventListener('timeupdate',()=>{if(vid.duration){const f=document.getElementById('vp-'+ev.id);if(f)f.style.width=(vid.currentTime/vid.duration*100)+'%'}});
@@ -3187,7 +3187,7 @@
   function _sharePrompt(link){
     const box=document.createElement('div');
     box.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:9999;display:flex;align-items:center;justify-content:center';
-    box.innerHTML='<div style="background:#0d0d0d;border:1px solid rgba(0,255,136,0.3);border-radius:14px;padding:22px;max-width:88vw;text-align:center"><div style="font-family:monospace;font-size:0.68em;color:#00ff88;letter-spacing:2px;margin-bottom:12px">🔗 COPIA IL LINK</div><input readonly value="'+link+'" data-action="selectSelf" style="width:100%;background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.2);color:#fff;padding:8px 10px;border-radius:8px;font-size:0.72em;font-family:monospace;margin-bottom:14px"><br><button onclick="this.closest(\'div\').parentElement.remove()" style="background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);padding:6px 20px;border-radius:8px;cursor:pointer;font-size:0.68em;letter-spacing:1px">CHIUDI</button></div>';
+    box.innerHTML='<div style="background:#0d0d0d;border:1px solid rgba(0,255,136,0.3);border-radius:14px;padding:22px;max-width:88vw;text-align:center"><div style="font-family:monospace;font-size:0.68em;color:#00ff88;letter-spacing:2px;margin-bottom:12px">🔗 COPIA IL LINK</div><input readonly value="'+link+'" data-action="selectSelf" style="width:100%;background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.2);color:#fff;padding:8px 10px;border-radius:8px;font-size:0.72em;font-family:monospace;margin-bottom:14px"><br><button data-action="removeParentRow" style="background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);padding:6px 20px;border-radius:8px;cursor:pointer;font-size:0.68em;letter-spacing:1px">CHIUDI</button></div>';
     document.body.appendChild(box);
   }
 
@@ -3496,6 +3496,7 @@
   function dlVid(url){const a=document.createElement('a');a.href=url;a.download='m4tr1x_'+Date.now()+'.mp4';a.click();toast('DOWNLOADING...')}
   function shortenKey(k){return k?k.slice(0,6)+'\u2026'+k.slice(-4):'ANON'}
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function escAttr(s){return esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
   // Safely set an avatar element from a picture URL (validates http/https, uses DOM API)
   function setAvatar(el, url, style) {
     if (!el || !url) return;
@@ -3609,7 +3610,7 @@
       + '<span style="color:var(--blue)">'+(ICONS[p.protocol]||'🔗')+' '+p.protocol.toUpperCase()
       + (p.username?' <span style="color:rgba(255,255,255,0.4)">@'+esc(p.username)+'</span>':'')
       + ' <span style="color:rgba(0,170,255,0.4);font-size:0.85em">'+esc(p.instance||'')+'</span></span>'
-      + '<button onclick="disconnectProto(\''+p.protocol+'\')" style="background:none;border:1px solid rgba(255,34,34,0.3);color:var(--red);font-size:0.9em;padding:3px 8px;cursor:pointer;font-family:var(--font-mono)">✕</button>'
+      + '<button data-action="disconnectProto" data-args="'+escAttr(p.protocol)+'" style="background:none;border:1px solid rgba(255,34,34,0.3);color:var(--red);font-size:0.9em;padding:3px 8px;cursor:pointer;font-family:var(--font-mono)">✕</button>'
       + '</div>'
     ).join('');
   }
@@ -3824,8 +3825,8 @@
   <script>
   (function(){
     const argsOf=el=>{const a=el.getAttribute('data-args');if(a==null)return [];if(a[0]==='[')try{return JSON.parse(a)}catch(_){}; return [a];};
-    const ACTIONS={setSats:(el,ev,n)=>setSats(+n,el),setBoost:(el,ev,n)=>setBoost(+n,el),selToken:(el,ev,n)=>selToken(+n,el),selCat:(el,ev,cat)=>selCat(el,cat),selectSelf:(el)=>el.select(),clickEl:(el,ev,id)=>{const t=document.getElementById(id);if(t)t.click();},closeZapOpenWallet:()=>{closeZap();openWalletModal();},};   // data-action override: (el,event,...args)=>...
-    const INPUTS={onBadgeDocSelected:(el)=>onBadgeDocSelected(el)};    // data-oninput/onchange override: (el,event)=>...
+    const ACTIONS={setSats:(el,ev,n)=>setSats(+n,el),setBoost:(el,ev,n)=>setBoost(+n,el),selToken:(el,ev,n)=>selToken(+n,el),selCat:(el,ev,cat)=>selCat(el,cat),selectSelf:(el)=>el.select(),clickEl:(el,ev,id)=>{const t=document.getElementById(id);if(t)t.click();},closeZapOpenWallet:()=>{closeZap();openWalletModal();},closeThenViewProf:(el,ev,id)=>{closeSearch();viewProf(id);},zapStop:(el,ev,id,who,x)=>{ev.stopPropagation();openZap(id,who,x);},toggleMusicStop:(el,ev,id,u)=>{ev.stopPropagation();toggleMusicSlide(id,u);},viewProfStop:(el,ev,pk)=>{ev.stopPropagation();viewProf(pk);},removeParentRow:(el)=>{const d=el.closest('div');if(d&&d.parentElement)d.parentElement.remove();},openStoryGroup:(el,ev,gi)=>openStoryGroup(+gi),openStoryHl:(el,ev,i)=>openStoryHl(+i),};   // data-action override: (el,event,...args)=>...
+    const INPUTS={onBadgeDocSelected:(el)=>onBadgeDocSelected(el),seekMusicSlide:(el,ev)=>seekMusicSlide(ev,el.getAttribute('data-args'))};    // data-oninput/onchange override: (el,event)=>...
     function callAction(el,ev){
       const name=el.getAttribute('data-action'); if(!name)return;
       try{

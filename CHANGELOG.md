@@ -14,7 +14,7 @@
   pubblico opt-in) o `M4TR1X_BIND_HOST`. Il relay Nostr `:4848` resta invariato per la mesh.
 - Nuovo test `tests/test-cors-bind.js` (10 asserzioni).
 
-### Frontend — CSP: handler inline → delega (B2, parziale)
+### Frontend — CSP: handler inline → delega (B2)
 - La CSP dell'app (`script-src 'self' 'nonce-…'`, senza `unsafe-inline`) blocca gli
   handler inline `onclick`/`oninput`/`onchange`: nel build Electron l'intera UI
   sarebbe non funzionante (topbar, modali, tab). Verificato empiricamente in Chromium.
@@ -22,9 +22,16 @@
   gli handler inline con `data-action` / `data-close` / `data-oninput` / `data-onchange`,
   con override `ACTIONS`/`INPUTS` per i casi con elemento/evento. Funziona anche sui nodi
   generati a runtime.
-- Migrati i **133 handler statici** (topbar, section-tabs, bottom-nav, modali, backdrop,
-  setSats/setBoost/selToken/selCat, input file). Restano da migrare i ~25 handler dentro
-  i template JS (feed/forum/music/shop/story) — prossimo blocco.
+- Migrati **tutti** gli handler inline (0 rimasti): 133 statici (topbar, section-tabs,
+  bottom-nav, modali, backdrop, setSats/setBoost/selToken/selCat, input file) + i ~25
+  dentro i template JS generati a runtime (feed slide, forum, music, shop, story, proto).
+- Aggiunto `escAttr()` (escapa anche `"` e `'`, che `esc()` NON escapava) per i valori
+  passati via `data-args`: chiude un buco latente di attribute-injection nei template.
+  Verificato con round-trip su input ostile (`"`/`'`/`<img onerror>`/`&`): valore integro
+  alla funzione, zero nodi iniettati, zero attribute-breakout.
+- Verificato empiricamente in Chromium headless: dispatcher reale sotto CSP reale —
+  no-arg, `data-args`, override `ACTIONS` con elemento/evento, backdrop, e round-trip
+  escaping. Tutti i 5 blocchi `<script>` passano il syntax-check.
 
 ## v2.3.0 — Developer Preview
 
