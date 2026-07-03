@@ -248,7 +248,7 @@ async function universalPost(h8address, { text, title, tags = [] }) {
   try {
     const nostr     = getNostr()
     const nostrTags = tags.map(t => ['t', t])
-    const ev = await nostr.publishNote(body, nostrTags)
+    const ev = await nostr.publishNote(body, null, nostrTags)
     results.nostr = { ok: true, id: ev?.id }
   } catch (e) {
     results.nostr = { ok: false, error: e.message }

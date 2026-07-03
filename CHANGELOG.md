@@ -33,6 +33,20 @@
   no-arg, `data-args`, override `ACTIONS` con elemento/evento, backdrop, e round-trip
   escaping. Tutti i 5 blocchi `<script>` passano il syntax-check.
 
+### Fix — quick win (D)
+- **D1** `universalPost`: `publishNote(body, nostrTags)` passava gli hashtag dove va la
+  privkey (`publishNote(content, privkeyHex, tags)`) → il post universale su Nostr perdeva
+  i tag/falliva. Corretto in `publishNote(body, null, nostrTags)`.
+- **D2** `/api/v1/admin/reload` era senza protezione (chiunque poteva forzare un reload del
+  server). Ora dietro `localhostOnly` + `verifyAdminKey`.
+- **D3** Mint: senza `H8_ADMIN_MINT_KEY` il mint era sempre disabilitato anche con una
+  `ADMIN_KEY` valida. Ora l'autorità è `H8_ADMIN_MINT_KEY` se impostata, altrimenti la
+  `ADMIN_KEY` del server (esposta a `process.env` per coerenza). Resta sempre dietro chiave
+  admin (P8) — mai aperto. Nuovo test `tests/test-d-fixes.js` (D2 + D3).
+- **D4** `changePassword`: il file `.bak` (envelope cifrato con la VECCHIA password) restava
+  su disco dopo un cambio riuscito. Ora viene rimosso al completamento; il backup copre solo
+  la finestra di crash tra write e rename. Test `test-h8identity-changepw.js` aggiornato.
+
 ## v2.3.0 — Developer Preview
 
 ### H8 Token Economy (live)

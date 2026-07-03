@@ -92,6 +92,9 @@ const ADMIN_KEY = (() => {
   console.warn(`[SECURITY]     ${generated}`)
   return generated
 })()
+// Rende la ADMIN_KEY effettiva visibile agli altri moduli (es. h8token.mintTokens),
+// così l'autorità mint è coerente con quella verificata da verifyAdminKey.
+process.env.ADMIN_KEY = ADMIN_KEY
 const BADGE_DOCS_DIR = path.join(DATA_DIR, 'badge_docs')
 if (!fs.existsSync(BADGE_DOCS_DIR)) fs.mkdirSync(BADGE_DOCS_DIR, { recursive: true })
 
@@ -1224,7 +1227,7 @@ function stopServer() {
 }
 
 // ─── Admin: graceful server-only reload (no Electron restart needed) ──────────
-app.post('/api/v1/admin/reload', (req, res) => {
+app.post('/api/v1/admin/reload', localhostOnly, verifyAdminKey, (req, res) => {
   res.json({ ok: true, message: 'Reloading server...' })
   setTimeout(() => {
     const port = server?.address()?.port || 8080

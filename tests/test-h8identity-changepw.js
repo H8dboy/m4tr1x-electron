@@ -102,10 +102,11 @@ async function main() {
     h8id.lockIdentity()
   })
 
-  await test('file .bak creato durante cambio password riuscito', () => {
-    assert.ok(fs.existsSync(BAK_PATH), 'il file .bak deve esistere dopo un cambio riuscito')
-    const bak = JSON.parse(fs.readFileSync(BAK_PATH, 'utf8'))
-    assert.equal(bak.address, originalAddress, '.bak deve contenere lo stesso address')
+  await test('.bak rimosso dopo un cambio password riuscito', () => {
+    // Il backup serve solo come rete di sicurezza per un crash tra write e rename;
+    // dopo un cambio riuscito NON deve restare, perché contiene l'envelope cifrato
+    // con la VECCHIA password (se debole, sarebbe attaccabile su disco).
+    assert.ok(!fs.existsSync(BAK_PATH), 'il .bak non deve restare dopo un cambio riuscito')
   })
 
   // ── Test 2: vecchia password sbagliata ────────────────────────────────────
@@ -123,17 +124,14 @@ async function main() {
     assert.equal(contentAfter, contentBefore, 'il file NON deve essere modificato dopo password errata')
   })
 
-  await test('password sbagliata: il .bak non viene ricreato (non sovrascrive quello buono)', async () => {
-    // Il .bak esiste dal test precedente — il suo contenuto non deve cambiare
-    const bakBefore = fs.existsSync(BAK_PATH) ? fs.readFileSync(BAK_PATH, 'utf8') : null
+  await test('password sbagliata: nessun .bak lasciato su disco', async () => {
+    // La vecchia password è verificata PRIMA di creare il backup: un tentativo errato
+    // non deve creare né lasciare alcun .bak.
     await assert.rejects(
       () => h8id.changePassword('SBAGLIATA-2', 'qualsiasi'),
       /Invalid current password/i
     )
-    if (bakBefore !== null) {
-      const bakAfter = fs.existsSync(BAK_PATH) ? fs.readFileSync(BAK_PATH, 'utf8') : null
-      assert.equal(bakAfter, bakBefore, '.bak non deve essere modificato dopo password errata')
-    }
+    assert.ok(!fs.existsSync(BAK_PATH), 'una password errata non deve lasciare un .bak')
   })
 
   await test('lockout: dopo 5 password sbagliate successive il wallet si blocca', async () => {

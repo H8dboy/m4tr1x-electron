@@ -342,8 +342,12 @@ async function verifyChain() {
 }
 
 function mintTokens(to, amount, adminKey) {
-  const expectedKey = process.env.H8_ADMIN_MINT_KEY
-  if (!expectedKey) throw new Error('H8_ADMIN_MINT_KEY non configurata — mint disabilitato')
+  // Mint resta controllato da chiave admin (P8): mai aperto. Autorità = mint key
+  // dedicata (H8_ADMIN_MINT_KEY) se impostata, altrimenti la ADMIN_KEY del server
+  // (sempre presente). Prima, senza H8_ADMIN_MINT_KEY il mint era sempre disabilitato
+  // anche con una ADMIN_KEY valida — comportamento sorprendente, ora rimosso.
+  const expectedKey = process.env.H8_ADMIN_MINT_KEY || process.env.ADMIN_KEY
+  if (!expectedKey) throw new Error('Nessuna chiave admin configurata — mint disabilitato')
   if (!adminKey || adminKey !== expectedKey) throw new Error('Chiave admin non valida')
   if (!validAddress(to)) throw new Error('Invalid recipient address')
   if (!Number.isInteger(amount) || amount <= 0) throw new Error('amount positive integer required')

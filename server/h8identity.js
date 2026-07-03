@@ -228,6 +228,10 @@ async function changePassword(oldPassword, newPassword) {
     throw err
   }
 
+  // Rename riuscito: rimuovi il backup — conteneva l'envelope cifrato con la VECCHIA
+  // password. Lasciarlo su disco vanificherebbe il cambio password se la vecchia era debole.
+  try { fs.unlinkSync(bakPath) } catch {}
+
   // ── 5. Aggiorna sessione in memoria se il wallet era aperto ──────────────
   if (_unlocked && _unlocked.address === stored.address) {
     _unlocked = { address: stored.address, publicKey: stored.publicKey, secretKey }
