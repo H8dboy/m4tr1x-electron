@@ -38,6 +38,10 @@ tmp/
 temp/
 badge_docs/
 
+# ─── Directory temporanee dei test ───────────────────────────────────────────
+.smoke-tmp/
+.cors-tmp/
+
 # ─── AI models (large binaries, downloaded/generated at runtime) ─────────────
 models/*.onnx
 models/*.onnx.backup_*

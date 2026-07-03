@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Security — hardening rete API (allineamento a m4tr1x-node)
+- CORS: rimosso `origin: true`. L'API `:8080` ora accetta solo localhost, LAN privata
+  (192.168./10./172.), `.onion` e le origini in `ALLOWED_ORIGINS`. Un sito esterno aperto
+  nel browser dell'utente non può più chiamare il nodo.
+- Aggiunti 5 security headers su ogni risposta: `X-Content-Type-Options: nosniff`,
+  `X-Frame-Options: DENY`, `X-XSS-Protection`, `Referrer-Policy: no-referrer`,
+  `Permissions-Policy` (geolocation/microphone/camera negati).
+- Bind API da `0.0.0.0` a `127.0.0.1` di default: l'Electron è il dispositivo dell'utente,
+  non un server di rete. Diventa raggiungibile dalla LAN solo con `PUBLIC_NODE_URL` (nodo
+  pubblico opt-in) o `M4TR1X_BIND_HOST`. Il relay Nostr `:4848` resta invariato per la mesh.
+- Nuovo test `tests/test-cors-bind.js` (10 asserzioni).
+
 ## v2.3.0 — Developer Preview
 
 ### H8 Token Economy (live)

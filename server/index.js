@@ -71,6 +71,13 @@ const API_KEY          = process.env.M4TR1X_API_KEY || ''
 const ALLOWED_ORIGINS  = (process.env.ALLOWED_ORIGINS || 'http://localhost:8080').split(',')
 const ALLOWED_EXT      = new Set(['.mp4', '.mov', '.avi', '.webm', '.mkv'])
 
+// Bind host: l'Electron è il DISPOSITIVO dell'utente, non un server di rete → loopback di
+// default. Diventa raggiungibile dalla LAN solo se l'utente sceglie di essere nodo pubblico
+// (PUBLIC_NODE_URL) o forza M4TR1X_BIND_HOST. Il relay Nostr (:4848) resta separato e aperto
+// per la mesh: qui blindiamo solo l'API :8080.
+const IS_PUBLIC_NODE   = !!process.env.PUBLIC_NODE_URL
+const BIND_HOST        = process.env.M4TR1X_BIND_HOST || (IS_PUBLIC_NODE ? '0.0.0.0' : '127.0.0.1')
+
 const DATA_DIR      = process.env.M4TR1X_DATA_DIR || process.cwd()
 const UPLOAD_DIR    = path.join(DATA_DIR, 'uploads')
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true })
@@ -92,8 +99,30 @@ if (!fs.existsSync(BADGE_DOCS_DIR)) fs.mkdirSync(BADGE_DOCS_DIR, { recursive: tr
 const app = express()
 
 // CORS â accetta localhost (Electron) + origini configurate
+// Security headers (allineati a 03_node-server)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('X-XSS-Protection', '1; mode=block')
+  res.setHeader('Referrer-Policy', 'no-referrer')
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()')
+  next()
+})
+
+// CORS — solo localhost (Electron), LAN privata, .onion e origini configurate.
+// NON più origin:true: un sito esterno aperto nel browser dell'utente non deve poter
+// chiamare le API del nodo. Rifiuto = header CORS omesso, il browser blocca la risposta.
 app.use(cors({
-  origin: true,
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true)   // same-origin / client non-browser: nessun header Origin
+    if (origin.startsWith('http://192.168.') || origin.startsWith('http://10.') ||
+        origin.startsWith('http://172.')     || origin.includes('.onion')       ||
+        origin.includes('localhost')         || origin.includes('127.0.0.1')    ||
+        ALLOWED_ORIGINS.includes(origin)) {
+      return cb(null, true)
+    }
+    return cb(null, false)
+  },
   credentials: false,
   methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['X-Nostr-Pubkey', 'X-API-Key', 'X-Admin-Key', 'Content-Type'],
@@ -1174,12 +1203,12 @@ function startServer(port = 8080) {
   setTimeout(() => relayMesh.startMesh(), 5000)
   setTimeout(() => startBlockSync(), 5500)
   return new Promise((resolve, reject) => {
-    server = app.listen(port, '0.0.0.0', () => {
+    server = app.listen(port, BIND_HOST, () => {
       const { networkInterfaces } = require('os')
       const nets = networkInterfaces()
       const lan = Object.values(nets).flat().find(n => n.family === 'IPv4' && !n.internal)
-      console.log(`[SERVER] M4TR1X Alpha Node in ascolto su http://localhost:${port}`)
-      if (lan) console.log(`[SERVER] Raggiungibile dalla rete: http://${lan.address}:${port}`)
+      console.log(`[SERVER] M4TR1X Alpha Node in ascolto su http://localhost:${port} (bind ${BIND_HOST})`)
+      if (lan && BIND_HOST === '0.0.0.0') console.log(`[SERVER] Raggiungibile dalla rete: http://${lan.address}:${port}`)
       const onion = getOnionAddress()
       if (onion) console.log(`[SERVER] Indirizzo Tor: http://${onion}`)
       resolve(server)
