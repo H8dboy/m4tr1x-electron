@@ -24,6 +24,9 @@ const path     = require('path')
 // ── Isolated temp directory ───────────────────────────────────────────────────
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'm4tr1x-h8token-test-'))
 process.env.M4TR1X_DATA_DIR = tmpDir
+// Il mint richiede una chiave admin (P8). Il focus del test è verifyChain, non l'auth
+// del mint: configuriamo una chiave di test e passiamola al mint (che è solo setup).
+process.env.H8_ADMIN_MINT_KEY = 'test-mint-key'
 
 // Force fresh module loads with isolated state
 ;[
@@ -61,7 +64,7 @@ async function main () {
   const testAddr = 'H8' + 'a'.repeat(38)
 
   // Mint tokens to the unlocked identity so transfer is possible
-  await h8token.mintTokens(unlocked.address, 1000)
+  await h8token.mintTokens(unlocked.address, 1000, 'test-mint-key')
   // Transfer creates a signed (ML-DSA) block with from_pubkey stored
   await h8token.transfer(testAddr, 100, 'audit-test-transfer')
 
@@ -78,8 +81,10 @@ async function main () {
     const db2 = new Database(path.join(tmpDir, 'h8ledger.db'))
 
     // Find a block with a real ML-DSA signature (has from_pubkey, not genesis)
+    // Un blocco firmato NON-mint: i blocchi mint (from '0x0') sono genesis-like e
+    // verifyChain ne salta la verifica firma per design, quindi puntiamo al transfer.
     const signed = db2.prepare(
-      "SELECT block_index, signature FROM ledger WHERE from_pubkey IS NOT NULL LIMIT 1"
+      "SELECT block_index, signature FROM ledger WHERE from_pubkey IS NOT NULL AND tx_type = 'transfer' LIMIT 1"
     ).get()
 
     assert.ok(signed, 'Test ledger must have at least one ML-DSA signed block')
@@ -103,7 +108,7 @@ async function main () {
     const db2 = new Database(path.join(tmpDir, 'h8ledger.db'))
 
     const signed = db2.prepare(
-      "SELECT from_addr, from_pubkey FROM ledger WHERE from_pubkey IS NOT NULL LIMIT 1"
+      "SELECT from_addr, from_pubkey FROM ledger WHERE from_pubkey IS NOT NULL AND tx_type = 'transfer' LIMIT 1"
     ).get()
     db2.close()
 

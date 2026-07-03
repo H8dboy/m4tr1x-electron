@@ -81,6 +81,14 @@
 
     let elapsed = 0;
 
+    // Se il processo principale segnala un errore di avvio del server, mostralo.
+    // SEMPRE via textContent (mai innerHTML): il messaggio d'errore non è fidato.
+    if (window.m4tr1x_native && typeof window.m4tr1x_native.onServerError === 'function') {
+      window.m4tr1x_native.onServerError(function (msg) {
+        STATUS_EL.textContent = 'SERVER ERROR: ' + msg;
+      });
+    }
+
     function poll() {
       fetch(HEALTH_URL, { cache: 'no-store' })
         .then(r => {
