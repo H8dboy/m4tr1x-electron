@@ -190,29 +190,29 @@
   <div id="section-pill" class="signal-pill">SIGNAL</div>
   <div id="topbar">
     <div class="logo">M4TR1X<span class="mx-signal-dot"></span></div>
-    <span id="session-timer" data-action="$1" title="Tempo sessione — clicca per impostare limite">00:00</span>
+    <span id="session-timer" data-action="toggleSessionAlert" title="Tempo sessione — clicca per impostare limite">00:00</span>
     <div id="topbar-right">
-      <button class="top-btn h8-wallet-btn" data-action="$1" title="H8 Wallet" id="topbar-wallet-btn">
+      <button class="top-btn h8-wallet-btn" data-action="openWalletModal" title="H8 Wallet" id="topbar-wallet-btn">
         <img class="h8-logo" src="assets/h8-token.png?v=2" alt="H8" draggable="false">
         <span id="topbar-h8-amount" style="font-size:0.7em;font-family:var(--font-mono);color:rgba(0,255,136,0.5);letter-spacing:1px">H8</span>
       </button>
-      <button class="top-btn" data-action="$1" title="Cerca persone e contenuti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+      <button class="top-btn" data-action="openSearch" title="Cerca persone e contenuti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
       <div class="notif-btn-wrap">
-        <button class="top-btn" data-action="$1" title="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></button>
+        <button class="top-btn" data-action="openNotifDrawer" title="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></button>
         <div class="notif-dot" id="notif-dot"></div>
       </div>
-      <button class="top-btn" data-action="$1" title="Node Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13H11l-1 9 8.5-11H12l1-9z"/></svg></button>
-      <div id="user-avatar-top" data-action="$1" title="My Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+      <button class="top-btn" data-action="openNodeModal" title="Node Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13H11l-1 9 8.5-11H12l1-9z"/></svg></button>
+      <div id="user-avatar-top" data-action="openMyProfile" title="My Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></div>
     </div>
   </div>
   <div id="section-tabs">
-    <button class="sec-tab active" data-action="$1" data-args="$2" title="Signal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M4.9 5a10 10 0 0 0 0 14"/><path d="M19.1 5a10 10 0 0 1 0 14"/></svg></button>
-    <button class="sec-tab film-tab" data-action="$1" data-args="$2" title="Film"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/></svg></button>
-    <button class="sec-tab music-tab" data-action="$1" data-args="$2" title="Music"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></button>
-    <button class="sec-tab forum-tab" data-action="$1" data-args="$2" title="Forum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5"/><path d="M5 9v9M19 9v9M9 9v9M15 9v9"/><path d="M3 18h18"/></svg></button>
-    <button class="sec-tab shop-tab desktop-only" data-action="$1" data-args="$2" title="Shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></button>
-    <button class="sec-tab dm-tab" data-action="$1" data-args="$2" title="Messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></button>
-    <button class="sec-tab live-tab" data-action="$1" data-args="$2" title="Live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/><path d="M7.5 7.5a6 6 0 0 0 0 9M16.5 7.5a6 6 0 0 1 0 9"/></svg></button>
+    <button class="sec-tab active" data-action="switchSec" data-args="signal" title="Signal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M4.9 5a10 10 0 0 0 0 14"/><path d="M19.1 5a10 10 0 0 1 0 14"/></svg></button>
+    <button class="sec-tab film-tab" data-action="switchSec" data-args="film" title="Film"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/></svg></button>
+    <button class="sec-tab music-tab" data-action="switchSec" data-args="music" title="Music"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></button>
+    <button class="sec-tab forum-tab" data-action="switchSec" data-args="forum" title="Forum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5"/><path d="M5 9v9M19 9v9M9 9v9M15 9v9"/><path d="M3 18h18"/></svg></button>
+    <button class="sec-tab shop-tab desktop-only" data-action="switchSec" data-args="shop" title="Shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></button>
+    <button class="sec-tab dm-tab" data-action="switchSec" data-args="dm" title="Messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></button>
+    <button class="sec-tab live-tab" data-action="switchSec" data-args="live" title="Live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/><path d="M7.5 7.5a6 6 0 0 0 0 9M16.5 7.5a6 6 0 0 1 0 9"/></svg></button>
   </div>
   <div class="section-banner" id="banner-film">
     <span class="banner-icon">🎬</span>
@@ -235,7 +235,7 @@
     <div class="banner-text"><strong>PRIVATE MESSAGES</strong>ChaCha20-Poly1305 · E2E Encrypted · No phone number <span class="integration-status live">E2E ENCRYPTED</span></div>
   </div>
   <div class="section-banner" id="banner-live"><span class="banner-icon">🔴</span><div class="banner-text"><strong>LIVE STREAMS</strong> WebRTC P2P · Decentralized <span class="integration-status live">P2P LIVE</span></div></div>
-  <button id="mute-btn" data-action="$1">🔇</button>
+  <button id="mute-btn" data-action="toggleMute">🔇</button>
   <div id="stories-bar"></div>
   <div id="feed-wrap">
     <div class="section-feed active" id="feed-signal"><div class="slide-placeholder"><div class="ph-text">[ CONNECTING TO RELAYS... ]</div></div></div>
@@ -252,7 +252,7 @@
       <div class="shop-container" id="shop-container">
         <div class="shop-header">
           <div class="shop-balance">💰 M4TR1X: <span class="shop-balance-amount" id="token-balance">0</span></div>
-          <button class="shop-buy-tokens" data-action="$1">BUY TOKENS</button>
+          <button class="shop-buy-tokens" data-action="openTokenModal">BUY TOKENS</button>
         </div>
         <div class="shop-grid" id="shop-grid"><div class="slide-placeholder" style="grid-column:span 2"><div class="ph-text">[ LOADING MARKETPLACE... ]</div></div></div>
         <div class="shop-powered">DECENTRALIZED MARKETPLACE · M4TR1X TOKEN ECONOMY</div>
@@ -261,8 +261,8 @@
     <div class="section-feed" id="feed-live">
       <div style="padding:16px">
         <div style="display:flex;gap:10px;margin-bottom:16px">
-          <button class="go-live-btn" data-action="$1" style="flex:1">🔴 GO LIVE</button>
-          <button class="go-live-btn" data-action="$1" style="flex:1;background:rgba(255,255,255,0.06)">⏹ STOP</button>
+          <button class="go-live-btn" data-action="openGoLive" style="flex:1">🔴 GO LIVE</button>
+          <button class="go-live-btn" data-action="stopGoLive" style="flex:1;background:rgba(255,255,255,0.06)">⏹ STOP</button>
         </div>
         <div id="live-streams-list"><div class="slide-placeholder"><div class="ph-text" style="color:rgba(255,90,106,0.9)">[ NO LIVE STREAMS ]\n\nBe the first to go live.</div></div></div>
       </div>
@@ -283,25 +283,25 @@
     <a href="https://funkwhale.audio" target="_blank">FUNKWHALE</a>
   </div>
   <div id="bottom-nav">
-    <button class="bnav active" id="bnav-signal" data-action="$1" data-args="$2"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M4.9 5a10 10 0 0 0 0 14"/><path d="M19.1 5a10 10 0 0 1 0 14"/></svg></span><span class="bnav-label">SIGNAL</span></button>
-    <button class="bnav film-nav" id="bnav-film" data-action="$1" data-args="$2"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/></svg></span><span class="bnav-label">FILM</span></button>
-    <button class="bnav forum-nav" id="bnav-forum" data-action="$1" data-args="$2"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5"/><path d="M5 9v9M19 9v9M9 9v9M15 9v9"/><path d="M3 18h18"/></svg></span><span class="bnav-label">FORUM</span></button>
-    <button class="bnav post-nav" data-action="$1"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><span class="bnav-label">POST</span></button>
-    <button class="bnav music-nav" id="bnav-music" data-action="$1" data-args="$2"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span><span class="bnav-label">MUSIC</span></button>
-    <button class="bnav shop-nav" id="bnav-shop" data-action="$1" data-args="$2"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span><span class="bnav-label">SHOP</span></button>
-    <button class="bnav live-nav" id="bnav-live" data-action="$1" data-args="$2" style="position:relative"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/><path d="M7.5 7.5a6 6 0 0 0 0 9M16.5 7.5a6 6 0 0 1 0 9"/></svg></span><span class="bnav-label">LIVE</span><span id="live-count-badge" style="display:none;position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:0.5em;font-family:var(--font-mono);border-radius:8px;padding:1px 5px;min-width:16px;text-align:center;letter-spacing:0"></span></button>
-    <button class="bnav dm-nav" id="bnav-dm" data-action="$1" data-args="$2" style="position:relative"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></span><span class="bnav-label">DM</span><span id="dm-unread-badge" style="display:none;position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:0.5em;font-family:var(--font-mono);border-radius:8px;padding:1px 5px;min-width:16px;text-align:center;letter-spacing:0"></span></button>
+    <button class="bnav active" id="bnav-signal" data-action="switchSec" data-args="signal"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M4.9 5a10 10 0 0 0 0 14"/><path d="M19.1 5a10 10 0 0 1 0 14"/></svg></span><span class="bnav-label">SIGNAL</span></button>
+    <button class="bnav film-nav" id="bnav-film" data-action="switchSec" data-args="film"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/></svg></span><span class="bnav-label">FILM</span></button>
+    <button class="bnav forum-nav" id="bnav-forum" data-action="switchSec" data-args="forum"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5"/><path d="M5 9v9M19 9v9M9 9v9M15 9v9"/><path d="M3 18h18"/></svg></span><span class="bnav-label">FORUM</span></button>
+    <button class="bnav post-nav" data-action="openUpload"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><span class="bnav-label">POST</span></button>
+    <button class="bnav music-nav" id="bnav-music" data-action="switchSec" data-args="music"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span><span class="bnav-label">MUSIC</span></button>
+    <button class="bnav shop-nav" id="bnav-shop" data-action="switchSec" data-args="shop"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span><span class="bnav-label">SHOP</span></button>
+    <button class="bnav live-nav" id="bnav-live" data-action="switchSec" data-args="live" style="position:relative"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/><path d="M7.5 7.5a6 6 0 0 0 0 9M16.5 7.5a6 6 0 0 1 0 9"/></svg></span><span class="bnav-label">LIVE</span><span id="live-count-badge" style="display:none;position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:0.5em;font-family:var(--font-mono);border-radius:8px;padding:1px 5px;min-width:16px;text-align:center;letter-spacing:0"></span></button>
+    <button class="bnav dm-nav" id="bnav-dm" data-action="switchSec" data-args="dm" style="position:relative"><span class="bicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></span><span class="bnav-label">DM</span><span id="dm-unread-badge" style="display:none;position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:0.5em;font-family:var(--font-mono);border-radius:8px;padding:1px 5px;min-width:16px;text-align:center;letter-spacing:0"></span></button>
   </div>
-  <button class="forum-new-btn" id="forum-fab" data-action="$1"><svg viewBox="0 0 24 24" fill="none" stroke="#080b10" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-  <button class="mx-fab" id="mx-compose-fab" data-action="$1" title="Compose"><svg viewBox="0 0 24 24" fill="none" stroke="#080b10" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button class="forum-new-btn" id="forum-fab" data-action="openForumModal"><svg viewBox="0 0 24 24" fill="none" stroke="#080b10" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button class="mx-fab" id="mx-compose-fab" data-action="openUpload" title="Compose"><svg viewBox="0 0 24 24" fill="none" stroke="#080b10" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 
   <!-- ░░ SEARCH — cerca persone e contenuti ░░ -->
-  <div id="mx-search-overlay" data-close="$1">
+  <div id="mx-search-overlay" data-close="closeSearch">
     <div class="mx-search-panel">
       <div class="mx-search-bar">
         <svg class="mx-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         <input id="mx-search-input" autocomplete="off" spellcheck="false" placeholder="Cerca persone, post, video, musica…" data-oninput="mxSearchDebounced">
-        <button class="mx-search-esc" data-action="$1">ESC</button>
+        <button class="mx-search-esc" data-action="closeSearch">ESC</button>
       </div>
       <div id="mx-search-results" class="mx-search-results"><div class="mx-search-hint">Cerca persone e contenuti nella rete M4TR1X</div></div>
     </div>
@@ -359,23 +359,23 @@
     <div class="sv-head">
       <span class="sv-av" id="sv-av"></span>
       <span class="sv-who"><b id="sv-name">—</b><small id="sv-time"></small></span>
-      <button class="sv-close" data-action="$1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <button class="sv-close" data-action="closeStory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div class="sv-stage"><img id="sv-img" alt=""></div>
     <div class="sv-caption" id="sv-caption"></div>
-    <div class="sv-tap sv-tap-l" data-action="$1"></div>
-    <div class="sv-tap sv-tap-r" data-action="$1"></div>
+    <div class="sv-tap sv-tap-l" data-action="storyPrev"></div>
+    <div class="sv-tap sv-tap-r" data-action="storyNext"></div>
     <div class="sv-owner" id="sv-owner">
-      <button class="sv-ob" data-action="$1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M10 11v6M14 11v6"/></svg><span>Elimina</span></button>
-      <button class="sv-ob sv-ob-hl" id="sv-hl-btn" data-action="$1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 9.2c1.4-1.6 3.8-.6 3.8 1.4 0 1.7-2.1 3-3.8 4.4-1.7-1.4-3.8-2.7-3.8-4.4 0-2 2.4-3 3.8-1.4z"/></svg><span>In evidenza</span></button>
+      <button class="sv-ob" data-action="deleteStory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M10 11v6M14 11v6"/></svg><span>Elimina</span></button>
+      <button class="sv-ob sv-ob-hl" id="sv-hl-btn" data-action="toggleStoryHighlight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 9.2c1.4-1.6 3.8-.6 3.8 1.4 0 1.7-2.1 3-3.8 4.4-1.7-1.4-3.8-2.7-3.8-4.4 0-2 2.4-3 3.8-1.4z"/></svg><span>In evidenza</span></button>
     </div>
   </div>
   <div id="story-compose">
     <div class="sc-panel">
-      <div class="sc-head"><span>NUOVA STORIA · 24H</span><button class="sv-close" data-action="$1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="sc-head"><span>NUOVA STORIA · 24H</span><button class="sv-close" data-action="closeStoryCompose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
       <div class="sc-preview"><img id="sc-img" alt=""></div>
       <input id="sc-caption" maxlength="200" autocomplete="off" spellcheck="false" placeholder="Aggiungi una didascalia…">
-      <button class="sc-publish" id="sc-publish" data-action="$1">CONDIVIDI STORIA</button>
+      <button class="sc-publish" id="sc-publish" data-action="publishStory">CONDIVIDI STORIA</button>
     </div>
   </div>
   <script>
@@ -399,7 +399,7 @@
   }
   function renderStoriesBar(){
     const bar=document.getElementById('stories-bar'); if(!bar) return;
-    let html='<div class="story-item story-add" data-action="$1" title="Aggiungi alla tua storia">'
+    let html='<div class="story-item story-add" data-action="startStory" title="Aggiungi alla tua storia">'
       +'<div class="story-ring story-ring-add"><div class="story-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>'
       +'<span class="story-label">La tua storia</span></div>';
     _storyGroups.forEach((g,gi)=>{
@@ -539,41 +539,41 @@
   document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const v=document.getElementById('story-viewer'); if(v&&v.classList.contains('show'))closeStory(); const c=document.getElementById('story-compose'); if(c&&c.classList.contains('show'))closeStoryCompose(); } });
   setTimeout(()=>{ if(typeof loadStories==='function') loadStories(); }, 1400);
   </script>
-  <button class="shop-sell-btn" id="shop-fab" data-action="$1">＋</button>
+  <button class="shop-sell-btn" id="shop-fab" data-action="openSellModal">＋</button>
   <!-- Funkwhale Audio Player -->
   <div id="fw-player">
-    <button class="fw-player-btn" id="fw-play-btn" data-action="$1">▶</button>
+    <button class="fw-player-btn" id="fw-play-btn" data-action="toggleFwPlay">▶</button>
     <div class="fw-player-info"><div class="fw-player-title" id="fw-now-playing">No track</div></div>
     <audio id="fw-audio"></audio>
   </div>
   <div id="comments-drawer">
-    <div class="drawer-bar" data-action="$1">
+    <div class="drawer-bar" data-action="closeComments">
       <span class="drawer-bar-title">💬 REPLIES</span>
       <button class="drawer-bar-close">✕</button>
     </div>
     <div id="cmt-list"></div>
     <div id="cmt-input-bar">
       <input id="cmt-input" placeholder="BROADCAST REPLY..." spellcheck="false">
-      <button id="cmt-send" data-action="$1">SEND</button>
+      <button id="cmt-send" data-action="postComment">SEND</button>
     </div>
   </div>
   <div id="upload-modal" class="desktop-only">
     <div class="upload-sheet">
       <div class="up-head">
         <span class="up-title" id="up-title">⬆ UPLOAD</span>
-        <button class="up-close" data-action="$1">✕</button>
+        <button class="up-close" data-action="closeUpload">✕</button>
       </div>
       <div class="up-cats">
-        <button class="up-cat signal sel" data-action="selCat" data-args="$1" title="Signal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 16.24a6 6 0 0 1 0-8.49M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/></svg></button>
-        <button class="up-cat film" data-action="selCat" data-args="$1" title="Film / Video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2.5"/></svg></button>
-        <button class="up-cat music" data-action="selCat" data-args="$1" title="Music"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
-        <button class="up-cat photo" data-action="selCat" data-args="$1" title="Photo / NFT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l2-3h6l2 3h3a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+        <button class="up-cat signal sel" data-action="selCat" data-args="signal" title="Signal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 16.24a6 6 0 0 1 0-8.49M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/></svg></button>
+        <button class="up-cat film" data-action="selCat" data-args="film" title="Film / Video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2.5"/></svg></button>
+        <button class="up-cat music" data-action="selCat" data-args="music" title="Music"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
+        <button class="up-cat photo" data-action="selCat" data-args="photo" title="Photo / NFT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l2-3h6l2 3h3a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
       </div>
       <div class="up-body">
         <div class="up-disc film" id="disc-film">🎬 <strong>INDIE FILM CHANNEL</strong><br>Upload your own films. Distributed across M4TR1X nodes.</div>
         <div class="up-disc music" id="disc-music">🎵 <strong>UNDERGROUND MUSIC</strong><br>Original music only. M4TR1X network.</div>
         <div class="up-disc photo" id="disc-photo">📸 <strong>PHOTO & NFT</strong><br>Publish photos. Set a price to sell as NFT via H8 tips.</div>
-        <div class="drop-zone" id="drop-zone" data-action="clickEl" data-args="$1">
+        <div class="drop-zone" id="drop-zone" data-action="clickEl" data-args="file-input">
           <div class="dz-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2.5"/></svg></div>
           <strong style="font-size:0.82em">DROP VIDEO HERE</strong>
           <p>or click to select · MP4, MOV · max 500MB</p>
@@ -597,7 +597,7 @@
         <div class="field"><label>Tags (space separated)</label><input type="text" id="up-tags" placeholder="evidence underground indie"></div>
         <div class="field"><label>Blossom Server</label><select id="up-server"><option value="/blossom">M4TR1X Node (local)</option></select></div>
         <div id="up-progress"><div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div><div class="prog-txt" id="prog-txt">Preparing...</div></div>
-        <button class="btn-pub" id="btn-pub" data-action="$1" disabled>PUBLISH ON M4TR1X</button>
+        <button class="btn-pub" id="btn-pub" data-action="doUpload" disabled>PUBLISH ON M4TR1X</button>
       </div>
     </div>
   </div>
@@ -616,29 +616,29 @@
       </div>
       <div id="zap-content">
         <div class="sats-row">
-          <button class="sat-btn" data-action="$1" data-args="$2">1</button>
-          <button class="sat-btn" data-action="$1" data-args="$2">10</button>
-          <button class="sat-btn" data-action="$1" data-args="$2">50</button>
-          <button class="sat-btn" data-action="$1" data-args="$2">100</button>
-          <button class="sat-btn" data-action="$1" data-args="$2">500</button>
+          <button class="sat-btn" data-action="setSats" data-args="1">1</button>
+          <button class="sat-btn" data-action="setSats" data-args="10">10</button>
+          <button class="sat-btn" data-action="setSats" data-args="50">50</button>
+          <button class="sat-btn" data-action="setSats" data-args="100">100</button>
+          <button class="sat-btn" data-action="setSats" data-args="500">500</button>
         </div>
         <div style="font-size:0.58em;color:rgba(255,34,119,0.35);text-align:center;margin-bottom:6px;letter-spacing:1px">H8 TOKENS</div>
         <input class="zap-input" type="number" id="zap-amount" placeholder="Importo personalizzato..." min="1" max="100000">
         <div style="font-size:0.58em;color:rgba(255,34,119,0.45);text-align:center;margin-bottom:14px;letter-spacing:1px;line-height:1.8">
           50% → CREATOR · 20% → PLATFORM · 30% → SERVER
         </div>
-        <button class="btn-zap" data-action="$1" style="background:#ff2277">♥ INVIA TIP</button>
+        <button class="btn-zap" data-action="sendH8Tip" style="background:#ff2277">♥ INVIA TIP</button>
       </div>
-      <button class="zap-cancel" data-action="$1">ANNULLA</button>
+      <button class="zap-cancel" data-action="closeZap">ANNULLA</button>
     </div>
   </div>
 
   <!-- ===== WALLET MODAL ===== -->
-  <div id="wallet-modal" style="display:none;position:fixed;inset:0;z-index:520;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="$1">
+  <div id="wallet-modal" style="display:none;position:fixed;inset:0;z-index:520;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="closeWalletModal">
     <div style="width:100%;border-top:2px solid rgba(0,255,136,0.35);padding:22px 18px 36px;max-height:88vh;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <span style="font-family:var(--font-display);font-size:0.82em;letter-spacing:3px;color:var(--green)">🔐 H8 WALLET</span>
-        <button data-action="$1" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
+        <button data-action="closeWalletModal" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <!-- Stato -->
       <div id="wallet-status-block" style="background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.15);border-radius:14px;padding:16px 18px;margin-bottom:18px">
@@ -652,21 +652,21 @@
             <div style="font-size:0.58em;color:rgba(0,255,136,0.4);letter-spacing:2px;margin-bottom:3px">SALDO</div>
             <div style="font-family:var(--font-display);font-size:1.4em;color:var(--green);display:flex;align-items:center;gap:8px"><img class="h8-logo h8-logo-lg" src="assets/h8-token.png?v=2" alt="H8" draggable="false"><span id="wallet-balance-big">0</span> <span style="font-size:0.45em;opacity:0.6">H8</span></div>
           </div>
-          <button id="wallet-action-btn" data-action="$1" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.35);color:var(--green);font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:9px 16px;cursor:pointer;border-radius:10px">...</button>
+          <button id="wallet-action-btn" data-action="walletToggleLock" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.35);color:var(--green);font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:9px 16px;cursor:pointer;border-radius:10px">...</button>
         </div>
       </div>
       <!-- Unlock form -->
       <div id="wallet-unlock-form" style="display:none">
         <div style="font-size:0.65em;letter-spacing:2px;color:rgba(0,255,136,0.5);margin-bottom:8px">PASSWORD WALLET</div>
         <input id="wallet-pw-input" type="password" placeholder="Inserisci la tua password H8..." style="width:100%;border:1px solid rgba(0,255,136,0.3);color:var(--green);font-family:var(--font-mono);font-size:0.82em;padding:12px 14px;outline:none;margin-bottom:12px;background:rgba(0,255,136,0.03)">
-        <button data-action="$1" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:13px;cursor:pointer;border-radius:10px;margin-bottom:8px">🔓 SBLOCCA</button>
+        <button data-action="doWalletUnlock" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:13px;cursor:pointer;border-radius:10px;margin-bottom:8px">🔓 SBLOCCA</button>
         <div id="wallet-pw-error" style="display:none;font-size:0.68em;color:var(--red);text-align:center;letter-spacing:1px;margin-bottom:8px"></div>
       </div>
       <!-- History -->
       <div id="wallet-history-section" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div style="font-size:0.65em;letter-spacing:2px;color:rgba(0,255,136,0.4)">ULTIME TRANSAZIONI</div>
-          <button data-action="$1" style="background:none;border:none;color:rgba(0,255,136,0.4);font-size:0.7em;cursor:pointer;letter-spacing:1px">↻ aggiorna</button>
+          <button data-action="loadWalletHistory" style="background:none;border:none;color:rgba(0,255,136,0.4);font-size:0.7em;cursor:pointer;letter-spacing:1px">↻ aggiorna</button>
         </div>
         <div id="wallet-history-list" style="font-size:0.72em;letter-spacing:1px;line-height:1;"></div>
       </div>
@@ -678,7 +678,7 @@
         <div style="font-size:0.65em;letter-spacing:2px;color:rgba(0,255,136,0.5);margin-bottom:8px">SCEGLI UNA PASSWORD</div>
         <input id="wallet-new-pw" type="password" placeholder="Password sicura..." style="width:100%;border:1px solid rgba(0,255,136,0.3);color:var(--green);font-family:var(--font-mono);font-size:0.82em;padding:12px 14px;outline:none;margin-bottom:8px;background:rgba(0,255,136,0.03)">
         <input id="wallet-new-pw2" type="password" placeholder="Conferma password..." style="width:100%;border:1px solid rgba(0,255,136,0.3);color:var(--green);font-family:var(--font-mono);font-size:0.82em;padding:12px 14px;outline:none;margin-bottom:12px;background:rgba(0,255,136,0.03)">
-        <button data-action="$1" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:14px;cursor:pointer;border-radius:10px">⚡ CREA WALLET H8</button>
+        <button data-action="doWalletCreate" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:14px;cursor:pointer;border-radius:10px">⚡ CREA WALLET H8</button>
         <div id="wallet-create-error" style="display:none;font-size:0.68em;color:var(--red);text-align:center;letter-spacing:1px;margin-top:8px"></div>
       </div>
     </div>
@@ -687,21 +687,21 @@
     <div class="forum-sheet">
       <div class="forum-sheet-head">
         <span class="forum-sheet-title">🏛️ NEW DISCUSSION</span>
-        <button class="forum-sheet-close" data-action="$1">✕</button>
+        <button class="forum-sheet-close" data-action="closeForumModal">✕</button>
       </div>
       <div class="forum-field"><label>Title</label><input type="text" id="forum-title" placeholder="Discussion topic..."></div>
       <div class="forum-field"><label>Body</label><textarea id="forum-body" rows="6" placeholder="Share your thoughts..."></textarea></div>
       <div class="forum-field"><label>Tags (space separated)</label><input type="text" id="forum-tags" placeholder="technology privacy freedom"></div>
-      <button class="btn-forum-post" data-action="$1">PUBLISH THREAD</button>
+      <button class="btn-forum-post" data-action="postForumThread">PUBLISH THREAD</button>
     </div>
   </div>
   <div id="sell-modal">
     <div class="sell-sheet">
       <div class="sell-sheet-head">
         <span class="sell-sheet-title">🛍️ SELL ITEM</span>
-        <button class="sell-sheet-close" data-action="$1">✕</button>
+        <button class="sell-sheet-close" data-action="closeSellModal">✕</button>
       </div>
-      <div class="sell-img-zone" id="sell-img-zone" data-action="clickEl" data-args="$1">
+      <div class="sell-img-zone" id="sell-img-zone" data-action="clickEl" data-args="sell-img-input">
         <div style="font-size:2em;margin-bottom:6px">📷</div>
         <strong style="font-size:0.75em">ADD PHOTOS</strong>
       </div>
@@ -710,28 +710,28 @@
       <div class="sell-field"><label>Description</label><textarea id="sell-desc" rows="3" placeholder="Describe your item..."></textarea></div>
       <div class="sell-field"><label>Price (M4TR1X Tokens)</label><input type="number" id="sell-price" placeholder="0"></div>
       <div class="sell-field"><label>Category</label><select id="sell-category"><option value="digital">Digital Goods</option><option value="physical">Physical Goods</option><option value="art">Art & Collectibles</option><option value="services">Services</option><option value="other">Other</option></select></div>
-      <button class="btn-sell" data-action="$1">LIST FOR SALE</button>
+      <button class="btn-sell" data-action="publishListing">LIST FOR SALE</button>
     </div>
   </div>
   <div id="token-modal">
     <div class="token-sheet">
       <div class="token-title">H8 TOKEN</div>
       <div class="token-row">
-        <button class="token-btn" data-action="$1" data-args="$2">100</button>
-        <button class="token-btn" data-action="$1" data-args="$2">500</button>
-        <button class="token-btn" data-action="$1" data-args="$2">1K</button>
-        <button class="token-btn" data-action="$1" data-args="$2">5K</button>
-        <button class="token-btn" data-action="$1" data-args="$2">10K</button>
+        <button class="token-btn" data-action="selToken" data-args="100">100</button>
+        <button class="token-btn" data-action="selToken" data-args="500">500</button>
+        <button class="token-btn" data-action="selToken" data-args="1000">1K</button>
+        <button class="token-btn" data-action="selToken" data-args="5000">5K</button>
+        <button class="token-btn" data-action="selToken" data-args="10000">10K</button>
       </div>
       <div class="token-info" id="token-balance-info">Balance: <span id="h8-balance-display">--</span> H8</div>
       <div class="token-info" style="color:rgba(255,136,0,0.5)">Quantum-resistant · Post-NIST ML-DSA65</div>
-      <button class="btn-buy-token" data-action="$1">BUY H8 TOKENS</button>
-      <button class="token-cancel" data-action="$1">CANCEL</button>
+      <button class="btn-buy-token" data-action="buyTokens">BUY H8 TOKENS</button>
+      <button class="token-cancel" data-action="closeTokenModal">CANCEL</button>
     </div>
   </div>
   <div id="dm-chat">
     <div class="dm-chat-head">
-      <button class="dm-chat-back" data-action="$1">←</button>
+      <button class="dm-chat-back" data-action="closeDmChat">←</button>
       <div class="dm-av" id="dm-chat-av" style="width:28px;height:28px;font-size:0.7em">👤</div>
       <span class="dm-chat-name" id="dm-chat-name">...</span>
       <span class="dm-chat-encrypt">🔒 SIGNAL ENCRYPTED</span>
@@ -739,12 +739,12 @@
     <div class="dm-chat-msgs" id="dm-chat-msgs"></div>
     <div class="dm-chat-input">
       <input id="dm-msg-input" placeholder="Type encrypted message..." spellcheck="false">
-      <button data-action="$1">SEND</button>
+      <button data-action="sendDm">SEND</button>
     </div>
   </div>
 
   <!-- ===== PROFILE PANEL ===== -->
-  <div id="profile-panel" data-close="$1">
+  <div id="profile-panel" data-close="closeProfile">
     <div id="profile-inner">
       <div class="prof-head">
         <div class="prof-head-row">
@@ -755,7 +755,7 @@
               <div class="prof-key" id="prof-key">...</div>
             </div>
           </div>
-          <button class="prof-close" data-action="$1">✕</button>
+          <button class="prof-close" data-action="closeProfile">✕</button>
         </div>
         <div class="prof-bio" id="prof-bio" style="display:none"></div>
         <!-- Account collegati su altre piattaforme (da Nostr kind 0) -->
@@ -770,28 +770,28 @@
           <span style="font-size:0.65em;color:rgba(255,204,0,0.5)">· VERIFICATO M4TR1X</span>
         </div>
         <div class="prof-actions" id="prof-actions" style="display:none">
-          <button class="prof-follow-btn" id="prof-follow-btn" data-action="$1">FOLLOW</button>
-          <button class="prof-dm-btn" data-action="$1">💬 DM</button>
+          <button class="prof-follow-btn" id="prof-follow-btn" data-action="toggleFollow">FOLLOW</button>
+          <button class="prof-dm-btn" data-action="profileDM">💬 DM</button>
         </div>
         <div id="prof-own-actions" style="display:none;gap:8px;margin-top:6px;flex-wrap:wrap">
-          <button class="prof-edit-btn" id="prof-edit-btn" data-action="$1" style="background:rgba(0,255,65,0.08);border:1px solid rgba(0,255,65,0.3);color:var(--green);font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer">✏ EDIT PROFILE</button>
-          <button class="prof-badge-req-btn" id="req-badge-btn" data-action="$1" style="background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.3);color:#ffcc00;font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer">🏅 RICHIEDI BADGE</button>
-          <button data-action="$1" style="background:rgba(0,170,255,0.08);border:1px solid rgba(0,170,255,0.3);color:var(--blue);font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer">📡 COMPOSE</button>
-          <button data-action="$1" style="background:rgba(0,170,255,0.04);border:1px solid rgba(0,170,255,0.2);color:rgba(0,170,255,0.6);font-family:var(--font-mono);font-size:0.58em;letter-spacing:1px;padding:5px 10px;cursor:pointer" id="proto-accounts-btn">🔗 ACCOUNTS</button>
+          <button class="prof-edit-btn" id="prof-edit-btn" data-action="openEditProfile" style="background:rgba(0,255,65,0.08);border:1px solid rgba(0,255,65,0.3);color:var(--green);font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer">✏ EDIT PROFILE</button>
+          <button class="prof-badge-req-btn" id="req-badge-btn" data-action="openBadgeModal" style="background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.3);color:#ffcc00;font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer">🏅 RICHIEDI BADGE</button>
+          <button data-action="openCompose" style="background:rgba(0,170,255,0.08);border:1px solid rgba(0,170,255,0.3);color:var(--blue);font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer">📡 COMPOSE</button>
+          <button data-action="openProtoConnect" style="background:rgba(0,170,255,0.04);border:1px solid rgba(0,170,255,0.2);color:rgba(0,170,255,0.6);font-family:var(--font-mono);font-size:0.58em;letter-spacing:1px;padding:5px 10px;cursor:pointer" id="proto-accounts-btn">🔗 ACCOUNTS</button>
         </div>
       </div>
       <!-- Storie in evidenza (IG-style) — saved highlights, permanenti -->
       <div id="prof-story-hl" class="story-hl-row" style="display:none"></div>
       <div class="prof-stats">
         <div class="prof-stat"><div class="prof-stat-n" id="prof-posts">–</div><div class="prof-stat-l">POSTS</div></div>
-        <div class="prof-stat" style="cursor:pointer" data-action="$1" data-args="$2"><div class="prof-stat-n" id="prof-followers">–</div><div class="prof-stat-l">FOLLOWERS</div></div>
-        <div class="prof-stat" style="cursor:pointer" data-action="$1" data-args="$2"><div class="prof-stat-n" id="prof-following">–</div><div class="prof-stat-l">FOLLOWING</div></div>
+        <div class="prof-stat" style="cursor:pointer" data-action="openUserList" data-args="followers"><div class="prof-stat-n" id="prof-followers">–</div><div class="prof-stat-l">FOLLOWERS</div></div>
+        <div class="prof-stat" style="cursor:pointer" data-action="openUserList" data-args="following"><div class="prof-stat-n" id="prof-following">–</div><div class="prof-stat-l">FOLLOWING</div></div>
       </div>
       <!-- Grid tabs: Posts / Repost / NFT -->
       <div style="display:flex;border-bottom:1px solid var(--green-dark);flex-shrink:0">
-        <button id="gtab-posts" data-action="$1" data-args="$2" style="flex:1;background:none;border:none;border-bottom:2px solid var(--green);color:var(--green);font-family:var(--font-mono);font-size:0.6em;letter-spacing:2px;padding:8px;cursor:pointer">POSTS</button>
-        <button id="gtab-reposts" data-action="$1" data-args="$2" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--green-dark);font-family:var(--font-mono);font-size:0.6em;letter-spacing:2px;padding:8px;cursor:pointer">REPOST</button>
-        <button id="gtab-nft" data-action="$1" data-args="$2" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:#ffc832;opacity:0.45;font-family:var(--font-mono);font-size:0.6em;letter-spacing:2px;padding:8px;cursor:pointer">◈ NFT</button>
+        <button id="gtab-posts" data-action="switchGridTab" data-args="posts" style="flex:1;background:none;border:none;border-bottom:2px solid var(--green);color:var(--green);font-family:var(--font-mono);font-size:0.6em;letter-spacing:2px;padding:8px;cursor:pointer">POSTS</button>
+        <button id="gtab-reposts" data-action="switchGridTab" data-args="reposts" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--green-dark);font-family:var(--font-mono);font-size:0.6em;letter-spacing:2px;padding:8px;cursor:pointer">REPOST</button>
+        <button id="gtab-nft" data-action="switchGridTab" data-args="nft" style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:#ffc832;opacity:0.45;font-family:var(--font-mono);font-size:0.6em;letter-spacing:2px;padding:8px;cursor:pointer">◈ NFT</button>
       </div>
       <div class="prof-grid" id="prof-grid"><div class="prof-grid-empty">[ LOADING POSTS... ]</div></div>
     </div>
@@ -801,7 +801,7 @@
   <div id="notif-drawer">
     <div class="notif-head">
       <span class="notif-title">🔔 NOTIFICATIONS</span>
-      <button class="notif-close" data-action="$1">✕</button>
+      <button class="notif-close" data-action="closeNotifDrawer">✕</button>
     </div>
     <div class="notif-list" id="notif-list">
       <div class="notif-empty">[ SIGNALS INCOMING... ]</div>
@@ -809,11 +809,11 @@
   </div>
 
   <!-- ===== BADGE REQUEST MODAL ===== -->
-  <div id="badge-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="$1">
+  <div id="badge-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="closeBadgeModal">
   <div style="width:100%;border-top:1px solid rgba(255,204,0,0.3);padding:20px 16px 32px;max-height:85vh;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:#ffcc00">🏅 BADGE PROFESSIONALE</span>
-        <button data-action="$1" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
+        <button data-action="closeBadgeModal" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <div id="badge-status-display" style="display:none;margin-bottom:14px;padding:10px;border:1px solid rgba(255,204,0,0.2);font-size:0.7em;letter-spacing:1px"></div>
       <div id="badge-form">
@@ -838,7 +838,7 @@
         </div>
         <div style="margin-bottom:16px">
           <label style="font-size:0.65em;letter-spacing:2px;color:rgba(0,255,136,0.5);display:block;margin-bottom:6px">DOCUMENTO DI VERIFICA (PDF, JPG, PNG · max 10MB)</label>
-          <div id="badge-doc-zone" data-action="clickEl" data-args="$1" style="border:1px dashed rgba(255,204,0,0.3);padding:18px;text-align:center;cursor:pointer;font-size:0.7em;letter-spacing:1px;color:rgba(255,204,0,0.5)">
+          <div id="badge-doc-zone" data-action="clickEl" data-args="badge-doc-input" style="border:1px dashed rgba(255,204,0,0.3);padding:18px;text-align:center;cursor:pointer;font-size:0.7em;letter-spacing:1px;color:rgba(255,204,0,0.5)">
             <div style="font-size:1.8em;margin-bottom:6px">📄</div>
             <div id="badge-doc-name">Tocca per selezionare documento</div>
           </div>
@@ -847,17 +847,17 @@
         <div style="font-size:0.6em;letter-spacing:1px;color:rgba(255,204,0,0.4);margin-bottom:16px;line-height:1.6">
           ⚠ Il documento verrà verificato dall'admin M4TR1X. Solo professionisti verificati ricevono il badge. I dati sono gestiti localmente sul server.
         </div>
-        <button data-action="$1" style="width:100%;background:rgba(255,204,0,0.12);border:1px solid #ffcc00;color:#ffcc00;font-family:var(--font-display);font-size:0.7em;letter-spacing:3px;padding:14px;cursor:pointer">INVIA RICHIESTA</button>
+        <button data-action="submitBadgeRequest" style="width:100%;background:rgba(255,204,0,0.12);border:1px solid #ffcc00;color:#ffcc00;font-family:var(--font-display);font-size:0.7em;letter-spacing:3px;padding:14px;cursor:pointer">INVIA RICHIESTA</button>
       </div>
     </div>
   </div>
 
   <!-- ===== EDIT PROFILE MODAL ===== -->
-  <div id="edit-profile-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="$1">
+  <div id="edit-profile-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="closeEditProfile">
   <div style="width:100%;border-top:1px solid rgba(0,255,65,0.3);padding:20px 16px 32px;max-height:85vh;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:var(--green)">✏ EDIT PROFILE</span>
-        <button data-action="$1" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
+        <button data-action="closeEditProfile" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <div style="margin-bottom:12px">
         <label style="font-size:0.65em;letter-spacing:2px;color:rgba(0,255,136,0.5);display:block;margin-bottom:6px">DISPLAY NAME</label>
@@ -871,7 +871,7 @@
         <label style="font-size:0.65em;letter-spacing:2px;color:rgba(0,255,136,0.5);display:block;margin-bottom:6px">PICTURE URL</label>
         <input id="edit-prof-picture" type="url" placeholder="https://..." style="width:100%;border:1px solid rgba(0,255,65,0.3);color:var(--green);font-family:var(--font-mono);font-size:0.8em;padding:10px;outline:none">
       </div>
-      <button data-action="$1" style="width:100%;background:rgba(0,255,65,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.7em;letter-spacing:3px;padding:14px;cursor:pointer">SAVE &amp; PUBLISH</button>
+      <button data-action="saveEditProfile" style="width:100%;background:rgba(0,255,65,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.7em;letter-spacing:3px;padding:14px;cursor:pointer">SAVE &amp; PUBLISH</button>
     </div>
   </div>
 
@@ -879,7 +879,7 @@
   <div id="userlist-modal">
     <div class="userlist-head">
       <span class="userlist-title" id="userlist-title">FOLLOWERS</span>
-      <button data-action="$1" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
+      <button data-action="closeUserList" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
     </div>
     <div class="userlist-body" id="userlist-body">
       <div class="userlist-empty">[ LOADING... ]</div>
@@ -887,11 +887,11 @@
   </div>
 
   <!-- ===== COMPOSE MODAL (Universal Post) ===== -->
-  <div id="compose-modal" style="display:none;position:fixed;inset:0;z-index:510;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="$1">
+  <div id="compose-modal" style="display:none;position:fixed;inset:0;z-index:510;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="closeCompose">
     <div style="width:100%;border-top:1px solid rgba(0,170,255,0.3);padding:20px 16px 32px;max-height:85vh;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:var(--blue)">📡 BROADCAST</span>
-        <button data-action="$1" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
+        <button data-action="closeCompose" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <!-- Protocol checkboxes -->
       <div id="compose-proto-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;font-size:0.65em;letter-spacing:1px"></div>
@@ -899,23 +899,23 @@
       <textarea id="compose-text" rows="5" placeholder="What's happening? Post to all connected protocols at once..." style="width:100%;border:1px solid rgba(0,170,255,0.25);font-family:var(--font-mono);font-size:0.82em;padding:10px;outline:none;resize:vertical;margin-bottom:10px"></textarea>
       <!-- Hashtags -->
       <input id="compose-tags" type="text" placeholder="#tag1 #tag2 #tag3" style="width:100%;border:1px solid rgba(0,170,255,0.15);color:rgba(0,170,255,0.8);font-family:var(--font-mono);font-size:0.72em;padding:8px;outline:none;margin-bottom:14px">
-      <button data-action="$1" style="width:100%;background:rgba(0,170,255,0.15);border:1px solid var(--blue);color:var(--blue);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:13px;cursor:pointer">BROADCAST</button>
+      <button data-action="doUniversalPost" style="width:100%;background:rgba(0,170,255,0.15);border:1px solid var(--blue);color:var(--blue);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:13px;cursor:pointer">BROADCAST</button>
       <div id="compose-results" style="margin-top:12px;font-size:0.65em;letter-spacing:1px;line-height:1.8"></div>
     </div>
   </div>
 
   <!-- ===== PROTOCOL ACCOUNTS MODAL ===== -->
-  <div id="proto-modal" style="display:none;position:fixed;inset:0;z-index:510;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="$1">
+  <div id="proto-modal" style="display:none;position:fixed;inset:0;z-index:510;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="closeProtoConnect">
     <div style="width:100%;border-top:1px solid rgba(0,170,255,0.3);padding:20px 16px 32px;max-height:85vh;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:var(--blue)">🔗 CONNECTED ACCOUNTS</span>
-        <button data-action="$1" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
+        <button data-action="closeProtoConnect" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <!-- Connected list -->
       <div id="proto-connected-list" style="margin-bottom:18px"></div>
       <!-- Add account -->
       <!-- Sync identità su tutti i protocolli -->
-      <button data-action="$1" style="width:100%;background:rgba(0,255,65,0.08);border:1px solid rgba(0,255,65,0.3);color:var(--green);font-family:var(--font-display);font-size:0.65em;letter-spacing:3px;padding:10px;cursor:pointer;margin-bottom:16px">🔄 SYNC IDENTITY → ALL PROTOCOLS</button>
+      <button data-action="syncAllProfiles" style="width:100%;background:rgba(0,255,65,0.08);border:1px solid rgba(0,255,65,0.3);color:var(--green);font-family:var(--font-display);font-size:0.65em;letter-spacing:3px;padding:10px;cursor:pointer;margin-bottom:16px">🔄 SYNC IDENTITY → ALL PROTOCOLS</button>
       <div id="sync-results" style="font-size:0.62em;letter-spacing:1px;line-height:1.9;margin-bottom:16px"></div>
       <div style="font-size:0.65em;letter-spacing:2px;color:rgba(0,170,255,0.5);margin-bottom:10px">ADD ACCOUNT</div>
       <select id="proto-sel" style="width:100%;border:1px solid rgba(0,170,255,0.25);color:var(--blue);font-family:var(--font-mono);font-size:0.75em;padding:9px;outline:none;margin-bottom:8px">
@@ -926,39 +926,39 @@
       <input id="proto-instance" type="text" placeholder="instance (es. mastodon.social)" style="width:100%;border:1px solid rgba(0,170,255,0.2);color:#fff;font-family:var(--font-mono);font-size:0.75em;padding:9px;outline:none;margin-bottom:8px">
       <input id="proto-token" type="password" placeholder="access token (OAuth)" style="width:100%;border:1px solid rgba(0,170,255,0.2);color:#fff;font-family:var(--font-mono);font-size:0.75em;padding:9px;outline:none;margin-bottom:8px">
       <input id="proto-username" type="text" placeholder="username (opzionale)" style="width:100%;border:1px solid rgba(0,170,255,0.15);color:rgba(255,255,255,0.5);font-family:var(--font-mono);font-size:0.72em;padding:8px;outline:none;margin-bottom:14px">
-      <button data-action="$1" style="width:100%;background:rgba(0,170,255,0.12);border:1px solid var(--blue);color:var(--blue);font-family:var(--font-display);font-size:0.68em;letter-spacing:3px;padding:12px;cursor:pointer">CONNECT</button>
+      <button data-action="saveProtoAccount" style="width:100%;background:rgba(0,170,255,0.12);border:1px solid var(--blue);color:var(--blue);font-family:var(--font-display);font-size:0.68em;letter-spacing:3px;padding:12px;cursor:pointer">CONNECT</button>
     </div>
   </div>
 
   <!-- ===== BOOST MODAL ===== -->
-  <div id="boost-modal" style="display:none;position:fixed;inset:0;z-index:520;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="$1">
+  <div id="boost-modal" style="display:none;position:fixed;inset:0;z-index:520;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="closeBoostModal">
     <div style="width:100%;border-top:2px solid rgba(255,209,102,0.35);padding:22px 18px 36px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div style="font-family:var(--font-display);font-size:0.82em;letter-spacing:3px;color:var(--yellow)">⚡ BOOST VISIBILITÀ</div>
-        <button data-action="$1" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
+        <button data-action="closeBoostModal" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <div style="font-size:0.68em;color:rgba(255,209,102,0.5);letter-spacing:1px;margin-bottom:16px;line-height:1.7">
         Paga H8 per aumentare la visibilità di questo video nel feed.<br>Il boost score è pubblico e verificabile.
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-        <button class="boost-btn" data-action="$1" data-args="$2" style="flex:1;background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.25);color:var(--yellow);font-family:var(--font-mono);font-size:0.72em;padding:10px 4px;cursor:pointer;border-radius:10px;letter-spacing:1px">10 H8</button>
-        <button class="boost-btn" data-action="$1" data-args="$2" style="flex:1;background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.25);color:var(--yellow);font-family:var(--font-mono);font-size:0.72em;padding:10px 4px;cursor:pointer;border-radius:10px;letter-spacing:1px">50 H8</button>
-        <button class="boost-btn" data-action="$1" data-args="$2" style="flex:1;background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.25);color:var(--yellow);font-family:var(--font-mono);font-size:0.72em;padding:10px 4px;cursor:pointer;border-radius:10px;letter-spacing:1px">100 H8</button>
-        <button class="boost-btn" data-action="$1" data-args="$2" style="flex:1;background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.25);color:var(--yellow);font-family:var(--font-mono);font-size:0.72em;padding:10px 4px;cursor:pointer;border-radius:10px;letter-spacing:1px">500 H8</button>
+        <button class="boost-btn" data-action="setBoost" data-args="10" style="flex:1;background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.25);color:var(--yellow);font-family:var(--font-mono);font-size:0.72em;padding:10px 4px;cursor:pointer;border-radius:10px;letter-spacing:1px">10 H8</button>
+        <button class="boost-btn" data-action="setBoost" data-args="50" style="flex:1;background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.25);color:var(--yellow);font-family:var(--font-mono);font-size:0.72em;padding:10px 4px;cursor:pointer;border-radius:10px;letter-spacing:1px">50 H8</button>
+        <button class="boost-btn" data-action="setBoost" data-args="100" style="flex:1;background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.25);color:var(--yellow);font-family:var(--font-mono);font-size:0.72em;padding:10px 4px;cursor:pointer;border-radius:10px;letter-spacing:1px">100 H8</button>
+        <button class="boost-btn" data-action="setBoost" data-args="500" style="flex:1;background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.25);color:var(--yellow);font-family:var(--font-mono);font-size:0.72em;padding:10px 4px;cursor:pointer;border-radius:10px;letter-spacing:1px">500 H8</button>
       </div>
       <input id="boost-amount" type="number" placeholder="Importo personalizzato..." min="1" max="100000" style="width:100%;border:1px solid rgba(255,209,102,0.25);color:var(--yellow);font-family:var(--font-mono);font-size:0.85em;padding:12px 14px;outline:none;margin-bottom:14px;background:rgba(255,209,102,0.03)">
       <div style="font-size:0.6em;color:rgba(255,209,102,0.35);letter-spacing:1px;margin-bottom:14px">Balance: <span id="boost-balance">--</span> H8 · Boost va alla piattaforma per il ranking</div>
-      <button data-action="$1" style="width:100%;background:rgba(255,209,102,0.12);border:1px solid var(--yellow);color:var(--yellow);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:14px;cursor:pointer;border-radius:10px">⚡ BOOST</button>
-      <button data-action="$1" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.3);font-family:var(--font-mono);font-size:0.72em;letter-spacing:1px;padding:12px;cursor:pointer;margin-top:4px">ANNULLA</button>
+      <button data-action="doBoost" style="width:100%;background:rgba(255,209,102,0.12);border:1px solid var(--yellow);color:var(--yellow);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:14px;cursor:pointer;border-radius:10px">⚡ BOOST</button>
+      <button data-action="closeBoostModal" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.3);font-family:var(--font-mono);font-size:0.72em;letter-spacing:1px;padding:12px;cursor:pointer;margin-top:4px">ANNULLA</button>
     </div>
   </div>
 
   <!-- ===== SHOP ITEM DETAIL ===== -->
-  <div id="shop-item-modal" style="display:none;position:fixed;inset:0;z-index:530;background:rgba(0,0,0,0.96);overflow-y:auto" data-close="$1">
+  <div id="shop-item-modal" style="display:none;position:fixed;inset:0;z-index:530;background:rgba(0,0,0,0.96);overflow-y:auto" data-close="closeShopItem">
     <div style="max-width:480px;margin:0 auto;padding:24px 18px 48px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:rgba(255,136,0,0.9)">🛍️ ITEM</span>
-        <button data-action="$1" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
+        <button data-action="closeShopItem" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <div id="sit-img" style="width:100%;aspect-ratio:1;background:rgba(255,136,0,0.06);border:1px solid rgba(255,136,0,0.15);display:flex;align-items:center;justify-content:center;font-size:5em;margin-bottom:16px;overflow:hidden;border-radius:4px"></div>
       <div id="sit-name" style="font-family:var(--font-display);font-size:1em;letter-spacing:2px;color:rgba(255,136,0,0.9);margin-bottom:8px"></div>
@@ -976,7 +976,7 @@
         </div>
         <span style="margin-left:auto;font-size:0.65em;color:rgba(255,136,0,0.3)">→</span>
       </div>
-      <button id="sit-buy-btn" data-action="$1" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.75em;letter-spacing:3px;padding:15px;cursor:pointer;margin-bottom:10px;border-radius:10px;transition:0.2s">💰 ACQUISTA</button>
+      <button id="sit-buy-btn" data-action="doBuyItem" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.75em;letter-spacing:3px;padding:15px;cursor:pointer;margin-bottom:10px;border-radius:10px;transition:0.2s">💰 ACQUISTA</button>
       <button id="sit-dm-btn" style="width:100%;background:rgba(0,170,255,0.08);border:1px solid rgba(0,170,255,0.3);color:var(--blue);font-family:var(--font-mono);font-size:0.72em;letter-spacing:2px;padding:12px;cursor:pointer;border-radius:10px">💬 CONTATTA VENDITORE</button>
       <div id="sit-result" style="margin-top:14px;font-size:0.68em;letter-spacing:1px;text-align:center;line-height:1.6"></div>
     </div>
@@ -1307,7 +1307,7 @@
 
   function switchSec(name){
     S.section=name;
-    document.querySelectorAll('.sec-tab').forEach(t=>{const secName=t.getAttribute('onclick').match(/'(\w+)'/)[1];t.classList.toggle('active',secName===name)});
+    document.querySelectorAll('.sec-tab').forEach(t=>{const secName=t.getAttribute('data-args');t.classList.toggle('active',secName===name)});
     document.querySelectorAll('.section-feed').forEach(f=>f.classList.remove('active'));
     const feedEl=document.getElementById('feed-'+name);if(feedEl)feedEl.classList.add('active');
     document.querySelectorAll('.section-banner').forEach(b=>b.classList.remove('show'));
@@ -3778,7 +3778,7 @@
     }).catch(() => {});
   }
   </script>
-  <div class="modal-overlay" id="node-modal" data-close="$1" style="display:none">
+  <div class="modal-overlay" id="node-modal" data-close="closeNodeModal" style="display:none">
   <div class="modal-box" style="max-height:85vh;overflow-y:auto">
   <div class="modal-title">⚡ BECOME A NODE</div>
   <div id="node-current-status" style="margin-bottom:16px"></div>
@@ -3791,26 +3791,26 @@
   <label class="node-cap-item"><input type="checkbox" value="crypto"> <span>💰 CRYPTO</span></label>
   </div>
   <div style="display:flex;gap:10px;margin-top:20px">
-  <button class="btn-pub" style="flex:1" data-action="$1">ACTIVATE</button>
-  <button class="btn-pub" style="flex:1;background:rgba(255,68,85,0.15)!important;color:var(--red)!important" data-action="$1">DEACTIVATE</button>
+  <button class="btn-pub" style="flex:1" data-action="saveNodeConfig">ACTIVATE</button>
+  <button class="btn-pub" style="flex:1;background:rgba(255,68,85,0.15)!important;color:var(--red)!important" data-action="resignNode">DEACTIVATE</button>
   </div>
-  <button class="modal-close" data-action="$1">✕</button>
+  <button class="modal-close" data-action="closeNodeModal">✕</button>
   </div></div>
-  <div class="modal-overlay" id="golive-modal" data-close="$1" style="display:none">
+  <div class="modal-overlay" id="golive-modal" data-close="closeGoLive" style="display:none">
   <div class="modal-box">
   <div class="modal-title">🔴 GO LIVE</div>
   <div class="field"><label>TITLE</label><input id="live-title-input" placeholder="What are you streaming?"></div>
   <div class="field"><label>CATEGORY</label><select id="live-cat-select"><option value="reels">📹 Reels</option><option value="film">🎬 Film</option><option value="music">🎵 Music</option><option value="topic">🏛️ Topic</option></select></div>
   <div id="live-preview-wrap" style="display:none;margin:12px 0;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:9/16;max-height:280px"><video id="live-preview-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover"></video></div>
-  <button class="btn-pub" style="width:100%;margin-bottom:10px" data-action="$1">🎥 START CAMERA + GO LIVE</button>
-  <button class="modal-close" data-action="$1">✕</button>
+  <button class="btn-pub" style="width:100%;margin-bottom:10px" data-action="startGoLive">🎥 START CAMERA + GO LIVE</button>
+  <button class="modal-close" data-action="closeGoLive">✕</button>
   </div></div>
-  <div class="modal-overlay" id="liveview-modal" data-close="$1" style="display:none">
+  <div class="modal-overlay" id="liveview-modal" data-close="closeLiveView" style="display:none">
   <div class="modal-box" style="padding:0;overflow:hidden;border-radius:16px">
   <div style="position:relative;background:#000;aspect-ratio:9/16;max-height:70vh">
   <video id="liveview-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover"></video>
   <div style="position:absolute;bottom:0;left:0;right:0;padding:16px;background:linear-gradient(transparent,rgba(0,0,0,0.8))"><div id="liveview-title" style="font-size:0.9em;font-weight:700;color:#fff"></div><div id="liveview-author" style="font-size:0.7em;color:rgba(255,255,255,0.6)"></div></div>
-  <button data-action="$1" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1em;cursor:pointer">✕</button>
+  <button data-action="closeLiveView" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1em;cursor:pointer">✕</button>
   <div style="position:absolute;top:12px;left:12px;background:var(--red);color:#fff;font-size:0.65em;font-family:var(--font-mono);padding:3px 8px;border-radius:6px;letter-spacing:2px">● LIVE</div>
   </div></div></div>
   <!-- ── CSP-safe event delegation (B2) ──────────────────────────────────────
