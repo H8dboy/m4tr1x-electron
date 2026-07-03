@@ -14,6 +14,18 @@
   pubblico opt-in) o `M4TR1X_BIND_HOST`. Il relay Nostr `:4848` resta invariato per la mesh.
 - Nuovo test `tests/test-cors-bind.js` (10 asserzioni).
 
+### Frontend — CSP: handler inline → delega (B2, parziale)
+- La CSP dell'app (`script-src 'self' 'nonce-…'`, senza `unsafe-inline`) blocca gli
+  handler inline `onclick`/`oninput`/`onchange`: nel build Electron l'intera UI
+  sarebbe non funzionante (topbar, modali, tab). Verificato empiricamente in Chromium.
+- Aggiunto un dispatcher di delega unico (un solo listener su `document`) che rimpiazza
+  gli handler inline con `data-action` / `data-close` / `data-oninput` / `data-onchange`,
+  con override `ACTIONS`/`INPUTS` per i casi con elemento/evento. Funziona anche sui nodi
+  generati a runtime.
+- Migrati i **133 handler statici** (topbar, section-tabs, bottom-nav, modali, backdrop,
+  setSats/setBoost/selToken/selCat, input file). Restano da migrare i ~25 handler dentro
+  i template JS (feed/forum/music/shop/story) — prossimo blocco.
+
 ## v2.3.0 — Developer Preview
 
 ### H8 Token Economy (live)
