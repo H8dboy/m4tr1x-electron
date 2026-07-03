@@ -47,6 +47,24 @@
   su disco dopo un cambio riuscito. Ora viene rimosso al completamento; il backup copre solo
   la finestra di crash tra write e rename. Test `test-h8identity-changepw.js` aggiornato.
 
+### Ledger — mitigazioni anti-double-spend cross-nodo (C, allineamento a m4tr1x-node)
+- **Finestra di conferma** (`ledger_sync.js`): le entrate ricevute via gossip non sono
+  "saldate" finché non passano `H8_CONFIRM_WINDOW_MS` (default 8s). Nuovo `getRemoteBalances`
+  → `{ confirmed, pending, total }`.
+- **Tetto fondi non confermati** (`h8token.js`): `getSpendable`/`getBalanceBreakdown` — solo
+  `H8_MAX_UNCONFIRMED` (default 1000) di entrate fresche è spendibile subito; il resto attende
+  la conferma. I controlli di spesa in `transfer`/`tip`/`boost` usano `getSpendable`, non più
+  `getBalance`. `/api/v1/h8/balance` ora espone anche `spendable` e `pending_unconfirmed`.
+- **Session guard** (`session_guard.js`, nuovo): una sola sessione attiva per identità. Ogni
+  sessione sbloccata pubblica un claim effimero Nostr auto-firmato; se arriva un claim della
+  stessa identità con sid diverso → conflitto → `transfer`/`tip`/`boost` sospesi. Agganciato
+  a unlock/lock H8; stato via `GET /api/v1/h8/session-guard`. È rilevamento, non prevenzione.
+- **Guardia saldo-negativo** in `appendBlock` (esente il mint da `0x0`) e in
+  `ledger_sync.importRemoteBlock` (scarta blocchi firmati che porterebbero il mittente < 0).
+- Chiude la race intra-nodo e riduce il raggio del double-spend cross-nodo finché l'head node
+  canonico Postgres non lo chiude del tutto. Nuovi test: `scripts/doublespend-test.js`,
+  `scripts/mitigations-test.js`, `scripts/session-guard-test.js` (tutti verdi).
+
 ## v2.3.0 — Developer Preview
 
 ### H8 Token Economy (live)

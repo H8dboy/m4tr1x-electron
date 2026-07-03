@@ -18,9 +18,31 @@ function getSync() {
   return _sync
 }
 
+// Lazy import del session guard (mitigazione: una sola sessione attiva per identità).
+let _guard = null
+function getGuard() {
+  if (!_guard) { try { _guard = require('./session_guard') } catch { _guard = { hasConflict: () => false } } }
+  return _guard
+}
+
+// Rifiuta la spesa se è stata rilevata una sessione concorrente per la stessa identità.
+function assertNoSessionConflict(address) {
+  try {
+    if (getGuard().hasConflict(address))
+      throw new Error('Sessione concorrente rilevata per questa identità — spese sospese. Blocca l\'identità sugli altri nodi.')
+  } catch (e) {
+    if (/Sessione concorrente/.test(e.message)) throw e   // rilancia solo il nostro errore
+  }
+}
+
 const MINT_ADDRESS     = process.env.H8_MINT_ADDRESS     || 'H8' + '0'.repeat(38)
 const PLATFORM_ADDRESS = process.env.H8_PLATFORM_ADDRESS || 'H8' + '1'.repeat(38)
 const SERVER_ADDRESS   = process.env.H8_SERVER_ADDRESS   || 'H8' + '2'.repeat(38)
+
+// Mitigazione lancio (pre-head canonico): tetto ai fondi NON confermati rispendibili
+// subito. Fino a MAX_UNCONFIRMED di entrate fresche è spendibile all'istante (UX tip),
+// oltre bisogna aspettare la finestra di conferma. Configurabile via H8_MAX_UNCONFIRMED.
+const MAX_UNCONFIRMED = Math.max(0, parseInt(process.env.H8_MAX_UNCONFIRMED || '1000'))
 
 const VALID_TX_TYPES = new Set([
   'mint', 'transfer',
@@ -178,6 +200,12 @@ async function appendBlock({ from, to, amount, tx_type, content_id = null, note 
   if (!VALID_TX_TYPES.has(tx_type)) throw new Error('Invalid tx_type')
   if (!Number.isInteger(amount) || amount < 0) throw new Error('amount must be non-negative integer (centesimi H8)')
 
+  // Guardia saldo-negativo (audit): nessuna spesa può portare il mittente sotto zero.
+  // Esente il mint (from '0x0'). Difesa in profondità: gira dentro il lock per-sender,
+  // così spese concorrenti non possono superarla in gara.
+  if (from !== '0x0' && getBalance(from) < amount)
+    throw new Error('Saldo insufficiente')
+
   const db = getDb()
   const last = getLastBlock()
   const idx = (last ? last.block_index : 0) + 1
@@ -222,6 +250,31 @@ function getBalance(address) {
   return localBal + remoteBal
 }
 
+// ─── Saldo spendibile (mitigazioni lancio) ────────────────────────────────────
+// Saldo spendibile ORA: totale meno la quota di entrate remote ancora "in attesa"
+// che eccede il tetto MAX_UNCONFIRMED. Il saldo locale (genesi/mint/proprie uscite)
+// è sempre confermato. È questo — non getBalance — che governa i controlli di spesa.
+function getSpendable(address) {
+  if (!validAddress(address)) return 0
+  const total = getBalance(address)
+  let pending = 0
+  try { pending = getSync().getRemoteBalances(address).pending } catch {}
+  const withheld = Math.max(pending - MAX_UNCONFIRMED, 0)
+  return total - withheld
+}
+
+// Breakdown per UI/diagnostica: { total, spendable, pending_unconfirmed }.
+function getBalanceBreakdown(address) {
+  const total = getBalance(address)
+  let pending = 0
+  try { pending = getSync().getRemoteBalances(address).pending } catch {}
+  return {
+    total,
+    spendable: total - Math.max(pending - MAX_UNCONFIRMED, 0),
+    pending_unconfirmed: Math.max(pending, 0),
+  }
+}
+
 function getHistory(address, limit = 50) {
   if (!validAddress(address)) return []
   const local = getDb().prepare(`
@@ -248,7 +301,8 @@ async function transfer(to, amount, note = '') {
   if (!unlocked) throw new Error('H8 wallet locked')
   const from = unlocked.address
   return withSenderLock(from, async () => {
-    if (getBalance(from) < amount) throw new Error('Saldo insufficiente')
+    assertNoSessionConflict(from)
+    if (getSpendable(from) < amount) throw new Error('Saldo insufficiente')
     return appendBlock({ from, to, amount, tx_type: 'transfer', note })
   })
 }
@@ -258,7 +312,8 @@ async function tip(creatorAddr, amount, contentId) {
   if (!unlocked) throw new Error('H8 wallet locked')
   const from = unlocked.address
   return withSenderLock(from, async () => {
-    if (getBalance(from) < amount) throw new Error('Saldo insufficiente per tip')
+    assertNoSessionConflict(from)
+    if (getSpendable(from) < amount) throw new Error('Saldo insufficiente per tip')
 
     const creatorShare  = Math.floor(amount * 0.50)
     const platformShare = Math.floor(amount * 0.20)
@@ -276,7 +331,8 @@ async function boost(contentId, amount) {
   if (!unlocked) throw new Error('H8 wallet locked')
   const from = unlocked.address
   return withSenderLock(from, async () => {
-    if (getBalance(from) < amount) throw new Error('Saldo insufficiente per boost')
+    assertNoSessionConflict(from)
+    if (getSpendable(from) < amount) throw new Error('Saldo insufficiente per boost')
     return appendBlock({ from, to: PLATFORM_ADDRESS, amount, tx_type: 'boost', content_id: contentId })
   })
 }
@@ -356,7 +412,8 @@ function mintTokens(to, amount, adminKey) {
 }
 
 module.exports = {
-  initLedger, getBalance, getHistory, transfer, tip, boost,
+  initLedger, getBalance, getSpendable, getBalanceBreakdown, getHistory,
+  transfer, tip, boost,
   getBoostScore, getBoostScoresBatch, verifyChain, mintTokens,
   MINT_ADDRESS, PLATFORM_ADDRESS, SERVER_ADDRESS,
 }

@@ -312,6 +312,7 @@ app.post('/api/v1/h8/wallet/unlock', verifyApiKey, async (req, res) => {
     const { password } = req.body
     if (!password) return res.status(400).json({ error: 'Password richiesta' })
     const result = await unlockIdentity(password)
+    try { require('./session_guard').claim(result.address) } catch {}
     res.json({ status: 'unlocked', address: result.address, balance: null })
   } catch (err) {
     res.status(401).json({ error: err.message })
@@ -321,7 +322,14 @@ app.post('/api/v1/h8/wallet/unlock', verifyApiKey, async (req, res) => {
 // Blocca wallet
 app.post('/api/v1/h8/wallet/lock', verifyApiKey, (req, res) => {
   lockIdentity()
+  try { require('./session_guard').release() } catch {}
   res.json({ status: 'locked' })
+})
+
+// Stato del session guard: sessione attiva e se è stato rilevato un conflitto.
+app.get('/api/v1/h8/session-guard', verifyApiKey, (req, res) => {
+  try { res.json(require('./session_guard').getState()) }
+  catch (e) { res.status(500).json({ error: e.message }) }
 })
 
 // ─── H8 Token Economy ────────────────────────────────────────────────────────
@@ -331,7 +339,9 @@ h8token.initLedger()
 app.get('/api/v1/h8/balance', verifyApiKey, (req, res) => {
   const addr = req.query.address || require('./h8identity').getUnlockedIdentity()?.address
   if (!addr) return res.status(400).json({ error: 'address richiesto o wallet bloccato' })
-  res.json({ address: addr, balance: h8token.getBalance(addr) })
+  const b = h8token.getBalanceBreakdown(addr)
+  // `balance` resta il totale (retrocompat); `spendable`/`pending_unconfirmed` aggiunti.
+  res.json({ address: addr, balance: b.total, spendable: b.spendable, pending_unconfirmed: b.pending_unconfirmed })
 })
 
 app.get('/api/v1/h8/history', verifyApiKey, (req, res) => {

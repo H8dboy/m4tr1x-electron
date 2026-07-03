@@ -23,6 +23,15 @@ const h8id     = require('./h8identity')
 const BLOCK_KIND = 30078
 const BLOCK_TAG  = 'm4tr1x-h8-block'
 
+// Mitigazione lancio (pre-head canonico): i fondi appena ricevuti via gossip non
+// sono "saldati" finché non sono trascorsi CONFIRM_WINDOW_MS dalla ricezione.
+// Configurabile via H8_CONFIRM_WINDOW_MS.
+const CONFIRM_WINDOW_MS = Math.max(0, parseInt(process.env.H8_CONFIRM_WINDOW_MS || '8000'))
+
+// Lazy import di h8token (rete di sicurezza saldo-negativo sui blocchi remoti).
+let _token = null
+function getToken() { if (!_token) _token = require('./h8token'); return _token }
+
 const SYNCABLE_TX_TYPES = new Set([
   'transfer', 'tip_creator', 'tip_platform', 'tip_server',
   'boost', 'shop_seller', 'shop_platform', 'shop_server',
@@ -102,7 +111,21 @@ async function importRemoteBlock(block) {
     return false
   }
 
-  const verified = await verifyRemoteBlock(block)
+  let verified = await verifyRemoteBlock(block)
+
+  // Rete di sicurezza saldo-negativo (audit): un blocco con firma ML-DSA valida viene
+  // comunque rifiutato se porterebbe il saldo globale del mittente sotto zero. La firma
+  // prova l'autenticità, non che il mittente non avesse già speso quei fondi. È una rete
+  // di sicurezza, non consenso: il gossip fuori-ordine può marcare un blocco legittimo
+  // come non verificato finché l'head node canonico non fornisce l'ordinamento.
+  if (verified) {
+    try {
+      if (getToken().getBalance(block.from_addr) < block.amount) {
+        console.warn(`[LEDGER_SYNC] ⚠️ Rifiutato overspend ${block.from_addr.slice(0, 10)} ${block.amount} H8 (saldo andrebbe negativo)`)
+        verified = false
+      }
+    } catch {}
+  }
 
   db.prepare(`
     INSERT OR IGNORE INTO remote_blocks
@@ -202,6 +225,27 @@ function getRemoteBalance(address) {
   return incoming - outgoing
 }
 
+// Breakdown confermato vs in attesa. Le entrate contano come "confermate" solo dopo
+// CONFIRM_WINDOW_MS dalla ricezione; le uscite contano sempre per intero. `pending` >= 0.
+function getRemoteBalances(address) {
+  const db     = getRemoteDb()
+  const cutoff = Math.floor((Date.now() - CONFIRM_WINDOW_MS) / 1000)
+  const incAll = db.prepare(
+    'SELECT COALESCE(SUM(amount),0) as s FROM remote_blocks WHERE to_addr = ? AND verified = 1'
+  ).get(address).s
+  const incConf = db.prepare(
+    'SELECT COALESCE(SUM(amount),0) as s FROM remote_blocks WHERE to_addr = ? AND verified = 1 AND received_at <= ?'
+  ).get(address, cutoff).s
+  const outgoing = db.prepare(
+    'SELECT COALESCE(SUM(amount),0) as s FROM remote_blocks WHERE from_addr = ? AND verified = 1'
+  ).get(address).s
+  return {
+    confirmed: incConf - outgoing,   // spendibile subito (al netto delle uscite)
+    pending:   incAll - incConf,     // entrate ancora dentro la finestra di conferma
+    total:     incAll - outgoing,
+  }
+}
+
 function getRemoteHistory(address, limit = 50) {
   return getRemoteDb().prepare(`
     SELECT hash, ts, from_addr, to_addr, amount, tx_type, content_id,
@@ -226,6 +270,8 @@ module.exports = {
   startBlockSync,
   importRemoteBlock,
   getRemoteBalance,
+  getRemoteBalances,
   getRemoteHistory,
   getRemoteStats,
+  CONFIRM_WINDOW_MS,
 }
