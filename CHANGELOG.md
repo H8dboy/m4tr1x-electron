@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.4.0 — 2026-07-06
 
 ### Security — hardening rete API (allineamento a m4tr1x-node)
 - CORS: rimosso `origin: true`. L'API `:8080` ora accetta solo localhost, LAN privata
