@@ -71,14 +71,14 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: 1
 
       - name: Generate checksums (Linux/Mac)
-        if: matrix.os != 'windows-latest'
+        if: matrix.platform != 'win'
         run: |
           cd dist
           find . -maxdepth 1 \( -name "*.AppImage" -o -name "*.dmg" -o -name "*.deb" \) \
             -exec sha256sum {} \; > checksums-${{ matrix.platform }}.txt || true
 
       - name: Generate checksums (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'win'
         shell: pwsh
         run: |
           cd dist
