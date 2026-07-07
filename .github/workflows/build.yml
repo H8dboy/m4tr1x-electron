@@ -17,7 +17,9 @@ jobs:
           - os: ubuntu-latest
             platform: linux
             artifact: '*.deb'
-          - os: windows-latest
+          # windows-latest (now Server 2025) broke node-gyp's Visual Studio
+          # detection during electron-rebuild of better-sqlite3 — pin to 2022.
+          - os: windows-2022
             platform: win
             artifact: '*.exe'
           - os: macos-latest
