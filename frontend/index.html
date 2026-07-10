@@ -251,7 +251,7 @@
     <div class="section-feed" id="feed-shop">
       <div class="shop-container" id="shop-container">
         <div class="shop-header">
-          <div class="shop-balance">💰 M4TR1X: <span class="shop-balance-amount" id="token-balance">0</span></div>
+          <div class="shop-balance"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.5v9M9.5 10a2.4 2 0 0 1 5 0c0 1.3-1.2 1.6-2.5 2s-2.5.7-2.5 2a2.4 2 0 0 0 5 0"/></svg>M4TR1X: <span class="shop-balance-amount" id="token-balance">0</span></div>
           <button class="shop-buy-tokens" data-action="openTokenModal">BUY TOKENS</button>
         </div>
         <div class="shop-grid" id="shop-grid"><div class="slide-placeholder" style="grid-column:span 2"><div class="ph-text">[ LOADING MARKETPLACE... ]</div></div></div>
@@ -262,7 +262,7 @@
       <div style="padding:16px">
         <div style="display:flex;gap:10px;margin-bottom:16px">
           <button class="go-live-btn" data-action="openGoLive" style="flex:1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"/><path d="M6 6a8.5 8.5 0 0 0 0 12M18 6a8.5 8.5 0 0 1 0 12"/></svg>GO LIVE</button>
-          <button class="go-live-btn" data-action="stopGoLive" style="flex:1;background:rgba(255,255,255,0.06)">⏹ STOP</button>
+          <button class="go-live-btn" data-action="stopGoLive" style="flex:1;background:rgba(255,255,255,0.06)"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>STOP</button>
         </div>
         <div id="live-streams-list"><div class="slide-placeholder"><div class="ph-text" style="color:rgba(255,90,106,0.9)">[ NO LIVE STREAMS ]\n\nBe the first to go live.</div></div></div>
       </div>
@@ -542,7 +542,7 @@
   <button class="shop-sell-btn" id="shop-fab" data-action="openSellModal">＋</button>
   <!-- Funkwhale Audio Player -->
   <div id="fw-player">
-    <button class="fw-player-btn" id="fw-play-btn" data-action="toggleFwPlay">▶</button>
+    <button class="fw-player-btn" id="fw-play-btn" data-action="toggleFwPlay"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5l12 7-12 7z" fill="currentColor" stroke="none"/></svg></button>
     <div class="fw-player-info"><div class="fw-player-title" id="fw-now-playing">No track</div></div>
     <audio id="fw-audio"></audio>
   </div>
@@ -604,13 +604,13 @@
   <div id="zap-modal">
     <div class="zap-sheet">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div class="zap-title" style="color:#ff2277;margin:0">♥ H8 TIP</div>
+        <div class="zap-title" style="color:#ff2277;margin:0"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.4-7 10-7 10z"/></svg>H8 TIP</div>
         <div style="font-size:0.65em;font-family:var(--font-mono);color:rgba(255,34,119,0.6);letter-spacing:1px">
           Balance: <span id="zap-balance-display" style="color:#ff2277;font-weight:bold">--</span> H8
         </div>
       </div>
       <div id="zap-wallet-locked" style="display:none;background:rgba(255,68,85,0.08);border:1px solid rgba(255,68,85,0.25);padding:12px 14px;margin-bottom:14px;font-size:0.72em;letter-spacing:1px;color:var(--red);text-align:center">
-        🔒 H8 WALLET BLOCCATO<br>
+        <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> H8 WALLET BLOCCATO<br>
         <span style="font-size:0.85em;opacity:0.7">Sblocca il wallet prima di inviare un tip</span><br>
         <button data-action="closeZapOpenWallet" style="background:rgba(255,68,85,0.15);border:1px solid rgba(255,68,85,0.4);color:var(--red);font-family:var(--font-mono);font-size:0.9em;padding:6px 16px;cursor:pointer;margin-top:8px;letter-spacing:1px">SBLOCCA WALLET</button>
       </div>
@@ -627,7 +627,7 @@
         <div style="font-size:0.58em;color:rgba(255,34,119,0.45);text-align:center;margin-bottom:14px;letter-spacing:1px;line-height:1.8">
           50% → CREATOR · 20% → PLATFORM · 30% → SERVER
         </div>
-        <button class="btn-zap" data-action="sendH8Tip" style="background:#ff2277">♥ INVIA TIP</button>
+        <button class="btn-zap" data-action="sendH8Tip" style="background:#ff2277"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.4-7 10-7 10z"/></svg>INVIA TIP</button>
       </div>
       <button class="zap-cancel" data-action="closeZap">ANNULLA</button>
     </div>
@@ -659,7 +659,7 @@
       <div id="wallet-unlock-form" style="display:none">
         <div style="font-size:0.65em;letter-spacing:2px;color:rgba(0,255,136,0.5);margin-bottom:8px">PASSWORD WALLET</div>
         <input id="wallet-pw-input" type="password" placeholder="Inserisci la tua password H8..." style="width:100%;border:1px solid rgba(0,255,136,0.3);color:var(--green);font-family:var(--font-mono);font-size:0.82em;padding:12px 14px;outline:none;margin-bottom:12px;background:rgba(0,255,136,0.03)">
-        <button data-action="doWalletUnlock" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:13px;cursor:pointer;border-radius:10px;margin-bottom:8px">🔓 SBLOCCA</button>
+        <button data-action="doWalletUnlock" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:13px;cursor:pointer;border-radius:10px;margin-bottom:8px"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/></svg>SBLOCCA</button>
         <div id="wallet-pw-error" style="display:none;font-size:0.68em;color:var(--red);text-align:center;letter-spacing:1px;margin-bottom:8px"></div>
       </div>
       <!-- History -->
@@ -678,7 +678,7 @@
         <div style="font-size:0.65em;letter-spacing:2px;color:rgba(0,255,136,0.5);margin-bottom:8px">SCEGLI UNA PASSWORD</div>
         <input id="wallet-new-pw" type="password" placeholder="Password sicura..." style="width:100%;border:1px solid rgba(0,255,136,0.3);color:var(--green);font-family:var(--font-mono);font-size:0.82em;padding:12px 14px;outline:none;margin-bottom:8px;background:rgba(0,255,136,0.03)">
         <input id="wallet-new-pw2" type="password" placeholder="Conferma password..." style="width:100%;border:1px solid rgba(0,255,136,0.3);color:var(--green);font-family:var(--font-mono);font-size:0.82em;padding:12px 14px;outline:none;margin-bottom:12px;background:rgba(0,255,136,0.03)">
-        <button data-action="doWalletCreate" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:14px;cursor:pointer;border-radius:10px">⚡ CREA WALLET H8</button>
+        <button data-action="doWalletCreate" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:14px;cursor:pointer;border-radius:10px"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>CREA WALLET H8</button>
         <div id="wallet-create-error" style="display:none;font-size:0.68em;color:var(--red);text-align:center;letter-spacing:1px;margin-top:8px"></div>
       </div>
     </div>
@@ -686,7 +686,7 @@
   <div id="forum-modal">
     <div class="forum-sheet">
       <div class="forum-sheet-head">
-        <span class="forum-sheet-title">🏛️ NEW DISCUSSION</span>
+        <span class="forum-sheet-title"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M4 10l8-5 8 5M5 10v11M19 10v11M9 21v-7M15 21v-7"/></svg>NEW DISCUSSION</span>
         <button class="forum-sheet-close" data-action="closeForumModal">✕</button>
       </div>
       <div class="forum-field"><label>Title</label><input type="text" id="forum-title" placeholder="Discussion topic..."></div>
@@ -698,11 +698,11 @@
   <div id="sell-modal">
     <div class="sell-sheet">
       <div class="sell-sheet-head">
-        <span class="sell-sheet-title">🛍️ SELL ITEM</span>
+        <span class="sell-sheet-title"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>SELL ITEM</span>
         <button class="sell-sheet-close" data-action="closeSellModal">✕</button>
       </div>
       <div class="sell-img-zone" id="sell-img-zone" data-action="clickEl" data-args="sell-img-input">
-        <div style="font-size:2em;margin-bottom:6px">📷</div>
+        <div style="font-size:2em;margin-bottom:6px"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.3"/><path d="M8.5 7L10 4.8h4L15.5 7"/></svg></div>
         <strong style="font-size:0.75em">ADD PHOTOS</strong>
       </div>
       <input type="file" id="sell-img-input" accept="image/*" style="display:none">
@@ -812,7 +812,7 @@
   <div id="badge-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="closeBadgeModal">
   <div style="width:100%;border-top:1px solid rgba(255,204,0,0.3);padding:20px 16px 32px;max-height:85vh;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:#ffcc00">🏅 BADGE PROFESSIONALE</span>
+        <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:#ffcc00"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M9 12.5 8 21l4-2 4 2-1-8.5"/></svg>BADGE PROFESSIONALE</span>
         <button data-action="closeBadgeModal" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <div id="badge-status-display" style="display:none;margin-bottom:14px;padding:10px;border:1px solid rgba(255,204,0,0.2);font-size:0.7em;letter-spacing:1px"></div>
@@ -856,7 +856,7 @@
   <div id="edit-profile-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="closeEditProfile">
   <div style="width:100%;border-top:1px solid rgba(0,255,65,0.3);padding:20px 16px 32px;max-height:85vh;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:var(--green)">✏ EDIT PROFILE</span>
+        <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:var(--green)"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M14 7l3 3"/></svg>EDIT PROFILE</span>
         <button data-action="closeEditProfile" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <div style="margin-bottom:12px">
@@ -890,7 +890,7 @@
   <div id="compose-modal" style="display:none;position:fixed;inset:0;z-index:510;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="closeCompose">
     <div style="width:100%;border-top:1px solid rgba(0,170,255,0.3);padding:20px 16px 32px;max-height:85vh;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:var(--blue)">📡 BROADCAST</span>
+        <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:var(--blue)"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4M9.2 9.2a4 4 0 0 0 0 5.6M14.8 9.2a4 4 0 0 1 0 5.6"/></svg>BROADCAST</span>
         <button data-action="closeCompose" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <!-- Protocol checkboxes -->
@@ -908,7 +908,7 @@
   <div id="proto-modal" style="display:none;position:fixed;inset:0;z-index:510;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="closeProtoConnect">
     <div style="width:100%;border-top:1px solid rgba(0,170,255,0.3);padding:20px 16px 32px;max-height:85vh;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:var(--blue)">🔗 CONNECTED ACCOUNTS</span>
+        <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:var(--blue)"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M10.5 6.5l1.8-1.8a4 4 0 0 1 5.7 5.7L16 12"/><path d="M13.5 17.5l-1.8 1.8a4 4 0 0 1-5.7-5.7L8 11.5"/></svg>CONNECTED ACCOUNTS</span>
         <button data-action="closeProtoConnect" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <!-- Connected list -->
@@ -934,7 +934,7 @@
   <div id="boost-modal" style="display:none;position:fixed;inset:0;z-index:520;background:rgba(0,0,0,0.93);align-items:flex-end" data-close="closeBoostModal">
     <div style="width:100%;border-top:2px solid rgba(255,209,102,0.35);padding:22px 18px 36px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div style="font-family:var(--font-display);font-size:0.82em;letter-spacing:3px;color:var(--yellow)">⚡ BOOST VISIBILITÀ</div>
+        <div style="font-family:var(--font-display);font-size:0.82em;letter-spacing:3px;color:var(--yellow)"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>BOOST VISIBILITÀ</div>
         <button data-action="closeBoostModal" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <div style="font-size:0.68em;color:rgba(255,209,102,0.5);letter-spacing:1px;margin-bottom:16px;line-height:1.7">
@@ -948,7 +948,7 @@
       </div>
       <input id="boost-amount" type="number" placeholder="Importo personalizzato..." min="1" max="100000" style="width:100%;border:1px solid rgba(255,209,102,0.25);color:var(--yellow);font-family:var(--font-mono);font-size:0.85em;padding:12px 14px;outline:none;margin-bottom:14px;background:rgba(255,209,102,0.03)">
       <div style="font-size:0.6em;color:rgba(255,209,102,0.35);letter-spacing:1px;margin-bottom:14px">Balance: <span id="boost-balance">--</span> H8 · Boost va alla piattaforma per il ranking</div>
-      <button data-action="doBoost" style="width:100%;background:rgba(255,209,102,0.12);border:1px solid var(--yellow);color:var(--yellow);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:14px;cursor:pointer;border-radius:10px">⚡ BOOST</button>
+      <button data-action="doBoost" style="width:100%;background:rgba(255,209,102,0.12);border:1px solid var(--yellow);color:var(--yellow);font-family:var(--font-display);font-size:0.72em;letter-spacing:3px;padding:14px;cursor:pointer;border-radius:10px"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>BOOST</button>
       <button data-action="closeBoostModal" style="width:100%;background:none;border:none;color:rgba(255,255,255,0.3);font-family:var(--font-mono);font-size:0.72em;letter-spacing:1px;padding:12px;cursor:pointer;margin-top:4px">ANNULLA</button>
     </div>
   </div>
@@ -957,7 +957,7 @@
   <div id="shop-item-modal" style="display:none;position:fixed;inset:0;z-index:530;background:rgba(0,0,0,0.96);overflow-y:auto" data-close="closeShopItem">
     <div style="max-width:480px;margin:0 auto;padding:24px 18px 48px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-        <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:rgba(255,136,0,0.9)">🛍️ ITEM</span>
+        <span style="font-family:var(--font-display);font-size:0.8em;letter-spacing:3px;color:rgba(255,136,0,0.9)"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>ITEM</span>
         <button data-action="closeShopItem" style="background:none;border:none;color:var(--green);font-size:1.2em;cursor:pointer">✕</button>
       </div>
       <div id="sit-img" style="width:100%;aspect-ratio:1;background:rgba(255,136,0,0.06);border:1px solid rgba(255,136,0,0.15);display:flex;align-items:center;justify-content:center;font-size:5em;margin-bottom:16px;overflow:hidden;border-radius:4px"></div>
@@ -969,15 +969,15 @@
       <div id="sit-desc" style="font-size:0.72em;color:rgba(255,255,255,0.55);line-height:1.8;margin-bottom:16px;letter-spacing:0.5px;white-space:pre-wrap"></div>
       <div id="sit-cat" style="display:none;font-size:0.58em;color:rgba(255,136,0,0.5);letter-spacing:2px;border:1px solid rgba(255,136,0,0.2);padding:3px 8px;margin-bottom:18px;display:inline-block"></div>
       <div style="display:flex;align-items:center;gap:10px;padding:14px 0;border-top:1px solid rgba(255,136,0,0.1);border-bottom:1px solid rgba(255,136,0,0.1);margin-bottom:22px;cursor:pointer" id="sit-seller-row">
-        <div id="sit-av" style="width:36px;height:36px;background:rgba(255,136,0,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,136,0,0.2);overflow:hidden;flex-shrink:0">👤</div>
+        <div id="sit-av" style="width:36px;height:36px;background:rgba(255,136,0,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,136,0,0.2);overflow:hidden;flex-shrink:0"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
         <div>
           <div style="font-size:0.58em;color:rgba(255,136,0,0.4);letter-spacing:2px;margin-bottom:2px">VENDITORE</div>
           <div id="sit-seller-name" style="font-size:0.72em;color:rgba(255,136,0,0.8);letter-spacing:1px">...</div>
         </div>
         <span style="margin-left:auto;font-size:0.65em;color:rgba(255,136,0,0.3)">→</span>
       </div>
-      <button id="sit-buy-btn" data-action="doBuyItem" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.75em;letter-spacing:3px;padding:15px;cursor:pointer;margin-bottom:10px;border-radius:10px;transition:0.2s">💰 ACQUISTA</button>
-      <button id="sit-dm-btn" style="width:100%;background:rgba(0,170,255,0.08);border:1px solid rgba(0,170,255,0.3);color:var(--blue);font-family:var(--font-mono);font-size:0.72em;letter-spacing:2px;padding:12px;cursor:pointer;border-radius:10px">💬 CONTATTA VENDITORE</button>
+      <button id="sit-buy-btn" data-action="doBuyItem" style="width:100%;background:rgba(0,255,136,0.12);border:1px solid var(--green);color:var(--green);font-family:var(--font-display);font-size:0.75em;letter-spacing:3px;padding:15px;cursor:pointer;margin-bottom:10px;border-radius:10px;transition:0.2s"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.5v9M9.5 10a2.4 2 0 0 1 5 0c0 1.3-1.2 1.6-2.5 2s-2.5.7-2.5 2a2.4 2 0 0 0 5 0"/></svg>ACQUISTA</button>
+      <button id="sit-dm-btn" style="width:100%;background:rgba(0,170,255,0.08);border:1px solid rgba(0,170,255,0.3);color:var(--blue);font-family:var(--font-mono);font-size:0.72em;letter-spacing:2px;padding:12px;cursor:pointer;border-radius:10px"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg>CONTATTA VENDITORE</button>
       <div id="sit-result" style="margin-top:14px;font-size:0.68em;letter-spacing:1px;text-align:center;line-height:1.6"></div>
     </div>
   </div>
@@ -2141,10 +2141,10 @@
     const el = document.getElementById('prof-linked-accounts');
     if (!el) return;
     const links = [];
-    if (p.mastodon)  links.push({ icon: '🐘', label: p.mastodon,  color: 'var(--purple)', url: 'https://' + p.mastodon.split('@').slice(-1)[0] + '/@' + p.mastodon.split('@')[0] });
-    if (p.peertube)  links.push({ icon: '📹', label: 'PeerTube',   color: 'var(--blue)',   url: p.peertube });
-    if (p.funkwhale) links.push({ icon: '🎵', label: 'Funkwhale',  color: 'var(--yellow)', url: p.funkwhale });
-    if (p.h8)        links.push({ icon: '🔐', label: p.h8.slice(0,12) + '…', color: 'var(--green)', url: null });
+    if (p.mastodon)  links.push({ icon: '<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg>', label: p.mastodon,  color: 'var(--purple)', url: 'https://' + p.mastodon.split('@').slice(-1)[0] + '/@' + p.mastodon.split('@')[0] });
+    if (p.peertube)  links.push({ icon: '<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>', label: 'PeerTube',   color: 'var(--blue)',   url: p.peertube });
+    if (p.funkwhale) links.push({ icon: '<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>', label: 'Funkwhale',  color: 'var(--yellow)', url: p.funkwhale });
+    if (p.h8)        links.push({ icon: '<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>', label: p.h8.slice(0,12) + '…', color: 'var(--green)', url: null });
     if (!links.length) { el.style.display = 'none'; return; }
     el.style.display = 'flex';
     el.innerHTML = links.map(l =>
@@ -3187,7 +3187,7 @@
   function _sharePrompt(link){
     const box=document.createElement('div');
     box.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:9999;display:flex;align-items:center;justify-content:center';
-    box.innerHTML='<div style="background:#0d0d0d;border:1px solid rgba(0,255,136,0.3);border-radius:14px;padding:22px;max-width:88vw;text-align:center"><div style="font-family:monospace;font-size:0.68em;color:#00ff88;letter-spacing:2px;margin-bottom:12px">🔗 COPIA IL LINK</div><input readonly value="'+link+'" data-action="selectSelf" style="width:100%;background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.2);color:#fff;padding:8px 10px;border-radius:8px;font-size:0.72em;font-family:monospace;margin-bottom:14px"><br><button data-action="removeParentRow" style="background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);padding:6px 20px;border-radius:8px;cursor:pointer;font-size:0.68em;letter-spacing:1px">CHIUDI</button></div>';
+    box.innerHTML='<div style="background:#0d0d0d;border:1px solid rgba(0,255,136,0.3);border-radius:14px;padding:22px;max-width:88vw;text-align:center"><div style="font-family:monospace;font-size:0.68em;color:#00ff88;letter-spacing:2px;margin-bottom:12px"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M10.5 6.5l1.8-1.8a4 4 0 0 1 5.7 5.7L16 12"/><path d="M13.5 17.5l-1.8 1.8a4 4 0 0 1-5.7-5.7L8 11.5"/></svg>COPIA IL LINK</div><input readonly value="'+link+'" data-action="selectSelf" style="width:100%;background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.2);color:#fff;padding:8px 10px;border-radius:8px;font-size:0.72em;font-family:monospace;margin-bottom:14px"><br><button data-action="removeParentRow" style="background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.7);padding:6px 20px;border-radius:8px;cursor:pointer;font-size:0.68em;letter-spacing:1px">CHIUDI</button></div>';
     document.body.appendChild(box);
   }
 
@@ -3247,7 +3247,7 @@
       const wrap = document.createElement('div');
       wrap.className = 'hl-wrap';
       wrap.id = 'hlw-' + eid;
-      wrap.innerHTML = '<div class="hl-circle" id="hlc-' + eid + '" style="display:flex;align-items:center;justify-content:center;font-size:1.5em">▶</div><span class="hl-label" id="hll-' + eid + '">...</span>';
+      wrap.innerHTML = '<div class="hl-circle" id="hlc-' + eid + '" style="display:flex;align-items:center;justify-content:center;font-size:1.5em"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5l12 7-12 7z" fill="currentColor" stroke="none"/></svg></div><span class="hl-label" id="hll-' + eid + '">...</span>';
       wrap.onclick = () => openHighlightVideo(eid);
       // Click lungo su proprio profilo = rimuovi
       if (isMe) {
@@ -3478,7 +3478,7 @@
     const item = document.createElement('div');
     item.className = 'userlist-item';
     item.onclick = () => { closeUserList(); viewProf(pk); };
-    item.innerHTML = '<div class="userlist-av" id="ulav-' + pk.slice(0,12) + '">👤</div>'
+    item.innerHTML = '<div class="userlist-av" id="ulav-' + pk.slice(0,12) + '"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>'
       + '<div class="userlist-info">'
       + '<div class="userlist-name" id="ulnm-' + pk.slice(0,12) + '">' + (profName(pk) || shortenKey(pk)) + '</div>'
       + '<div class="userlist-key">' + pk.slice(0, 24) + '…</div>'
@@ -3529,7 +3529,7 @@
     // Nostr is always on
     const ALL = ['nostr','mastodon','peertube','funkwhale'];
     const COLORS = {nostr:'var(--green)',mastodon:'var(--purple)',peertube:'var(--blue)',funkwhale:'var(--yellow)'};
-    const ICONS  = {nostr:'⚡',mastodon:'🐘',peertube:'📹',funkwhale:'🎵'};
+    const ICONS  = {nostr:'<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',mastodon:'<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg>',peertube:'<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>',funkwhale:'<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>'};
     list.innerHTML = ALL.map(p => {
       const connected = p === 'nostr' || protoMap[p];
       const username  = protoMap[p]?.username ? ' @'+protoMap[p].username : (p==='nostr'?' (active)':' (not connected)');
@@ -3604,10 +3604,10 @@
       list.innerHTML = '<div style="font-size:0.65em;color:rgba(255,255,255,0.25);letter-spacing:1px;padding:8px 0">[ NO ACCOUNTS CONNECTED YET ]</div>';
       return;
     }
-    const ICONS = {mastodon:'🐘',peertube:'📹',funkwhale:'🎵'};
+    const ICONS = {mastodon:'<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg>',peertube:'<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>',funkwhale:'<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>'};
     list.innerHTML = protocols.map(p =>
       '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,170,255,0.08);font-size:0.68em">'
-      + '<span style="color:var(--blue)">'+(ICONS[p.protocol]||'🔗')+' '+p.protocol.toUpperCase()
+      + '<span style="color:var(--blue)">'+(ICONS[p.protocol]||'<svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M10.5 6.5l1.8-1.8a4 4 0 0 1 5.7 5.7L16 12"/><path d="M13.5 17.5l-1.8 1.8a4 4 0 0 1-5.7-5.7L8 11.5"/></svg>')+' '+p.protocol.toUpperCase()
       + (p.username?' <span style="color:rgba(255,255,255,0.4)">@'+esc(p.username)+'</span>':'')
       + ' <span style="color:rgba(0,170,255,0.4);font-size:0.85em">'+esc(p.instance||'')+'</span></span>'
       + '<button data-action="disconnectProto" data-args="'+escAttr(p.protocol)+'" style="background:none;border:1px solid rgba(255,34,34,0.3);color:var(--red);font-size:0.9em;padding:3px 8px;cursor:pointer;font-family:var(--font-mono)">✕</button>'
@@ -3780,15 +3780,15 @@
   </script>
   <div class="modal-overlay" id="node-modal" data-close="closeNodeModal" style="display:none">
   <div class="modal-box" style="max-height:85vh;overflow-y:auto">
-  <div class="modal-title">⚡ BECOME A NODE</div>
+  <div class="modal-title"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>BECOME A NODE</div>
   <div id="node-current-status" style="margin-bottom:16px"></div>
   <div class="node-caps-grid" id="node-caps-grid">
-  <label class="node-cap-item"><input type="checkbox" value="reels"> <span>📹 REELS</span></label>
-  <label class="node-cap-item"><input type="checkbox" value="film"> <span>🎬 FILM</span></label>
-  <label class="node-cap-item"><input type="checkbox" value="music"> <span>🎵 MUSIC</span></label>
-  <label class="node-cap-item"><input type="checkbox" value="topic"> <span>🏛️ TOPIC</span></label>
-  <label class="node-cap-item"><input type="checkbox" value="shop"> <span>🛍️ SHOP</span></label>
-  <label class="node-cap-item"><input type="checkbox" value="crypto"> <span>💰 CRYPTO</span></label>
+  <label class="node-cap-item"><input type="checkbox" value="reels"> <span><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg> REELS</span></label>
+  <label class="node-cap-item"><input type="checkbox" value="film"> <span><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg> FILM</span></label>
+  <label class="node-cap-item"><input type="checkbox" value="music"> <span><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg> MUSIC</span></label>
+  <label class="node-cap-item"><input type="checkbox" value="topic"> <span><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M4 10l8-5 8 5M5 10v11M19 10v11M9 21v-7M15 21v-7"/></svg> TOPIC</span></label>
+  <label class="node-cap-item"><input type="checkbox" value="shop"> <span><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> SHOP</span></label>
+  <label class="node-cap-item"><input type="checkbox" value="crypto"> <span><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.5v9M9.5 10a2.4 2 0 0 1 5 0c0 1.3-1.2 1.6-2.5 2s-2.5.7-2.5 2a2.4 2 0 0 0 5 0"/></svg> CRYPTO</span></label>
   </div>
   <div style="display:flex;gap:10px;margin-top:20px">
   <button class="btn-pub" style="flex:1" data-action="saveNodeConfig">ACTIVATE</button>
@@ -3798,9 +3798,9 @@
   </div></div>
   <div class="modal-overlay" id="golive-modal" data-close="closeGoLive" style="display:none">
   <div class="modal-box">
-  <div class="modal-title">🔴 GO LIVE</div>
+  <div class="modal-title"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px"  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"/><path d="M6 6a8.5 8.5 0 0 0 0 12M18 6a8.5 8.5 0 0 1 0 12"/></svg>GO LIVE</div>
   <div class="field"><label>TITLE</label><input id="live-title-input" placeholder="What are you streaming?"></div>
-  <div class="field"><label>CATEGORY</label><select id="live-cat-select"><option value="reels">📹 Reels</option><option value="film">🎬 Film</option><option value="music">🎵 Music</option><option value="topic">🏛️ Topic</option></select></div>
+  <div class="field"><label>CATEGORY</label><select id="live-cat-select"><option value="reels">Reels</option><option value="film">Film</option><option value="music">Music</option><option value="topic">Topic</option></select></div>
   <div id="live-preview-wrap" style="display:none;margin:12px 0;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:9/16;max-height:280px"><video id="live-preview-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover"></video></div>
   <button class="btn-pub" style="width:100%;margin-bottom:10px" data-action="startGoLive">🎥 START CAMERA + GO LIVE</button>
   <button class="modal-close" data-action="closeGoLive">✕</button>
