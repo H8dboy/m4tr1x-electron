@@ -215,27 +215,27 @@
     <button class="sec-tab live-tab" data-action="switchSec" data-args="live" title="Live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/><path d="M7.5 7.5a6 6 0 0 0 0 9M16.5 7.5a6 6 0 0 1 0 9"/></svg></button>
   </div>
   <div class="section-banner" id="banner-film">
-    <span class="banner-icon">🎬</span>
+    <span class="banner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg></span>
     <div class="banner-text"><strong>INDIE FILM CHANNEL</strong>Streaming via PeerTube Federation <span class="integration-status live">PEERTUBE LIVE</span></div>
   </div>
   <div class="section-banner" id="banner-music">
-    <span class="banner-icon">🎵</span>
+    <span class="banner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span>
     <div class="banner-text"><strong>UNDERGROUND MUSIC</strong>Streaming via Funkwhale Federation <span class="integration-status live">FUNKWHALE LIVE</span></div>
   </div>
   <div class="section-banner" id="banner-forum">
-    <span class="banner-icon">🏛️</span>
+    <span class="banner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M4 10l8-5 8 5M5 10v11M19 10v11M9 21v-7M15 21v-7"/></svg></span>
     <div class="banner-text"><strong>FORUM</strong>Federated via Mastodon ActivityPub <span class="integration-status live">MASTODON LIVE</span></div>
   </div>
   <div class="section-banner" id="banner-shop">
-    <span class="banner-icon">🛍️</span>
+    <span class="banner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span>
     <div class="banner-text"><strong>MARKETPLACE</strong>Buy & sell with M4TR1X tokens · Decentralized commerce</div>
   </div>
   <div class="section-banner" id="banner-dm">
-    <span class="banner-icon">💬</span>
+    <span class="banner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg></span>
     <div class="banner-text"><strong>PRIVATE MESSAGES</strong>ChaCha20-Poly1305 · E2E Encrypted · No phone number <span class="integration-status live">E2E ENCRYPTED</span></div>
   </div>
-  <div class="section-banner" id="banner-live"><span class="banner-icon">🔴</span><div class="banner-text"><strong>LIVE STREAMS</strong> WebRTC P2P · Decentralized <span class="integration-status live">P2P LIVE</span></div></div>
-  <button id="mute-btn" data-action="toggleMute">🔇</button>
+  <div class="section-banner" id="banner-live"><span class="banner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"/><path d="M6 6a8.5 8.5 0 0 0 0 12M18 6a8.5 8.5 0 0 1 0 12"/></svg></span><div class="banner-text"><strong>LIVE STREAMS</strong> WebRTC P2P · Decentralized <span class="integration-status live">P2P LIVE</span></div></div>
+  <button id="mute-btn" data-action="toggleMute"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l4 6M21 9l-4 6"/></svg></button>
   <div id="stories-bar"></div>
   <div id="feed-wrap">
     <div class="section-feed active" id="feed-signal"><div class="slide-placeholder"><div class="ph-text">[ CONNECTING TO RELAYS... ]</div></div></div>
@@ -261,7 +261,7 @@
     <div class="section-feed" id="feed-live">
       <div style="padding:16px">
         <div style="display:flex;gap:10px;margin-bottom:16px">
-          <button class="go-live-btn" data-action="openGoLive" style="flex:1">🔴 GO LIVE</button>
+          <button class="go-live-btn" data-action="openGoLive" style="flex:1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"/><path d="M6 6a8.5 8.5 0 0 0 0 12M18 6a8.5 8.5 0 0 1 0 12"/></svg>GO LIVE</button>
           <button class="go-live-btn" data-action="stopGoLive" style="flex:1;background:rgba(255,255,255,0.06)">⏹ STOP</button>
         </div>
         <div id="live-streams-list"><div class="slide-placeholder"><div class="ph-text" style="color:rgba(255,90,106,0.9)">[ NO LIVE STREAMS ]\n\nBe the first to go live.</div></div></div>
@@ -269,7 +269,7 @@
     </div>
     <div class="section-feed" id="feed-dm">
       <div class="dm-container" id="dm-container">
-        <div class="dm-encryption-badge"><span class="lock-icon">🔒</span> NIP-44 ACTIVE — ChaCha20-Poly1305 — Messages are end-to-end encrypted</div>
+        <div class="dm-encryption-badge"><span class="lock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span> NIP-44 ACTIVE — ChaCha20-Poly1305 — Messages are end-to-end encrypted</div>
         <div class="dm-list" id="dm-list"><div class="slide-placeholder"><div class="ph-text">[ LOADING CONTACTS... ]</div></div></div>
         <div class="dm-powered">REAL E2E ENCRYPTION · CHACHA20-POLY1305 · NO PHONE NUMBER REQUIRED</div>
       </div>
@@ -548,7 +548,7 @@
   </div>
   <div id="comments-drawer">
     <div class="drawer-bar" data-action="closeComments">
-      <span class="drawer-bar-title">💬 REPLIES</span>
+      <span class="drawer-bar-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg>REPLIES</span>
       <button class="drawer-bar-close">✕</button>
     </div>
     <div id="cmt-list"></div>
@@ -570,8 +570,8 @@
         <button class="up-cat photo" data-action="selCat" data-args="photo" title="Photo / NFT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l2-3h6l2 3h3a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
       </div>
       <div class="up-body">
-        <div class="up-disc film" id="disc-film">🎬 <strong>INDIE FILM CHANNEL</strong><br>Upload your own films. Distributed across M4TR1X nodes.</div>
-        <div class="up-disc music" id="disc-music">🎵 <strong>UNDERGROUND MUSIC</strong><br>Original music only. M4TR1X network.</div>
+        <div class="up-disc film" id="disc-film"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><strong>INDIE FILM CHANNEL</strong><br>Upload your own films. Distributed across M4TR1X nodes.</div>
+        <div class="up-disc music" id="disc-music"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><strong>UNDERGROUND MUSIC</strong><br>Original music only. M4TR1X network.</div>
         <div class="up-disc photo" id="disc-photo">📸 <strong>PHOTO & NFT</strong><br>Publish photos. Set a price to sell as NFT via H8 tips.</div>
         <div class="drop-zone" id="drop-zone" data-action="clickEl" data-args="file-input">
           <div class="dz-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2.5"/></svg></div>
@@ -732,9 +732,9 @@
   <div id="dm-chat">
     <div class="dm-chat-head">
       <button class="dm-chat-back" data-action="closeDmChat">←</button>
-      <div class="dm-av" id="dm-chat-av" style="width:28px;height:28px;font-size:0.7em">👤</div>
+      <div class="dm-av" id="dm-chat-av" style="width:28px;height:28px;font-size:0.7em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       <span class="dm-chat-name" id="dm-chat-name">...</span>
-      <span class="dm-chat-encrypt">🔒 SIGNAL ENCRYPTED</span>
+      <span class="dm-chat-encrypt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>SIGNAL ENCRYPTED</span>
     </div>
     <div class="dm-chat-msgs" id="dm-chat-msgs"></div>
     <div class="dm-chat-input">
@@ -761,7 +761,7 @@
         <!-- Account collegati su altre piattaforme (da Nostr kind 0) -->
         <div id="prof-linked-accounts" style="display:none;flex-wrap:wrap;gap:6px;padding:6px 0 2px"></div>
         <div class="prof-signal-row" id="prof-signal-row" style="display:none">
-          <span style="font-size:0.55em;color:rgba(0,255,65,0.35);letter-spacing:2px;font-family:var(--font-mono)">🔒 SIGNAL VERIFIED</span>
+          <span style="font-size:0.55em;color:rgba(0,255,65,0.35);letter-spacing:2px;font-family:var(--font-mono)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;vertical-align:-2px;margin-right:3px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>SIGNAL VERIFIED</span>
           <span class="prof-signal-user" id="prof-signal-user"></span>
         </div>
         <div id="prof-badge-row" style="display:none;align-items:center;gap:8px;padding:4px 0;font-size:0.72em;letter-spacing:1px;color:#ffcc00">
@@ -771,13 +771,13 @@
         </div>
         <div class="prof-actions" id="prof-actions" style="display:none">
           <button class="prof-follow-btn" id="prof-follow-btn" data-action="toggleFollow">FOLLOW</button>
-          <button class="prof-dm-btn" data-action="profileDM">💬 DM</button>
+          <button class="prof-dm-btn" data-action="profileDM"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg>DM</button>
         </div>
         <div id="prof-own-actions" style="display:none;gap:8px;margin-top:6px;flex-wrap:wrap">
-          <button class="prof-edit-btn" id="prof-edit-btn" data-action="openEditProfile" style="background:rgba(0,255,65,0.08);border:1px solid rgba(0,255,65,0.3);color:var(--green);font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer">✏ EDIT PROFILE</button>
-          <button class="prof-badge-req-btn" id="req-badge-btn" data-action="openBadgeModal" style="background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.3);color:#ffcc00;font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer">🏅 RICHIEDI BADGE</button>
-          <button data-action="openCompose" style="background:rgba(0,170,255,0.08);border:1px solid rgba(0,170,255,0.3);color:var(--blue);font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer">📡 COMPOSE</button>
-          <button data-action="openProtoConnect" style="background:rgba(0,170,255,0.04);border:1px solid rgba(0,170,255,0.2);color:rgba(0,170,255,0.6);font-family:var(--font-mono);font-size:0.58em;letter-spacing:1px;padding:5px 10px;cursor:pointer" id="proto-accounts-btn">🔗 ACCOUNTS</button>
+          <button class="prof-edit-btn" id="prof-edit-btn" data-action="openEditProfile" style="background:rgba(0,255,65,0.08);border:1px solid rgba(0,255,65,0.3);color:var(--green);font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M14 7l3 3"/></svg>EDIT PROFILE</button>
+          <button class="prof-badge-req-btn" id="req-badge-btn" data-action="openBadgeModal" style="background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.3);color:#ffcc00;font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M9 12.5 8 21l4-2 4 2-1-8.5"/></svg>RICHIEDI BADGE</button>
+          <button data-action="openCompose" style="background:rgba(0,170,255,0.08);border:1px solid rgba(0,170,255,0.3);color:var(--blue);font-family:var(--font-mono);font-size:0.65em;letter-spacing:2px;padding:6px 14px;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4M9.2 9.2a4 4 0 0 0 0 5.6M14.8 9.2a4 4 0 0 1 0 5.6"/></svg>COMPOSE</button>
+          <button data-action="openProtoConnect" style="background:rgba(0,170,255,0.04);border:1px solid rgba(0,170,255,0.2);color:rgba(0,170,255,0.6);font-family:var(--font-mono);font-size:0.58em;letter-spacing:1px;padding:5px 10px;cursor:pointer" id="proto-accounts-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M10.5 6.5l1.8-1.8a4 4 0 0 1 5.7 5.7L16 12"/><path d="M13.5 17.5l-1.8 1.8a4 4 0 0 1-5.7-5.7L8 11.5"/></svg>ACCOUNTS</button>
         </div>
       </div>
       <!-- Storie in evidenza (IG-style) — saved highlights, permanenti -->
@@ -1215,7 +1215,7 @@
     updateDmUnreadBadge();
     // Section pill init
     const pill = document.getElementById('section-pill');
-    if(pill){ pill.textContent = '📡 SIGNAL'; pill.className = 'signal-pill'; }
+    if(pill){ pill.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4M9.2 9.2a4 4 0 0 0 0 5.6M14.8 9.2a4 4 0 0 1 0 5.6"/></svg> SIGNAL'; pill.className = 'signal-pill'; }
     // Tap feedback on bottom nav
     document.querySelectorAll('.bnav').forEach(btn=>{
       btn.addEventListener('touchstart',()=>btn.style.transform='scale(0.88)',{passive:true});
@@ -1303,7 +1303,7 @@
 
   // ========== SECTION SWITCH ==========
   // Section label map
-  const SEC_LABELS = {signal:'📡 SIGNAL',film:'🎬 FILM',music:'🎵 MUSIC',forum:'🏛️ FORUM',shop:'🛍️ SHOP',dm:'💬 MESSAGES',live:'🔴 LIVE'};
+  const SEC_LABELS = {signal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4M9.2 9.2a4 4 0 0 0 0 5.6M14.8 9.2a4 4 0 0 1 0 5.6"/></svg> SIGNAL',film:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg> FILM',music:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg> MUSIC',forum:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M4 10l8-5 8 5M5 10v11M19 10v11M9 21v-7M15 21v-7"/></svg> FORUM',shop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> SHOP',dm:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg> MESSAGES',live:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"/><path d="M6 6a8.5 8.5 0 0 0 0 12M18 6a8.5 8.5 0 0 1 0 12"/></svg> LIVE'};
 
   function switchSec(name){
     S.section=name;
@@ -1326,7 +1326,7 @@
     // Update section pill
     const pill = document.getElementById('section-pill');
     if(pill){
-      pill.textContent = SEC_LABELS[name] || name.toUpperCase();
+      pill.innerHTML = SEC_LABELS[name] || name.toUpperCase();
       pill.className = name + '-pill';
     }
     if(!S.loaded[name]){loadSec(name);S.loaded[name]=true}
@@ -1707,13 +1707,13 @@
         const ph = c.querySelector('.slide-placeholder'); if (ph) ph.remove();
         const title = ev.tags.find(t => t[0] === 'subject')?.[1] || '';
         const div = document.createElement('div'); div.className = 'forum-post'; div.dataset.eid = ev.id;
-        div.innerHTML = '<div class="forum-post-header"><div class="forum-post-av" id="fav-' + ev.id + '">\u{1F464}</div>' +
+        div.innerHTML = '<div class="forum-post-header"><div class="forum-post-av" id="fav-' + ev.id + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>' +
           '<span class="forum-post-name" id="fnm-' + ev.id + '" data-action="viewProf" data-args="'+escAttr(ev.pubkey)+'" style="cursor:pointer">' + (profName(ev.pubkey)||shortenKey(ev.pubkey)) + '</span>' +
           '<span class="forum-post-time">' + ago(ev.created_at) + '</span></div>' +
           (title ? '<div class="forum-post-title">' + esc(title) + '</div>' : '') +
           '<div class="forum-post-body">' + esc(ev.content) + '</div>' +
-          '<div class="forum-post-footer"><span class="forum-act" data-action="openComments" data-args="'+escAttr(ev.id)+'">\u{1F4AC} Reply</span>' +
-          '<span class="forum-act" data-action="shareEv" data-args="'+escAttr(ev.id)+'">\u{1F4E1} Share</span>' +
+          '<div class="forum-post-footer"><span class="forum-act" data-action="openComments" data-args="'+escAttr(ev.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg>Reply</span>' +
+          '<span class="forum-act" data-action="shareEv" data-args="'+escAttr(ev.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4M9.2 9.2a4 4 0 0 0 0 5.6M14.8 9.2a4 4 0 0 1 0 5.6"/></svg>Share</span>' +
           '<span class="forum-post-source">M4TR1X</span></div>';
         c.appendChild(div);
         loadProf(ev.pubkey).then(p => {
@@ -1990,7 +1990,7 @@
     const bkmActive=isBookmarked(ev.id)?'bkm-active':'';
     evCache[ev.id] = ev;
     const initName=esc(profName(ev.pubkey)||shortenKey(ev.pubkey));
-    el.innerHTML='<video class="slide-video" preload="none" loop muted playsinline><source src="'+vurl+'" type="video/mp4"></video><div class="ai-badge scanning" id="aib-'+ev.id+'">[ SCAN ]</div><div class="grad-top"></div><div class="grad-bot"></div><div class="play-flash" id="pf-'+ev.id+'"></div><div class="slide-info"><div class="slide-info-card"><div class="slide-author" data-action="viewProf" data-args="'+escAttr(ev.pubkey)+'"><div class="slide-av" id="av-'+ev.id+'">\u{1F464}</div><span class="slide-name" id="nm-'+ev.id+'">'+initName+'</span><span class="slide-time">'+ago(ev.created_at)+'</span></div>'+(mainTitle?'<div class="slide-meta">'+esc(mainTitle)+(g?'<span class="slide-genre">'+esc(g)+'</span>':'')+'</div>':'')+(cap?'<div class="slide-caption">'+cap+'</div>':'')+(tags?'<div class="slide-tags">'+tags+'</div>':'')+'</div></div></div><div class="slide-actions"><div class="sact" data-action="viewProf" data-args="'+escAttr(ev.pubkey)+'"><div class="sact-icon" id="sav-'+ev.id+'">\u{1F464}</div><span class="sact-label">PROFILO</span></div><div class="sact h8-tip-act" data-action="openZap" data-args="'+escAttr(JSON.stringify([ev.id,ev.pubkey,null]))+'"><div class="sact-icon" style="color:#ff2277">\u2665</div><span class="sact-label">TIP</span></div><div class="sact boost-act" id="bst-'+ev.id+'" data-action="openBoostModal" data-args="'+escAttr(ev.id)+'"><div class="sact-icon" style="color:var(--yellow)">\u26A1</div><span class="sact-label" id="bstlbl-'+ev.id+'">BOOST</span></div><div class="sact" data-action="openComments" data-args="'+escAttr(ev.id)+'"><div class="sact-icon">\u{1F4AC}</div><span class="sact-label">REPLY</span></div><div class="sact" data-action="shareEv" data-args="'+escAttr(ev.id)+'"><div class="sact-icon">\u{1F4E1}</div><span class="sact-label">RELAY</span></div><div class="sact" id="rp-'+ev.id+'" data-action="doRepost" data-args="'+escAttr(ev.id)+'"><div class="sact-icon">\u{1F501}</div><span class="sact-label">REPOST</span></div><div class="sact '+bkmActive+'" id="bkm-'+ev.id+'" data-action="toggleBookmark" data-args="'+escAttr(JSON.stringify([ev.id,vurl,esc(mainTitle||cap.slice(0,40))]))+'"><div class="sact-icon">\u2605</div><span class="sact-label">SALVA</span></div></div><div class="slide-labels"><div class="slbl real-lbl" id="lbr-'+ev.id+'" data-action="submitLabel" data-args="'+escAttr(JSON.stringify([ev.id,'REAL']))+'"><div class="slbl-icon">\u2713</div><span class="slbl-text">REALE</span></div><div class="label-stats-panel" id="lbs-'+ev.id+'"></div><div class="slbl ai-lbl" id="lba-'+ev.id+'" data-action="submitLabel" data-args="'+escAttr(JSON.stringify([ev.id,'AI_GENERATED']))+'"><div class="slbl-icon">\u26A0</div><span class="slbl-text">AI</span></div></div><div class="vid-prog"><div class="vid-prog-fill" id="vp-'+ev.id+'"></div></div>';
+    el.innerHTML='<video class="slide-video" preload="none" loop muted playsinline><source src="'+vurl+'" type="video/mp4"></video><div class="ai-badge scanning" id="aib-'+ev.id+'">[ SCAN ]</div><div class="grad-top"></div><div class="grad-bot"></div><div class="play-flash" id="pf-'+ev.id+'"></div><div class="slide-info"><div class="slide-info-card"><div class="slide-author" data-action="viewProf" data-args="'+escAttr(ev.pubkey)+'"><div class="slide-av" id="av-'+ev.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div><span class="slide-name" id="nm-'+ev.id+'">'+initName+'</span><span class="slide-time">'+ago(ev.created_at)+'</span></div>'+(mainTitle?'<div class="slide-meta">'+esc(mainTitle)+(g?'<span class="slide-genre">'+esc(g)+'</span>':'')+'</div>':'')+(cap?'<div class="slide-caption">'+cap+'</div>':'')+(tags?'<div class="slide-tags">'+tags+'</div>':'')+'</div></div></div><div class="slide-actions"><div class="sact" data-action="viewProf" data-args="'+escAttr(ev.pubkey)+'"><div class="sact-icon" id="sav-'+ev.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div><span class="sact-label">PROFILO</span></div><div class="sact h8-tip-act" data-action="openZap" data-args="'+escAttr(JSON.stringify([ev.id,ev.pubkey,null]))+'"><div class="sact-icon" style="color:#ff2277"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.4-7 10-7 10z"/></svg></div><span class="sact-label">TIP</span></div><div class="sact boost-act" id="bst-'+ev.id+'" data-action="openBoostModal" data-args="'+escAttr(ev.id)+'"><div class="sact-icon" style="color:var(--yellow)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div><span class="sact-label" id="bstlbl-'+ev.id+'">BOOST</span></div><div class="sact" data-action="openComments" data-args="'+escAttr(ev.id)+'"><div class="sact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"/></svg></div><span class="sact-label">REPLY</span></div><div class="sact" data-action="shareEv" data-args="'+escAttr(ev.id)+'"><div class="sact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4M9.2 9.2a4 4 0 0 0 0 5.6M14.8 9.2a4 4 0 0 1 0 5.6"/></svg></div><span class="sact-label">RELAY</span></div><div class="sact" id="rp-'+ev.id+'" data-action="doRepost" data-args="'+escAttr(ev.id)+'"><div class="sact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div><span class="sact-label">REPOST</span></div><div class="sact '+bkmActive+'" id="bkm-'+ev.id+'" data-action="toggleBookmark" data-args="'+escAttr(JSON.stringify([ev.id,vurl,esc(mainTitle||cap.slice(0,40))]))+'"><div class="sact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg></div><span class="sact-label">SALVA</span></div></div><div class="slide-labels"><div class="slbl real-lbl" id="lbr-'+ev.id+'" data-action="submitLabel" data-args="'+escAttr(JSON.stringify([ev.id,'REAL']))+'"><div class="slbl-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></div><span class="slbl-text">REALE</span></div><div class="label-stats-panel" id="lbs-'+ev.id+'"></div><div class="slbl ai-lbl" id="lba-'+ev.id+'" data-action="submitLabel" data-args="'+escAttr(JSON.stringify([ev.id,'AI_GENERATED']))+'"><div class="slbl-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v5M12 17.6v.2"/></svg></div><span class="slbl-text">AI</span></div></div><div class="vid-prog"><div class="vid-prog-fill" id="vp-'+ev.id+'"></div></div>';
     const vid=el.querySelector('video');
     vid.addEventListener('loadedmetadata',()=>{if(vid.videoWidth>vid.videoHeight)vid.classList.add('landscape')});
     vid.addEventListener('timeupdate',()=>{if(vid.duration){const f=document.getElementById('vp-'+ev.id);if(f)f.style.width=(vid.currentTime/vid.duration*100)+'%'}});
