@@ -5,28 +5,33 @@
    Loaded LAST → wins the cascade. Pure restyle, zero markup logic touched.
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+/* Font IBM Plex serviti LOCALMENTE da fonts/fonts.css (importato in m4tr1x.css).
+   Nessun @import a fonts.googleapis.com — regola 0 privacy/Tor. */
 
 /* ─── 1 · RETUNE THE DESIGN TOKENS ───────────────────────────────────────── */
+/* Valori allineati al pacchetto "serio" (design_handoff_m4tr1x_serio).       */
 :root {
   /* Surfaces — deep "INK", calmer than the old blue-black */
   --bg:        #080b10;
-  --surface:   #0c1118;
-  --surface2:  #11171f;
-  --surface3:  #161c25;
-  --border:    rgba(255,255,255,0.08);
-  --border-hi: rgba(255,255,255,0.14);
+  --surface:   #0f141b;
+  --surface2:  #161c25;   /* bolle, avatar, input  (= --surface-2 del pacchetto) */
+  --surface-2: #161c25;   /* alias con il nome del pacchetto                     */
+  --surface3:  #1b2230;   /* un gradino sopra, per hover/nested                  */
+  --border:    rgba(255,255,255,0.06);
+  --border-hi: rgba(255,255,255,0.12);
 
   /* Reading voice — warm off-white, less neon-blue */
   --text:      #e8edf2;
-  --text-dim:  rgba(232,237,242,0.78);
-  --text-muted:rgba(232,237,242,0.52);
+  --text-dim:  rgba(232,237,242,0.62);
+  --text-muted:rgba(232,237,242,0.40);
 
   /* Accent palette — green stays, the rest get the v3 hues */
   --green:      #00ff88;
-  --green-dim:  #00cc6e;
-  --green-dark: rgba(0,255,136,0.5);   /* era 0.10 → testo/tab inattivi invisibili */
-  --green-glow: rgba(0,255,136,0.07);
+  --green-dim:  #00bb66;
+  --green-dark: rgba(0,255,136,0.5);   /* NON 0.10: a 0.10 tab/testi inattivi spariscono.
+                                          Dove il pacchetto chiede 0.22 (bolle DM) il valore
+                                          è scritto esplicito nel SERIO PASS in fondo. */
+  --green-glow: rgba(0,255,136,0.05);
 
   --blue:       #4ca6ff;   /* FILM   */
   --yellow:     #f5c451;   /* MUSIC  */
@@ -40,10 +45,17 @@
   --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
   --font-display: 'IBM Plex Mono', ui-monospace, monospace;
   --font-read:    'IBM Plex Sans', system-ui, sans-serif;
+  --font-body:    'IBM Plex Sans', system-ui, sans-serif;  /* alias del pacchetto */
 
-  --r:      14px;
+  /* Chrome — nav più alta, respiro per le label */
+  --topbar: 56px;
+  --bottom: 80px;
+
+  --r:      16px;   /* card, bolle chat */
   --rsm:    10px;
   --rlg:    20px;
+  --r-cta:  12px;   /* bottoni */
+  --r-fab:  16px;   /* FAB */
 }
 
 /* ─── 2 · BASE — editorial calm ──────────────────────────────────────────── */
@@ -315,6 +327,36 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); letter-spa
 .mx-fab svg { width: 24px; height: 24px; }
 .mx-fab:hover  { transform: translateY(-2px) scale(1.05); box-shadow: 0 12px 34px rgba(0,255,136,0.55); }
 .mx-fab:active { transform: translateY(0) scale(0.96); }
+
+/* ─── 21b · LIVE FAB — sulla pagina LIVE il "+" diventa un tasto REC rosso.
+   Rosso + pallino bianco pulsante = "stai per andare in diretta", scelta consapevole. */
+.mx-fab.live-fab        { background: var(--red); box-shadow: 0 8px 26px rgba(255,85,102,0.45); }
+.mx-fab.live-fab:hover  { box-shadow: 0 12px 34px rgba(255,85,102,0.62); }
+.mx-fab.live-fab .rec-dot {
+  position: relative; width: 17px; height: 17px; border-radius: 50%; background: #fff;
+}
+.mx-fab.live-fab .rec-dot::after {
+  content: ''; position: absolute; inset: -7px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.7); animation: recPulse 1.7s ease-out infinite;
+}
+@keyframes recPulse {
+  0%   { transform: scale(.6);  opacity: .85; }
+  70%  { transform: scale(1.3); opacity: 0; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+/* Testa della pagina LIVE — spiega il gesto e ospita END STREAM quando sei in onda */
+.live-hint {
+  display: flex; align-items: center; gap: 9px; padding: 2px 2px 16px;
+  font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.live-hint .rec-mini {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--red); flex: none;
+  box-shadow: 0 0 8px rgba(255,85,102,.75); animation: recBlink 1.6s ease-in-out infinite;
+}
+@keyframes recBlink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+.go-live-btn.live-stop { width: 100%; }
 
 /* POST leaves the bottom-nav → it now lives in the green FAB (per the design) */
 .bnav.post-nav { display: none !important; }
@@ -607,3 +649,142 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); letter-spa
 .drawer-bar-title svg { width: 15px; height: 15px; }
 .up-disc svg { width: 15px; height: 15px; vertical-align: -2px; margin-right: 5px; }
 
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SERIO PASS — "il verde si guadagna il glow"
+   Rifinitura del Visual System v3 secondo il pacchetto design_handoff_m4tr1x_serio.
+   Solo estetica: nessun cambio di struttura, logica JS, routing o funzionalità.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── S1 · GLOW DISCIPLINE ───────────────────────────────────────────────────
+   Niente neon diffuso sul testo. Il glow resta solo dove significa qualcosa:
+   dot di stato, indicatore nav attivo, FAB.                                  */
+*, *::before, *::after { text-shadow: none !important; }
+
+/* la scanline CRT scende a livello quasi subliminale */
+body::before { opacity: 0.45; }
+
+/* ─── S2 · TIPOGRAFIA — mono per il sistema, sans per la lettura ──────────── */
+.forum-post-title, .forum-post-body, .up-body, .userlist-body,
+.dm-msg-bubble, .slide-caption, .prof-bio, .shop-item-name,
+.comment-body, .post-text, .caption, .bio, p {
+  font-family: var(--font-body);
+  line-height: 1.55;
+}
+/* le label "terminale" restano mono UPPERCASE con tracking largo */
+.bnav-label, .sact-label, .mx-chip, .integration-status,
+.badge, .stat-label, .dm-msg-time, .npub {
+  font-family: var(--font-mono);
+  letter-spacing: 0.14em;
+}
+
+/* ─── S3 · BOTTOM NAV — inattive spente, attiva con barretta indicatore ───── */
+#bottom-nav {
+  height: var(--bottom);
+  background: rgba(8,11,16,0.92);
+  backdrop-filter: blur(20px) saturate(1.3);
+  border-top: 1px solid var(--border);
+  box-shadow: none;
+}
+.bnav { color: rgba(232,237,242,0.32); transition: color 140ms ease; position: relative; }
+.bnav .bicon svg { width: 21px; height: 21px; display: block; }
+.bnav-label { font-size: 0.62em; letter-spacing: 0.10em; }
+
+/* niente più alone attorno all'icona: il segnale è la barretta */
+.bnav .bicon, .bnav:hover .bicon, .bnav.active .bicon { filter: none; }
+.bnav.active::after {
+  content: ''; position: absolute; top: 2px; left: 50%;
+  transform: translateX(-50%);
+  width: 18px; height: 2px; border-radius: 2px;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+/* il POST resta la CTA piena: nessuna barretta, glow contenuto */
+.bnav.post-nav::after { display: none; }
+.bnav.post-nav .bicon {
+  border-radius: var(--r-fab);
+  box-shadow: 0 8px 26px rgba(0,255,136,0.40);
+}
+.bnav.post-nav:hover .bicon { box-shadow: 0 8px 30px rgba(0,255,136,0.52); }
+
+/* accenti di sezione (mai come sfondo pieno, solo colore dell'attiva) */
+.bnav.active,           .bnav:hover           { color: var(--green); }
+.bnav.film-nav.active,  .bnav.film-nav:hover  { color: var(--blue); }
+.bnav.music-nav.active, .bnav.music-nav:hover { color: var(--yellow); }
+.bnav.forum-nav.active, .bnav.forum-nav:hover { color: var(--purple); }
+.bnav.shop-nav.active,  .bnav.shop-nav:hover  { color: var(--orange); }
+.bnav.live-nav.active,  .bnav.live-nav:hover  { color: var(--red); }
+.bnav.dm-nav.active,    .bnav.dm-nav:hover    { color: var(--green); }
+
+/* ─── S4 · TOPBAR — vetro, hairline, nessuna ombra pesante ───────────────── */
+#topbar {
+  height: var(--topbar);
+  background: rgba(8,11,16,0.92);
+  backdrop-filter: blur(20px) saturate(1.3);
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+}
+.logo { letter-spacing: 0.14em; }
+/* l'unica animazione neon superstite: il dot "segnale vivo" */
+.mx-signal-dot { box-shadow: 0 0 8px rgba(0,255,136,0.70); }
+
+/* ─── S5 · SECTION TABS — icona attiva colorata, underline sottile ────────── */
+.sec-tab { color: rgba(232,237,242,0.32); transition: color 140ms ease; }
+.sec-tab svg { width: 19px; height: 19px; }
+.sec-tab.active { color: var(--green); }
+.sec-tab.film-tab.active  { color: var(--blue); }
+.sec-tab.music-tab.active { color: var(--yellow); }
+.sec-tab.forum-tab.active { color: var(--purple); }
+.sec-tab.shop-tab.active  { color: var(--orange); }
+.sec-tab.live-tab.active  { color: var(--red); }
+
+/* ─── S6 · CARD — hairline, raggio 16, zero ombra ────────────────────────── */
+.forum-post, .shop-item, .dm-item, .userlist-item, .notif-item, .up-disc {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: none;
+}
+.forum-post:hover {
+  transform: none;
+  background: var(--surface2);
+  border-color: rgba(180,140,255,0.28);
+  box-shadow: none;
+}
+
+/* ─── S7 · BOLLE CHAT — coda 5px, inviate verde tenue ────────────────────── */
+.dm-msg-bubble {
+  background: var(--surface-2);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px 16px 16px 5px;
+  padding: 11px 14px;
+  font-family: var(--font-body);
+  color: rgba(232,237,242,0.92);
+}
+.dm-msg.me .dm-msg-bubble {
+  background: rgba(0,255,136,0.10);
+  border-color: rgba(0,255,136,0.22);
+  border-radius: 16px 16px 5px 16px;
+  color: var(--text);
+}
+.dm-msg-time { color: rgba(232,237,242,0.35); }
+
+/* ─── S8 · FAB — rounded square, ombra colorata per sezione ──────────────── */
+.mx-fab, .forum-new-btn, .shop-sell-btn {
+  border-radius: var(--r-fab);
+  width: 50px; height: 50px;
+}
+.mx-fab        { box-shadow: 0 8px 26px rgba(0,255,136,0.40); }
+.forum-new-btn { box-shadow: 0 8px 26px rgba(180,140,255,0.40); }
+.shop-sell-btn { box-shadow: 0 8px 26px rgba(255,154,77,0.40); }
+
+/* ─── S9 · CTA / PILL ────────────────────────────────────────────────────── */
+.btn-primary { border-radius: var(--r-cta) !important; box-shadow: 0 8px 26px rgba(0,255,136,0.28); }
+.btn-primary:hover { transform: none; box-shadow: 0 10px 30px rgba(0,255,136,0.38) !important; }
+.shop-buy-tokens, .go-live-btn { border-radius: var(--r-cta); }
+
+/* ─── S10 · MOTION — transizioni sobrie 120–160ms ────────────────────────── */
+a, button, .bnav, .sec-tab, .top-btn, .mx-chip {
+  transition: color 140ms ease, opacity 140ms ease,
+              background 140ms ease, border-color 140ms ease;
+}

@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>M4TR1X — Loading</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+    @import url('fonts/fonts.css'); /* font locali IBM Plex — regola 0 (no Google) */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       height: 100%; width: 100%;
       background: #000;
       color: #00ff41;
-      font-family: 'Share Tech Mono', monospace;
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -31,7 +31,7 @@
       z-index: 9999;
     }
     .logo {
-      font-family: 'Orbitron', monospace;
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
       font-size: 2em;
       font-weight: 900;
       letter-spacing: 8px;

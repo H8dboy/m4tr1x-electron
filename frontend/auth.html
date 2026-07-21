@@ -6,7 +6,7 @@
     <title>M4TR1X — ACCESS PROTOCOL</title>
     <script src="m4tr1x-bridge.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+        @import url('fonts/fonts.css'); /* IBM Plex locale — regola 0 (no Google/CDN) */
 
         :root {
             --green: #00ff88;
@@ -222,6 +222,124 @@
             justify-content: center; gap: 20px; height: 100%;
             border-left: 1px solid var(--green-dark);
         }
+
+        /* ══ SERIO PASS ══════════════════════════════════════════════════════
+           Stessa schermata, verde disciplinato: testo neutro leggibile,
+           hairline al posto dei bordi neon, glow solo dove significa qualcosa.
+           ══════════════════════════════════════════════════════════════════ */
+        :root {
+            --text:       #e8edf2;
+            --text-dim:   rgba(232,237,242,0.62);
+            --text-muted: rgba(232,237,242,0.40);
+            --border:     rgba(255,255,255,0.06);
+            --border-hi:  rgba(255,255,255,0.12);
+            --surface:    #0f141b;
+            --surface-2:  #161c25;
+            --r-cta:      12px;
+            /* era rgba(0,255,136,0.14) → illeggibile dove è usato come colore
+               testo negli inline style (#wallet-log, #auth-log, "ENTERING…").
+               Tutti gli usi come bordo sono ridefiniti qui sotto. */
+            --green-dark: rgba(232,237,242,0.34);
+        }
+        /* intestazioni delle colonne laterali: label di sistema, non insegne */
+        #left-deco > div:first-child,
+        #right-deco > div:first-child { color: var(--text-muted) !important; letter-spacing: 0.20em !important; }
+        html, body { color: var(--text); }
+        #matrix-canvas { opacity: 0.10; }
+        body::after {
+            background: repeating-linear-gradient(
+                0deg, transparent 0 3px, rgba(0,0,0,0.02) 3px 4px);
+        }
+
+        /* il wordmark non pulsa più: presenza, non insegna al neon */
+        .auth-logo {
+            color: var(--text);
+            text-shadow: none;
+            animation: none;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            font-size: 2.4em;
+        }
+        .auth-tagline { color: var(--text-muted); letter-spacing: 0.22em; }
+
+        /* colonne decorative: hairline, label mute, valori neutri */
+        #left-deco, #right-deco, .deco-block { border-color: var(--border); }
+        .deco-label { color: var(--text-muted); letter-spacing: 0.18em; }
+        .deco-value { color: var(--text-dim); }
+        .deco-value.live { color: var(--green); animation: none; }
+        .deco-log { color: var(--text-muted); border-color: var(--border); border-radius: 10px; }
+        .deco-log .ok { color: var(--text-dim); }
+
+        /* card: superficie ink, hairline, raggio 16, nessun alone */
+        .auth-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: none;
+            overflow: hidden;
+        }
+        .card-header {
+            border-bottom: 1px solid var(--border);
+            color: var(--text-dim);
+            letter-spacing: 0.18em;
+        }
+
+        .field-label { color: var(--text-muted); letter-spacing: 0.16em; }
+        .field-input {
+            background: var(--surface-2);
+            border: 1px solid var(--border-hi);
+            border-radius: 10px;
+            color: var(--text);
+        }
+        .field-input::placeholder { color: var(--text-muted); }
+        .field-input:focus {
+            border-color: rgba(0,255,136,0.55);
+            box-shadow: 0 0 0 3px rgba(0,255,136,0.12);
+        }
+
+        /* CTA: il verde pieno si guadagna il suo posto */
+        .btn-primary {
+            border-radius: var(--r-cta);
+            font-weight: 600; letter-spacing: 0.16em;
+            box-shadow: 0 8px 26px rgba(0,255,136,0.28);
+        }
+        .btn-primary:hover {
+            transform: none;
+            box-shadow: 0 10px 30px rgba(0,255,136,0.40);
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-dim);
+            font-family: var(--font-read);
+            line-height: 1.6;
+        }
+        .info-box strong { color: var(--green); font-family: var(--font-mono); }
+        .warning-box { border-radius: 10px; font-family: var(--font-read); }
+        .address-box {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-left: 2px solid var(--green);
+            border-radius: 10px;
+        }
+        .address-box-label { color: var(--text-muted); letter-spacing: 0.16em; }
+
+        .log-line { color: var(--text-muted); }
+        .log-line.ok { color: var(--text-dim); }
+
+        .success-logo {
+            color: var(--text); text-shadow: none; animation: none;
+            font-weight: 600; letter-spacing: 0.14em;
+        }
+        .success-msg { color: var(--text-dim); letter-spacing: 0.20em; }
+        .progress-line { background: var(--border-hi); border-radius: 2px; }
+        .progress-line::after { box-shadow: 0 0 8px rgba(0,255,136,0.70); }
+
+        #toast { border-radius: var(--r-cta); font-weight: 600; letter-spacing: 0.16em; }
+
+        #site-footer { color: var(--text-muted) !important; }
     </style>
 </head>
 <body>
