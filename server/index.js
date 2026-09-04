@@ -78,6 +78,25 @@ const ALLOWED_EXT      = new Set(['.mp4', '.mov', '.avi', '.webm', '.mkv'])
 const IS_PUBLIC_NODE   = !!process.env.PUBLIC_NODE_URL
 const BIND_HOST        = process.env.M4TR1X_BIND_HOST || (IS_PUBLIC_NODE ? '0.0.0.0' : '127.0.0.1')
 
+// ─── Loopback ≠ proprietario ──────────────────────────────────────────────────
+// Un hidden service consegna le connessioni tramite il Tor LOCALE: ogni
+// visitatore .onion arriva con remoteAddress 127.0.0.1 e sarebbe indistinguibile
+// dal proprietario seduto davanti al computer. Stesso discorso dietro un reverse
+// proxy. Perciò "locale" significa: loopback, SENZA header di proxy, e NON dal
+// listener di ingresso Tor (vedi startTorIngress, che marca i socket _m4Public).
+// LOOPBACK_OWNER=0 disattiva del tutto il privilegio; si disattiva da solo se il
+// nodo riusa un Tor esterno di cui non sappiamo dove punti la HiddenServicePort.
+const _PROXY_HDRS = ['x-forwarded-for', 'x-real-ip', 'forwarded', 'cf-connecting-ip', 'true-client-ip', 'x-client-ip']
+let LOOPBACK_OWNER = process.env.LOOPBACK_OWNER !== '0'
+const _isLoopbackIp = ip => ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1'
+function _isLocalReq(req) {
+  if (!LOOPBACK_OWNER) return false
+  const sock = req.socket
+  if (!sock || sock._m4Public) return false
+  for (const h of _PROXY_HDRS) if (req.headers[h]) return false
+  return _isLoopbackIp(sock.remoteAddress || '')
+}
+
 const DATA_DIR      = process.env.M4TR1X_DATA_DIR || process.cwd()
 const UPLOAD_DIR    = path.join(DATA_DIR, 'uploads')
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true })
@@ -768,9 +787,10 @@ app.post('/api/v1/train/model/update', verifyApiKey, async (req, res) => {
 // âââ Routes: Professional Badge System âââââââââââââââââââââââââââââââââââââââ
 
 // Middleware: solo localhost per endpoint admin
+// NB: non basta guardare l'IP — vedi _isLocalReq, che esclude le connessioni
+// arrivate dal hidden service (socket _m4Public) e quelle con header di proxy.
 function localhostOnly(req, res, next) {
-  const ip = req.socket.remoteAddress || ''
-  if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') return next()
+  if (_isLocalReq(req)) return next()
   return res.status(403).json({ error: 'Admin access restricted to localhost' })
 }
 
@@ -1224,9 +1244,52 @@ function startServer(port = 8080) {
       if (lan && BIND_HOST === '0.0.0.0') console.log(`[SERVER] Raggiungibile dalla rete: http://${lan.address}:${port}`)
       const onion = getOnionAddress()
       if (onion) console.log(`[SERVER] Indirizzo Tor: http://${onion}`)
+      // Tor gestito dall'app: SOCKS in uscita + onion proprio → listener di ingresso.
+      // L'onion punta all'ingress, MAI alla porta principale, così i visitatori
+      // Tor non ereditano il privilegio del loopback.
+      // Da qui in poi il computer dell'utente diventa raggiungibile dalla rete Tor:
+      // è il senso di "attiva un nodo", ma deve restare una scelta → M4TR1X_TOR=0.
+      if (process.env.M4TR1X_TOR === '0') {
+        console.log('[tor] Disattivato da M4TR1X_TOR=0: nessun onion, nessun Tor avviato.')
+        return resolve(server)
+      }
+      startTorIngress(port).then(ingressPort => {
+        return require('./tor_node').ensureNodeTor(ingressPort, _RELAY_PORT)
+      }).then(r => {
+        const onionCfg = getOnionAddress() || /\.onion/.test(process.env.PRIVATE_NODE_URL || '')
+        if (r && r.external && onionCfg && LOOPBACK_OWNER && process.env.LOOPBACK_OWNER !== '1') {
+          LOOPBACK_OWNER = false
+          console.warn(`[SEC] Tor esterno con onion configurato: le connessioni dal hidden service arrivano da 127.0.0.1 e sarebbero indistinguibili dal proprietario → privilegio loopback DISATTIVATO (admin via ADMIN_KEY). Per riattivarlo punta la HiddenServicePort a 127.0.0.1:${_ingressPort} e metti LOOPBACK_OWNER=1.`)
+        }
+      }).catch(() => {})
       resolve(server)
     })
     server.on('error', reject)
+  })
+}
+
+// Listener di ingresso Tor: stessa app Express, solo su 127.0.0.1, ogni socket
+// marcato _m4Public così il hidden service non eredita i privilegi del loopback.
+// Porta: TOR_INGRESS_PORT, altrimenti PORT+10000, altrimenti una libera.
+// Il relay Nostr (:4848) ha un server HTTP proprio e viene mappato a parte nel torrc.
+let _ingress, _ingressPort = 0
+function startTorIngress(port) {
+  return new Promise(resolve => {
+    const want = parseInt(process.env.TOR_INGRESS_PORT || '', 10) || (port + 10000)
+    const tryListen = (p, retryFree) => {
+      const srv = require('http').createServer(app)
+      srv.on('connection', s => { s._m4Public = true })
+      srv.once('error', e => {
+        if (retryFree) { console.warn(`[SERVER] ingresso Tor :${p} occupato (${e.code}), uso una porta libera`); tryListen(0, false) }
+        else { console.warn(`[SERVER] ingresso Tor non avviato: ${e.message}`); resolve(port) }
+      })
+      srv.listen(p, '127.0.0.1', () => {
+        _ingress = srv; _ingressPort = srv.address().port
+        console.log(`[SERVER] Ingresso Tor (hidden service) su 127.0.0.1:${_ingressPort}`)
+        resolve(_ingressPort)
+      })
+    }
+    tryListen(want, true)
   })
 }
 
@@ -1234,6 +1297,7 @@ function stopServer() {
   if (server) {
     server.close(() => console.log('[SERVER] Server fermato.'))
   }
+  if (_ingress) { try { _ingress.close() } catch {} _ingress = null }
 }
 
 // ─── Admin: graceful server-only reload (no Electron restart needed) ──────────

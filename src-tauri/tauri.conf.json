@@ -93,8 +93,10 @@
       "../server/peertube.js":       "server/peertube.js",
       "../server/funkwhale.js":      "server/funkwhale.js",
       "../server/tor.js":            "server/tor.js",
+      "../server/tor_node.js":       "server/tor_node.js",
       "../server/badges.js":         "server/badges.js",
       "../server/package.json":      "server/package.json",
+      "../resources/tor/":           "resources/tor/",
       "../frontend/**/*":            "frontend",
       "../models/**/*":              "models",
       "../train/**/*":               "train"

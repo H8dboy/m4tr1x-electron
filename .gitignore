@@ -106,3 +106,6 @@ server/shop.js
 .claude/
 .aider*
 .copilot/
+
+# Binari Tor impacchettati a build time (scripts/fetch-tor.sh) — non committati
+resources/tor/*/
