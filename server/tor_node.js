@@ -149,4 +149,34 @@ async function ensureNodeTor (apiPort, relayPort) {
   return { ok: false, external: false }
 }
 
-module.exports = { ensureNodeTor, HOSTNAME_FILE, TOR_DIR, SOCKS_PORT }
+/**
+ * Ferma il Tor avviato da noi. Va chiamato quando l'app si chiude: il processo
+ * e' spawnato detached e sopravviverebbe all'uscita, lasciando la macchina a
+ * pubblicare l'onion dopo che l'utente ha chiuso la finestra.
+ *
+ * Un Tor ESTERNO (gia' in ascolto quando siamo partiti) non viene mai toccato:
+ * non e' nostro, e potrebbe servire ad altro sul computer dell'utente.
+ * Ritorna true se abbiamo effettivamente fermato un processo nostro.
+ */
+function stopNodeTor () {
+  if (!_child || !_child.pid) return false
+  const pid = _child.pid
+  _child = null
+  try {
+    if (process.platform === 'win32') {
+      execFileSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' })
+    } else {
+      // spawn detached mette Tor in un suo process group (pgid = pid): il segno
+      // meno lo termina insieme a eventuali figli. Se il gruppo non c'e' piu',
+      // si ripiega sul solo pid.
+      try { process.kill(-pid, 'SIGTERM') } catch { process.kill(pid, 'SIGTERM') }
+    }
+    console.log('[tor] Tor del nodo fermato.')
+    return true
+  } catch (e) {
+    if (e.code !== 'ESRCH') console.warn(`[tor] stop Tor fallito: ${e.message}`)
+    return false
+  }
+}
+
+module.exports = { ensureNodeTor, stopNodeTor, HOSTNAME_FILE, TOR_DIR, SOCKS_PORT }

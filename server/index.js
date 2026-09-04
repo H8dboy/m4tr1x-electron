@@ -1307,6 +1307,9 @@ function stopServer() {
     server.close(() => console.log('[SERVER] Server fermato.'))
   }
   if (_ingress) { try { _ingress.close() } catch {} _ingress = null }
+  // Senza questo il Tor che abbiamo avviato sopravvive alla chiusura dell'app e
+  // la macchina continua a pubblicare l'onion. Un Tor esterno non viene toccato.
+  try { require('./tor_node').stopNodeTor() } catch {}
 }
 
 // ─── Admin: graceful server-only reload (no Electron restart needed) ──────────

@@ -19,7 +19,7 @@
     "server": "node server/index.js",
     "build:linux": "electron-builder --linux deb",
     "test:smoke": "node scripts/smoke-test.js",
-    "test:tor": "node tests/test-tauri-resources.js && node tests/test-tor-ingress.js && node tests/test-tor-bundle.js && node tests/test-tor-outbound.js"
+    "test:tor": "node tests/test-tauri-resources.js && node tests/test-tor-ingress.js && node tests/test-tor-bundle.js && node tests/test-tor-outbound.js && node tests/test-tor-lifecycle.js"
   },
   "build": {
     "appId": "com.h8db0y.m4tr1x",
