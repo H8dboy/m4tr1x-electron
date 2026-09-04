@@ -1251,9 +1251,13 @@ function startServer(port = 8080) {
       // è il senso di "attiva un nodo", ma deve restare una scelta → M4TR1X_TOR=0.
       if (process.env.M4TR1X_TOR === '0') {
         console.log('[tor] Disattivato da M4TR1X_TOR=0: nessun onion, nessun Tor avviato.')
+        _torReady = Promise.resolve({ ok: false, disabled: true })
         return resolve(server)
       }
-      startTorIngress(port).then(ingressPort => {
+      // Tor sale in ~1s, cioè DOPO che questa promessa ha risolto: chi deve
+      // instradare il traffico in uscita (main.js) aspetta whenTorReady(), non
+      // startServer, altrimenti controllerebbe il SOCKS prima che esista.
+      _torReady = startTorIngress(port).then(ingressPort => {
         return require('./tor_node').ensureNodeTor(ingressPort, _RELAY_PORT)
       }).then(r => {
         const onionCfg = getOnionAddress() || /\.onion/.test(process.env.PRIVATE_NODE_URL || '')
@@ -1261,7 +1265,8 @@ function startServer(port = 8080) {
           LOOPBACK_OWNER = false
           console.warn(`[SEC] Tor esterno con onion configurato: le connessioni dal hidden service arrivano da 127.0.0.1 e sarebbero indistinguibili dal proprietario → privilegio loopback DISATTIVATO (admin via ADMIN_KEY). Per riattivarlo punta la HiddenServicePort a 127.0.0.1:${_ingressPort} e metti LOOPBACK_OWNER=1.`)
         }
-      }).catch(() => {})
+        return r
+      }).catch(e => ({ ok: false, error: e && e.message }))
       resolve(server)
     })
     server.on('error', reject)
@@ -1273,6 +1278,10 @@ function startServer(port = 8080) {
 // Porta: TOR_INGRESS_PORT, altrimenti PORT+10000, altrimenti una libera.
 // Il relay Nostr (:4848) ha un server HTTP proprio e viene mappato a parte nel torrc.
 let _ingress, _ingressPort = 0
+// Risolve quando il Tor dell'app ha finito di salire (o ha rinunciato).
+// Serve a main.js per instradare il traffico in uscita sul SOCKS appena aperto.
+let _torReady = Promise.resolve({ ok: false, notStarted: true })
+const whenTorReady = () => _torReady
 function startTorIngress(port) {
   return new Promise(resolve => {
     const want = parseInt(process.env.TOR_INGRESS_PORT || '', 10) || (port + 10000)
@@ -1315,7 +1324,7 @@ app.post('/api/v1/admin/reload', localhostOnly, verifyAdminKey, (req, res) => {
   }, 200)
 })
 
-module.exports = { startServer, stopServer, app }
+module.exports = { startServer, stopServer, app, whenTorReady }
 
 // Auto-start when run directly (e.g. node index.js)
 if (require.main === module) {

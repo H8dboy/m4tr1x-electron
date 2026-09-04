@@ -142,9 +142,30 @@ async function createWindow() {
 
   // Start local API server
   try {
-    const { startServer } = require('./server/index')
+    const { startServer, whenTorReady } = require('./server/index')
     await startServer(SERVER_PORT)
     console.log(`[M4TR1X] Local server running on port ${SERVER_PORT}`)
+
+    // Il server, avviandosi, tira su il Tor spedito con l'app (server/tor_node.js).
+    // La detection a inizio createWindow() è girata PRIMA che quel Tor esistesse:
+    // senza questo secondo passaggio l'app pubblicherebbe il proprio onion
+    // continuando però a mandare il traffico in USCITA in chiaro.
+    // Si aspetta whenTorReady() e non startServer, che risolve ~1s prima.
+    if (!torStatus.torEnabled) {
+      try {
+        await whenTorReady()
+        const after = await setupTorIfAvailable(session.defaultSession)
+        if (after.torEnabled) {
+          torStatus = after
+          console.log(`[M4TR1X] 🧅 Tor active (${after.source}) — maximum privacy`)
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.setTitle('M4TR1X 🧅 — The Unfiltered Eye (Tor)')
+          }
+        }
+      } catch (e) {
+        console.warn('[M4TR1X] Tor re-check dopo l\'avvio non riuscito:', e.message)
+      }
+    }
   } catch (err) {
     console.error('[M4TR1X] Failed to start server:', err)
   }
