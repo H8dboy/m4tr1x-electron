@@ -42,6 +42,34 @@ In v2.4 (planned):
 
 3. **Documented manual fiat gateway.** Public process for purchasing H8: send EUR via SEPA to a published IBAN, receive H8 within 24h. Conversion rate fixed by founder, posted publicly, updated quarterly.
 
+## Price and backing
+
+The euro is the reference currency. Every other price derives from the euro price at the exchange rate of the day — it is not an independent price list.
+
+The selling price is two things kept apart:
+
+```
+reserve_eur      = 1.00                                 # backing, held in reserve
+platform_fee_pct = 0.25                                 # infrastructure share, on top
+price_eur        = reserve_eur * (1 + platform_fee_pct) = 1.25
+```
+
+| | |
+|---|---|
+| **1 H8** | **€ 1.25** (€ 1.00 reserve + 25%) |
+| 1 H8 in USD | $ 1.375 — the same reserve converted at the EUR/USD rate |
+| Smallest unit | 0.01 H8 (1 ledger unit) = € 0.0125 |
+| Minimum order | € 1.00 threshold = 0.8 H8 |
+| Maximum order | 8,000 H8 = € 10,000 |
+
+**Backing policy.** Every H8 issued through the shop is covered by **€ 1.00 (or its USD equivalent) held in reserve**, kept separate from the platform fee. The fee is what pays for development and infrastructure; the reserve is not income and is not spent as such — it exists so that the credit in circulation has something behind it. The reserve is denominated in euro even when the buyer pays in another currency: other currencies are converted, the reserve is not re-denominated.
+
+This is a backing commitment, not a peg and not a redemption right: H8 remains non-transferable outside M4TR1X and cannot be withdrawn to an exchange (see *What H8 is NOT*).
+
+Orders are placed in whole H8 — `createOrder` floors the amount — so the first order actually accepted is 1 H8; the 0.8 H8 minimum is the € 1.00 threshold expressed in tokens.
+
+These are the defaults in `server/h8shop.js`. A node operator can override them in `h8shop_config.json` — the price a buyer sees always comes from `/api/v1/shop/info` on the node they are buying from, never from this document.
+
 ## Where H8 goes (flow)
 
 Every tip splits automatically into three:
