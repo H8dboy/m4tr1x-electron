@@ -42,6 +42,20 @@ In v2.4 (planned):
 
 3. **Documented manual fiat gateway.** Public process for purchasing H8: send EUR via SEPA to a published IBAN, receive H8 within 24h. Conversion rate fixed by founder, posted publicly, updated quarterly.
 
+## Why a closed credit
+
+H8 is not a substitute for money. It exists to move value that, in euro, would not move at all.
+
+An old laptop worth about €100 usually never gets sold. Between writing the listing, haggling, packing and shipping it, €100 is not worth the friction — so it stays in a drawer. The same laptop moves immediately if what comes back is credit the owner actually wants to use: tipping the film-makers and musicians they follow, or buying something else on the shop from another person who is also clearing out their shelves.
+
+That is the whole design:
+
+- **Sellers are private individuals selling their own things**, not businesses. A VAT-registered company has no reason to sell here: the sale would not be invoiceable, so for them it would be money lost.
+- **The credit never leaves.** No cash-out, no exchange, no redemption in euro. What you earn inside is spent inside.
+- **The euro reserve** exists so the credit stays covered while it circulates — not so that anyone can convert back out.
+
+It is a pact that holds only inside the infrastructure. Whoever wants euros should use an ordinary marketplace; H8 is for everything an ordinary marketplace does not make worth the trouble.
+
 ## Price and backing
 
 The euro is the reference currency. Every other price derives from the euro price at the exchange rate of the day — it is not an independent price list.
