@@ -244,8 +244,8 @@ async function verifyChain() {
 
 - **Founder/Lead**: H8db0y — architecture, security, crypto, core systems
 - **Repos**: 6 public repositories + private head node
-  - `m4tr1x-electron` — desktop app + API server (1,325 commits)
-  - `m4tr1x-node` — self-hosted backend (5,325 commits)
+  - `m4tr1x-electron` — desktop app + API server (90+ commits)
+  - `m4tr1x-node` — self-hosted backend (150+ commits)
   - `m4tr1x-android` — mobile app (Capacitor)
   - `m4tr1x-ai-detector` — community-trained deepfake model
   - ...plus experimental modules
